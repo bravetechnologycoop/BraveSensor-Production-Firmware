@@ -1,0 +1,5 @@
+# ignore vscode settings
+.vscode/
+
+#ignore particle workbench's project properties
+project.properties
