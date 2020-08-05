@@ -18,24 +18,15 @@
  * 
  */
 
-//#define SKIP_SERIAL
+//#define USE_SERIAL
+//#define HEIDI_DEBUGGING
 
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
 //0th SSID/password is used during product setup ONLY
 //5th SSID/password is Diagnostics network
-#define ADDR0 0
-#define ADDR1 64
-#define ADDR2 128
-#define ADDR3 192
-#define ADDR4 256
-#define ADDR5 320
-#define PWDOFFSET 32
-
 #define ADDRSSIDS 0
-#define ADDRPWDS 160
-
-#define INITSSID "Testbed"
-#define INITPWD "fireweed3"
+#define ADDRPWDS 320
+#define PWDOFFSET 64
 
 void printWifiCreds();
 void blinkLED();
@@ -44,6 +35,7 @@ int setWifiSSID(String);
 int setWifiPwd(String);   
 void writeToFlash();        
 void readFromFlash(); 
+//char* truncate(char mySSIDs[][32]);
 
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not 
@@ -55,7 +47,6 @@ SYSTEM_MODE(MANUAL);
 
 //STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
 
-#define WAIT_1_MINUTE 60000;
 
 //blue LED built into photon and argon board = D7
 int boardLED = D7;
@@ -65,8 +56,8 @@ int redLED = D4;
 //setCredentials() does not store credentials in flash memory unless particle has successfully
 //connected to that wifi network in the past, so we need to store credentials using EEPROM
 
-char mySSIDs[5][32] = {"Testbed", "Testbed", "Testbed", "Testbed", "Diagnostics"};
-char myPasswords[5][32] = {"notright1", "fireweed3", "notright3", "notright4", "DiagnosticsPwd"};
+char mySSIDs[5][32] = {"wrongssid123456789", "Testbed2", "Testbed3", "Testbed4", "Diagnostics"};
+char myPasswords[5][32] = {"notright123456789", "notright2", "notright3", "notright4", "DiagnosticsPwd"};
 
 //String mySSIDs[5] = {"Testbed", "Testbed", "Testbed", "Testbed", "Diagnostics"};
 //String myPasswords[5] = {"fireweed3", "notright2", "notright3", "notright4", "DiagnosticsPwd"};
@@ -79,10 +70,7 @@ void setup() {
   BLE.off();
   #endif
 
-  Serial.begin(9600);
-  waitUntil(Serial.available);
-
-  #if defined(SKIP_SERIAL)
+  #if defined(USE_SERIAL)
   //start comms with serial terminal for debugging...
   Serial.begin(9600);
   // wait until a character sent from USB host
@@ -97,20 +85,34 @@ void setup() {
 
   uint16_t checkForContent;
 
-
-
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFF
   //on new boards, note 0xFF does not correspond to any ASCII chars
-  EEPROM.put(ADDR0,0xFF);
-  EEPROM.get(ADDR0,checkForContent);
+  #if defined(WRITE_ORIGINALS)
+  EEPROM.put(ADDRSSIDS,0xFFFF);
+  #endif
+  EEPROM.get(ADDRSSIDS,checkForContent);
 
-  if(checkForContent == 0xFF) {
+  //if memory has not been written to yet, write the initial set of 
+  //passwords.  else read what's already in there.
+/*  if(checkForContent == 0xFFFF) {
     writeToFlash();
   } else {
     readFromFlash();
   }
-  
+*/
+  writeToFlash();
+  readFromFlash();
+
+  EEPROM.put(ADDRSSIDS,"Testbed");
+  EEPROM.put(ADDRPWDS,"fireweed3");
+
+  readFromFlash();
+
+  #if defined(WRITE_ORIGINALS)
+  readFromFlash();
+  #endif
+ 
   //loops through 5 different stored networks until connection established
   connectToWifi(mySSIDs,myPasswords);
 
@@ -135,11 +137,78 @@ void loop() {
   //system manual mode, for... reasons... ???
   //Particle.process();
 
+  #if defined(USE_SERIAL)
   Serial.print("you're looping");
+  #endif
 
   blinkLED();
 
 }
+
+/*char* truncate(char mySSIDs[][32]) 
+{ 
+
+  for(int i = 0; i < 5; i++){
+
+    char* holder = mySSIDs[i]; 
+    strcpy(mySSIDs[i], holder);
+
+    return holder;
+
+  }
+
+} 
+*/
+
+//connects to one of 5 stored wifi networks
+void connectToWifi(char mySSIDs[][32], char myPasswords[][32]){
+
+  //turn off wifi module
+  WiFi.off();
+
+  //clears credentials from any previously connected networks
+  WiFi.clearCredentials();
+
+  //turn on wifi module
+  WiFi.on();
+
+  //store these credentials in temporary memory, specifically in an object of type
+  //WiFiCredentials. Look at source code to understand objects as there are 
+  //no docs on them.
+  for(int i = 0; i < 5; i++){
+
+    #if defined(USE_SERIAL)
+    Serial.print("Setting credential set: ");
+    Serial.println(i+1);
+    Serial.println(mySSIDs[i]);
+    Serial.println(myPasswords[i]);
+    #endif
+
+    //WiFi.setCredentials(ssidHolder,pwdHolder);
+
+    WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
+
+    WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
+    
+    waitFor(WiFi.ready, 30000);    
+
+    //wifi.ready() returns true when connected and false when not
+    if(WiFi.ready()) {
+      #if defined(USE_SERIAL)
+      Serial.println("Connected to wifi.");
+      #endif
+      break;
+    } else {
+      #if defined(USE_SERIAL)
+      Serial.println("***Failed to connect to wifi***");
+      #endif
+      continue;
+    }
+
+  }
+
+}  //end connectToWifi()
+
 
 void writeToFlash() {
 
@@ -153,7 +222,7 @@ void writeToFlash() {
 void readFromFlash() {
 
   EEPROM.get(ADDRSSIDS,mySSIDs);  
-  EEPROM.get(ADDRPWDS, myPasswords);
+  EEPROM.get(ADDRPWDS,myPasswords);
 
 }
 
@@ -200,53 +269,6 @@ int setWifiPwd(String newPwd){
   return -1;
 
 }
-
-//connects to one of 5 stored wifi networks
-void connectToWifi(char mySSIDs[][32], char myPasswords[][32]){
-
-  //turn off wifi module
-  WiFi.off();
-
-  //clears credentials from any previously connected networks
-  WiFi.clearCredentials();
-
-  //turn on wifi module
-  WiFi.on();
-
-  //store these credentials in temporary memory, specifically in an object of type
-  //WiFiCredentials. Look at source code to understand objects as there are 
-  //no docs on them.
-  for(int i = 0; i < 5; i++){
-    #if defined(SKIP_SERIAL)
-    Serial.print("Setting credential set: ");
-    Serial.println(i+1);
-    Serial.println(mySSIDs[i]);
-    Serial.println(myPasswords[i]);
-    #endif
-    WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
-
-    WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
-    
-    waitFor(WiFi.ready, 30000);    
-
-    //wifi.ready() returns true when connected and false when not
-    if(WiFi.ready()) {
-      #if defined(SKIP_SERIAL)
-      Serial.println("Connected to wifi.");
-      #endif
-      break;
-    } else {
-      #if defined(SKIP_SERIAL)
-      Serial.println("***Failed to connect to wifi***");
-      #endif
-      continue;
-    }
-
-  }
-
-}  //end connectToWifi()
-
-
 
 
 //uses getCredentials to retrieve and print wifi credentials stored in 
