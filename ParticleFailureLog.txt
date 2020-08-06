@@ -1,0 +1,58 @@
+Debug flash time: 40s
+Clean debug build + flash time: 5m 50s
+
+Wednesday August 5/20, 2:05pm:
+Clean debug build + flash.
+
+Debug flash.
+
+Debug flash.
+
+Debug flash.
+
+Debug flash - doesn't make it to 3rd debug point.  No errors displayed. Diagnostics LED blinks blue, external LED is blinking so loop() was reached and 3rd debug point was completely skipped.
+
+Debug flash with no code changes.  Same behaviour.
+
+Clean debug build + flash. (using restart button on vscode debug panel)  - same behaviour, fuck.  Is it my code?
+
+Debug flash - commented out all unrelated EEPROM.put() in the code, no other changes. Same behaviour.
+
+Debug flash - huh neato, no changes to code, just using step over instead of setting a breakpoint on the next line, and and now I'm getting a hard fault.
+
+Unplug/replug argon and debug board.  Delete all breakpoints.  Clean debug build + flash. NOW THE FUCKING THING WORKS, ARGH.  (Works == steps through code, and past the offending EEPROM.put() line, properly again. Definitely not my code that caused this!)
+
+Debug flash - debugger skips my 2nd debug point and lands on a line that does not have a debug point. Try "continue", it goes to another line that does not have a debug point.  Press continue again and 3rd debug point is also skipped, code continues on to try to connect to wifi.  Fails to connect to first set of (correct) wifi credentials. Freezes on attempt to connect to second set of wifi credentials.
+
+Debug flash - oops, forgot to put in DFU mode, get LIBUSB_TRANSFER_TIMED_OUT
+
+Debug flash - same behaviour, skips debug points and goes to lines that do not have debug points, so clean it is, sigh...
+
+Clean debug build + flash - can't connect with minicom, "Device /dev/ttyACM0 is locked".  I forgot to disconnect minicom before doing the clean build + flash.
+
+Disconnect debugger using disconnect button on vscode debug panel.  Press F5 to reconnect and initiate debug flash.  Same "Device /dev/ttyACM0 is locked" error, fuck.
+
+Unplug and replug argon and debugger.  Debug flash.  Debug panel in vscode disappeared, I guess the flash failed?
+
+Debug flash.  VSCode error window:  "Failed to launch OpenOCD GDB Server: Timeout".
+
+Unplug argon and debugger.  Clean build. Delete breakpoints.  Replug argon and debugger.  Flash debug - get windows popup:  "VirtualBox.exe Memory Error.  The instruction at 0x00007FFB6B676E8400FF referenced memory at 0X0000 0000000000000020. The memory could not be read.  Click ok to terminate program."  Terminated virtual box, restarted laptop, reloaded VM.  
+
+From approximately 2:30pm onwards was trying to get sensible results from the Particle debugger without it crashing.  I think maybe one actual code issue was tested during that time.  
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Thursday August 6/20
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -18,8 +18,8 @@
  * 
  */
 
-//#define USE_SERIAL
-//#define HEIDI_DEBUGGING
+#define USE_SERIAL
+#define DEBUG_BUILD
 
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
 //0th SSID/password is used during product setup ONLY
@@ -83,7 +83,7 @@ void setup() {
   pinMode(boardLED,OUTPUT); 
   pinMode(redLED,OUTPUT);
 
-  uint16_t checkForContent;
+
 
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFF
@@ -91,7 +91,9 @@ void setup() {
   #if defined(WRITE_ORIGINALS)
   EEPROM.put(ADDRSSIDS,0xFFFF);
   #endif
-  EEPROM.get(ADDRSSIDS,checkForContent);
+
+//  uint16_t checkForContent;
+//  EEPROM.get(ADDRSSIDS,checkForContent);
 
   //if memory has not been written to yet, write the initial set of 
   //passwords.  else read what's already in there.
@@ -101,13 +103,24 @@ void setup() {
     readFromFlash();
   }
 */
-  writeToFlash();
-  readFromFlash();
+  //writeToFlash();
+  //readFromFlash();
+
+  EEPROM.put(ADDRSSIDS,mySSIDs);  
+  EEPROM.put(ADDRPWDS, myPasswords);
 
   EEPROM.put(ADDRSSIDS,"Testbed");
   EEPROM.put(ADDRPWDS,"fireweed3");
 
-  readFromFlash();
+  EEPROM.get(ADDRSSIDS,mySSIDs);  
+  EEPROM.get(ADDRPWDS,myPasswords);
+
+  char* ssidHolder = mySSIDs[0];
+  char* pwdHolder = myPasswords[0];
+
+  int lenssid = strlen(ssidHolder);
+
+  //readFromFlash();
 
   #if defined(WRITE_ORIGINALS)
   readFromFlash();
