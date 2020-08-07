@@ -18,7 +18,7 @@
  * 
  */
 
-#define USE_SERIAL
+//#define USE_SERIAL
 #define DEBUG_BUILD
 
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
@@ -28,7 +28,10 @@
 #define ADDRPWDS 320
 #define PWDOFFSET 64
 
+#if defined(USE_SERIAL)
 void printWifiCreds();
+#endif
+
 void blinkLED();
 void connectToWifi(char[][32], char[][32]);
 int setWifiSSID(String);
@@ -83,8 +86,6 @@ void setup() {
   pinMode(boardLED,OUTPUT); 
   pinMode(redLED,OUTPUT);
 
-
-
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFF
   //on new boards, note 0xFF does not correspond to any ASCII chars
@@ -118,7 +119,16 @@ void setup() {
   char* ssidHolder = mySSIDs[0];
   char* pwdHolder = myPasswords[0];
 
-  int lenssid = strlen(ssidHolder);
+  int lenssid = strlen(mySSIDs[0]);
+
+  char ssidHolder2[lenssid+1];  //for some reason this works in C on my laptop but not on Particle?
+
+  strcpy(ssidHolder2,mySSIDs[0]);
+
+  int len2 = strlen(ssidHolder2);
+
+  //Serial.println(len2);
+  //Serial.println(ssidHolder2);
 
   //readFromFlash();
 
@@ -250,10 +260,12 @@ int setWifiSSID(String newSSID){
 
   //did it work?
   for(int i = 0; i < 5; i++){
+    #if defined(USE_SERIAL)
     Serial.print("New credential set: ");
     Serial.println(i+1);
     Serial.println(mySSIDs[i]);
     Serial.println(myPasswords[i]);
+    #endif
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
@@ -270,10 +282,12 @@ int setWifiPwd(String newPwd){
  
   //did it work?
   for(int i = 0; i < 5; i++){
+    #if defined(USE_SERIAL)
     Serial.print("New credential set: ");
     Serial.println(i+1);
     Serial.println(mySSIDs[i]);
     Serial.println(myPasswords[i]);
+    #endif
 
     //String holderSSID = String(mySSIDs[i]);
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
@@ -283,7 +297,7 @@ int setWifiPwd(String newPwd){
 
 }
 
-
+#if defined(USE_SERIAL)
 //uses getCredentials to retrieve and print wifi credentials stored in 
 //particle's flash memory
 void printWiFiCreds(){
@@ -320,6 +334,7 @@ void printWiFiCreds(){
   }
 
 }
+#endif
 
 void blinkLED(){
 

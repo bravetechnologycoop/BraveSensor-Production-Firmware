@@ -43,6 +43,115 @@ From approximately 2:30pm onwards was trying to get sensible results from the Pa
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Thursday August 6/20
 
+Clean debug build + flash of code from yesterday, no changes.  Hits first debug point, skips my second one and lands on a line with no debug point.  Took a screenshot.
+
+Debug flash after adding int len = strlen(ssidHolder);
+
+....lost some logs here due to mousepad crashing.  Moved log file to repo so I can open it in vscode and back it up with git.  I do recall the outcome of the above debug flash was to skip breakpoints again...
+
+----> Switched branches and tested Sampath's radar code.  It runs fine with regular device OS+flash, after I use particle CLI to connect argon to wifi and assign it a device name.  Did not try debug build with his code but he reported getting SOS mode when he tried it.
+
+Back to my code.  Clean debug build + flash of unchanged code.  Hit my first breakpoint, skipped the second, landed on the third.  Third breakpoint is placed at connectToWifi() function in setup().  Pressed continue and code connected to wifi and began looping/blinking without trouble.  Yesterday the same code failed to connect, Argon went into listening mode and blinked external LED.  Does this have something to do with assigning the argon a device name for testing Sampath's code?
+
+Add a println(), then debug flash.  Device enters DFU mode automatically.  
+
+Remove println(), add a strcpy().  Debug flash.  LIBUSB timeout.  
+
+Manual entry into DFU.  Debug flash.  Debugger skips second breakpoint and lands on a line with no breakpoint.
+
+Change the string strcpy() is writing to.  Debug flash.  LIBUSB timeout.
+
+Manual entry into DFU.  Debug flash.  Hard fault.
+
+Comment out the strcpy() line.  Add a serial.println().  Unplug and replug argon and debuger.  Debug flash.  Get error unable to connect to device [serial # of my argon].  Check if device is connected to computer.  
+
+Unplug replug argon + debugger.  Debug flash.  Enters DFU mode automatically.  All by debug points are ignored and code exceutes in its entirty, wtf?!?  Points for connecting to wifi without issue though.
+
+Remembered to disconnect minicom before re-flashing.  Debug flash.  Enters DFU mode automatically, maybe the serial connection interferes with its ability to do that?  Will test further.  Also need to test if device will now handle breakpoints after Wifi.connect() is called, or will that cause disconnection?  ...all debug points ignored same as before, guess I have to do another 5 min clean build, sigh...
+
+Disconnect minicom.  Clean build + flash.  Enters DFU mode automatically, yay.  All debug points are hit, and code connects to wifi successfully!
+
+Added this line: int len2 = strlen(ssidHolder2);  Debug flash.  Enters DFU mode automatically, AND disconnects from minicom automatically, so minicom is not the problem there!!  Perhaps it really was my having connected this thing to the cloud?  When you set wifi credentials via command line, where are they stored?  Does having those make a difference to entering DFU mode even when you have your app set to manual mode?  ...got another hard fault, neato.
+
+Disconnect minicom.  Unplug and replug argon + debugger.  Clean debug build + flash, no code changes.  Enters DFU mode automatically, yay.  Code runs fine, so hard fault was not caused by my code.
+
+Added strcpy() line back.  Debug flash.  Enters DFU mode automatically.  Run code, press key in minicom, vscode debug panel disappears and no println() statements appear in minicom.  Argon is happily breathing cyan, but external LED is not blinking.  Tested my strcpy() code in a C project compiled natively on my machine and it works fine, so I don't think my code is doing anything to cause segfaults or otherwise.
+
+Unplug replug argon + debugger.  Clean debug build + flash, no code changes.  DFU automatic, yay.  Step over stops showing place in code after 3 steps. Clicking continue on vscode debug panel successfully moves to next debug point.  ssidHolder2's reported length/value is different in "Variables" panel than it is in "Watch" panel, see screenshot.  Hovering over ssidHolder2 in the code reports the expected value, 'Testbed'.  
+
+Move a println() down two lines.  Debug flash.  Get LIBUSB timeout.  Minicom was open AND code was halted at a breakpoint on a Serial.println() command.  That command shouldn't have been executed yet though, and the previous serial.println() had finished printing to minicom, so there shouldn't be an active serial command that is blocking the debugger.  Also in previous cases code was halted while in loop() which prints to serial every 1.25 seconds, so unless I managed to magically stop the code at the right time every single time... still don't understand this error.
+
+Closed minicom.  Debug flash.  Still get a timeout.  Is it because the particle still is trying to talk via serial despite minicom disconnection?  Re-open minicom, try to click continue past the debug point on serial.println(), get an error popup from vscode:  "Could not continue: Cannot execute this command while the selected thread is running. (from exec-continue --thread 1)".
+
+Closed minicom.  Disconnected debugger using 'disconnect' command in vscode debug panel.  Pressed F5 to re-initiate connection.  Failed to enter DFU mode.
+
+Disconnected debugger via vscode panel.  Entered DFU mode manually.  Debug flash.  Get "Failed to launch OpenOCD GDB Server: Timeout.".
+
+Unplug replug debugger + argon.  Debug flash.  Enters DFU automatically again.  Said it flashed succesfully, but then vscode debug panel disappeared and got message "Failed to launch OpenOCD GDB Server: Timeout."
+
+Unplug replug debugger + argon.  Clean debug build + flash.  DFU is automatic again.  Still got "Failed to launch OpenOCD GDB Server: Timeout."
+
+Unplug replug debugger + argon.  Clean debug build, clean device OS + app, flash.  DFU mode automatic.  Same again.  Am I not clicking continue fast enough after compile?  It's a little hard to sit around and stare at a screen for 6 minutes while something compiles...
+
+Unplug replug debugger + argon.  Clean debug build, clean device OS + app, flash.  DFU mode automatic.  Watch intently at end of compile.  Debug panel in vscode is in "running" mode displaying a pause symbol (F6).  I pressed it twice, nothing happened.  A few seconds later, the gdb timeout error reappeared.
+
+Shut down VM.  Restart host computer.  Reboot everything.  VSCode on startup says build is dirty would I like to clean, I say yes. The messages output into bash 5.0 terminal seem different than the ones output by the particle's clean commands, but too much is dumped to the terminal too quickly and I don't get a chance to see what vscode may have done differently.  Plug in debugger + argon.  Clean debug build, clean device OS + app for good measure, flash.  DFU mode works automatically, and code resumes its normal debugging behaviour.  No more GDB server timeout.  ssidHolder2's value still only displays on hovering over variable, does not display in Variables or Watch.
+
+Add Serial.println(ssidHolder2);  Disconnect minicom.  Debug flash. LIBUSB timeout.  Maybe it is to do with serial?  But these errors were happening when I was running code with no calls to serial.  
+
+Enter DFU mode manually.  Debug flash.  Code steps through debug points properly.  serial.println(ssidHolder2) shows the correct string so the hovering-over must be showing the correct result.  Variable shows ssidHolder2 as a char array length 0, Watch shows it as a char array of length -1, wtf??
+
+Comment out println(ssidHolder2).  Debug flash.  DFU is automatic despite minicom open and a println() statement in loop() executing.  Is the failure to find DFU when I initiate debug flash (via restart button in vscode debug panel) because it was halted at a serial command, at any command in setup, or because serial commands exist in setup at all?
+
+Leave minicom open.  Step to a debug point at a strlen() call.  Add int blah = 3;.  Debug flash.  LIBUSB timeout.
+
+Change blah = 3 to blah = 4, close minicom, debug flash.  LIBUSB timeout.
+
+Change blah = 4 to blah = 5, enter DFU mode manually, debug flash.  Step to strlen() debug point no problems.
+
+Close minicom.  Add a debug point in loop().  Manually enter DFU mode.  Debug flash.  Debugger stops on a line without a debug point.  Serial output does not display any println() commands in connectToWifi() or loop().
+
+Close minicom.  Enter DFU mode manually.  Clean build debug + flash.  Debugger stops on exact same line (that doesn't have debug point) as before, serial output halts at same line as before.
+
+Change int blah = 5 to = 6, move debug point back to setup().  Leave minicom open.  Debug flash.  LIBUSB timeout.
+
+Change line to int blahblah = 1, move debug point back to loop().  Close minicom.  Clean build debug + flash.  Fucking finally, debugger stops at debug point in loop()!
+
+Change int blahblah back to int blah.  Leave minicom open.  Debug flash.  LIBUSB timeout.  
+
+Disconnect from debugger via vscode.  Clean build debug + flash.  
+
+Whoops, forgot to close minicom.  Ctrl + C, close minicom, unplug replug argon + debugger, clean build debug + flash.  Program halts at debug point in loop() like it's supposed to.
+
+Close minicom in advance this time.  Change int blah = 1 to = 2.  Debug flash.  LIBUSB timeout.  
+
+At this point, is it the presence of serial commands at all, in any of the code, anywhere?  This also seems highly unlikely.  Since this log started I have been running serial commands in debug mode, requirng a key press via minicom to start the code.  For the better half of this morning the argon entered DFU automatically.  It was only around the time I added the println()s in setup() to display length and contents of ssidHolder2 that the timeout errors started.  But before then I had println() statements in the connectToWifi() function called from setup... so why would those two println() statements change anything?  Could it be because I set a breakpoint at one of them, then tried to reflash the code while it was halted at that breakpoint?
+
+Do serial commands cause the timeout, or does re-flashing while at a breakpoint of any kind cause this?  
+
+Remove all serial commands in setup(), loop(), and their sub-functions.  Unplug replug argon and debugger.  Clean debug build + flash.  Enters DFU automatically.  Halts at debug point in setup().  
+
+Change blah = 2 to blah = 3.  Debug flash.  Nope, LIBUSB timeout.  Time to get rid of all calls to serial everywhere, including the functions not being called right now.  
+
+Change blah = 3 to = 4.  Unplug and replug argon + debugger.  Debug flash.  DFU goes automatically!  Halt at debug point in setup() just fine.
+
+Change blah = 4 to = 5.  Debug flash.  LIBUSB timeout.
+
+Unplug and replug argon + debugger.  Debug flash.  DFU goes automatically.  Halt at debug point in setup() just fine.  
+
+Disconnect debugger with vscode panel button.  Change blah = 5 to blah = 6.   Debug flash (F5).  LIBUSB timeout AND the debug panel in vscode vanishes.  So it's not a matter of disconnecting the debugger via vscode button.
+
+Unplug replug argon + debugger.  Clean debug build + flash.  DFU mode is entered automatically.  Stops at my one debug point in setup.  Click continue, extenral LED blinks, internal breathes green which means connected to wifi but not cloud.  So code works, yay.
+
+Added #define DEBUG_MODE.  Entered DFU mode manually.  Debug flash.  Halts at the debug point like it should.
+
+Change blah = again.  Debug flash.  Cannot find device [device ID], make sure it is connected to computer.
+
+Unplug and replug argon + debugger. DFU mode manually. Clean build + flash.  
+
+
+
+
 
 
 
