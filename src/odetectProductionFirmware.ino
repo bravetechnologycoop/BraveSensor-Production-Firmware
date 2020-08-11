@@ -89,8 +89,8 @@
 
 #define RPM_THRESHOLD 15
 
-char locationid[] = "JHS_2";
-char deviceid[] = "92";
+char locationid[] = "HeidiTest";
+char deviceid[] = "H";
 char devicetype[] = "XeThru";
 
 LEDSystemTheme theme; // Enable custom theme
@@ -134,9 +134,10 @@ int charging = FALSE;
 double rssi;
 
 
-
+#if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
-  
+#endif
+
 void setup() 
 {
    // Getting the startup sequence right:
