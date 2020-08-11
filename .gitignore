@@ -3,3 +3,7 @@
 
 #ignore particle binaries
 target/
+
+#ignore binary called core
+#I think this is the core OS binary?
+core

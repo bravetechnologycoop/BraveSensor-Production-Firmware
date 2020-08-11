@@ -143,6 +143,12 @@ void setup()
    // Getting the startup sequence right:
   pinMode(D6, INPUT_PULLUP);
   Particle.function("config", get_configuration_values);
+
+
+
+
+
+  
   Particle.publishVitals(60);
   
   theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
