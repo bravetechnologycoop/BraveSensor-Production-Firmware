@@ -18,27 +18,24 @@
  * 
  */
 
-//#define USE_SERIAL
-#define DEBUG_BUILD
+#define USE_SERIAL
+#define WRITE_ORIGINALS
+//#define DEBUG_BUILD
 
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
 //0th SSID/password is used during product setup ONLY
 //5th SSID/password is Diagnostics network
 #define ADDRSSIDS 0
 #define ADDRPWDS 320
-#define PWDOFFSET 64
-
-#if defined(USE_SERIAL)
-void printWifiCreds();
-#endif
+#define MAXLEN 64
 
 void blinkLED();
-void connectToWifi(char[][32], char[][32]);
+void connectToWifi(char array1[][64], char array2[][64]);
 int setWifiSSID(String);
 int setWifiPwd(String);   
 void writeToFlash();        
 void readFromFlash(); 
-//char* truncate(char mySSIDs[][32]);
+//char* truncate(char mySSIDs[][MAXLEN]);
 
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not 
@@ -59,8 +56,8 @@ int redLED = D4;
 //setCredentials() does not store credentials in flash memory unless particle has successfully
 //connected to that wifi network in the past, so we need to store credentials using EEPROM
 
-char mySSIDs[5][32] = {"wrongssid123456789", "Testbed2", "Testbed3", "Testbed4", "Diagnostics"};
-char myPasswords[5][32] = {"notright123456789", "notright2", "notright3", "notright4", "DiagnosticsPwd"};
+char mySSIDs[5][64] = {"wrongssid123456789", "Testbed", "Testbed3", "Testbed4", "Diagnostics"};
+char myPasswords[5][64] = {"notright123456789", "fireweed3", "notright3", "notright4", "DiagnosticsPwd"};
 
 //String mySSIDs[5] = {"Testbed", "Testbed", "Testbed", "Testbed", "Diagnostics"};
 //String myPasswords[5] = {"fireweed3", "notright2", "notright3", "notright4", "DiagnosticsPwd"};
@@ -87,50 +84,22 @@ void setup() {
   pinMode(redLED,OUTPUT);
 
   //read the first two bytes of memory. Particle docs say all
-  //bytes of flash initialized to OxF. First two bytes are 0xFF
-  //on new boards, note 0xFF does not correspond to any ASCII chars
+  //bytes of flash initialized to OxF. First two bytes are 0xFFFF
+  //on new boards, note 0xFFFF does not correspond to any ASCII chars
   #if defined(WRITE_ORIGINALS)
   EEPROM.put(ADDRSSIDS,0xFFFF);
   #endif
 
-//  uint16_t checkForContent;
-//  EEPROM.get(ADDRSSIDS,checkForContent);
+  uint16_t checkForContent;
+  EEPROM.get(ADDRSSIDS,checkForContent);
 
   //if memory has not been written to yet, write the initial set of 
   //passwords.  else read what's already in there.
-/*  if(checkForContent == 0xFFFF) {
+  if(checkForContent == 0xFFFF) {
     writeToFlash();
   } else {
     readFromFlash();
   }
-*/
-  //writeToFlash();
-  //readFromFlash();
-
-  EEPROM.put(ADDRSSIDS,mySSIDs);  
-  EEPROM.put(ADDRPWDS, myPasswords);
-
-  EEPROM.put(ADDRSSIDS,"Testbed");
-  EEPROM.put(ADDRPWDS,"fireweed3");
-
-  EEPROM.get(ADDRSSIDS,mySSIDs);  
-  EEPROM.get(ADDRPWDS,myPasswords);
-
-  char* ssidHolder = mySSIDs[0];
-  char* pwdHolder = myPasswords[0];
-
-  int lenssid = strlen(mySSIDs[0]);
-
-  char ssidHolder2[lenssid+1];  //for some reason this works in C on my laptop but not on Particle?
-
-  strcpy(ssidHolder2,mySSIDs[0]);
-
-  int len2 = strlen(ssidHolder2);
-
-  //Serial.println(len2);
-  //Serial.println(ssidHolder2);
-
-  //readFromFlash();
 
   #if defined(WRITE_ORIGINALS)
   readFromFlash();
@@ -139,7 +108,7 @@ void setup() {
   //loops through 5 different stored networks until connection established
   connectToWifi(mySSIDs,myPasswords);
 
-/*  //register cloud-connected function before connecting to cloud
+  //register cloud-connected function BEFORE connecting to cloud
   //these will let me change pwd[0] to fireweed4
   Particle.function("changeSSID", setWifiSSID);
   Particle.function("changePwd", setWifiPwd);
@@ -150,7 +119,6 @@ void setup() {
   //publish vitals every 5 seconds
   //documentation example says this goes in setup, hokay...
   Particle.publishVitals(5);
-*/
 
 }
 
@@ -164,19 +132,24 @@ void loop() {
   Serial.print("you're looping");
   #endif
 
+  //WiFi.ready = false if wifi is lost. If false, try to reconnect
+  if(!WiFi.ready()){
+    connectToWifi(mySSIDs, myPasswords);
+  }  
+
   blinkLED();
 
 }
 
-/*char* truncate(char mySSIDs[][32]) 
+/*void truncate(char mySSIDs[][MAXLEN]) 
 { 
 
-  for(int i = 0; i < 5; i++){
+  //int lenssid = strlen(mySSIDs[0]);
 
-    char* holder = mySSIDs[i]; 
-    strcpy(mySSIDs[i], holder);
 
-    return holder;
+  //char ssidHolder2[lenssid+1];  //for some reason this works in C on my laptop but not on Particle?
+
+  //strcpy(ssidHolder2,mySSIDs[0]);
 
   }
 
@@ -184,7 +157,7 @@ void loop() {
 */
 
 //connects to one of 5 stored wifi networks
-void connectToWifi(char mySSIDs[][32], char myPasswords[][32]){
+void connectToWifi(char mySSIDs[][64], char myPasswords[][64]){
 
   //turn off wifi module
   WiFi.off();
@@ -256,7 +229,7 @@ void readFromFlash() {
 //The String is UTF-8 encoded.
 int setWifiSSID(String newSSID){
 
-  //mySSIDs[0] = newSSID;
+  strcpy(mySSIDs[0],newSSID.c_str());
 
   //did it work?
   for(int i = 0; i < 5; i++){
@@ -276,9 +249,9 @@ int setWifiSSID(String newSSID){
 
 int setWifiPwd(String newPwd){
 
-  //myPasswords[0] = newPwd;
+  const char* pwdHolder = newPwd.c_str();
 
-  //connectToWifi(mySSIDs,myPasswords);
+  strcpy(myPasswords[0], pwdHolder);
  
   //did it work?
   for(int i = 0; i < 5; i++){
@@ -293,48 +266,12 @@ int setWifiPwd(String newPwd){
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
+  connectToWifi(mySSIDs,myPasswords);
+
+  //it's never going to return because connectToWifi() above kills connection
   return -1;
 
 }
-
-#if defined(USE_SERIAL)
-//uses getCredentials to retrieve and print wifi credentials stored in 
-//particle's flash memory
-void printWiFiCreds(){
-
-  //hasCredentials returns true if there are wifi credentials stored in flash memory
-  if(WiFi.hasCredentials()){
-
-    //WiFiAccessPoint is object with a bunch of typedefs set up to store ssid info etc
-    //no docs on objects, have to examine raw source code for details
-    WiFiAccessPoint ap[5]; 
-
-    //getCredentials() lists credentials stored in flash, returns # of credentials
-    int found = WiFi.getCredentials(ap, 5);
-
-    Serial.print("# of credentials stored: ");
-    Serial.println(found);
-    Serial.println("");
-
-    for (int i = 0; i < found; i++) {
-        Serial.print("credential number: ");
-        Serial.println(i+1);
-        Serial.print("ssid: ");
-        Serial.println(ap[i].ssid);
-        // security is one of WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA, WLAN_SEC_WPA2, WLAN_SEC_WPA_ENTERPRISE, WLAN_SEC_WPA2_ENTERPRISE
-        Serial.print("security: ");
-        Serial.println(ap[i].security);
-        // cipher is one of WLAN_CIPHER_AES, WLAN_CIPHER_TKIP or WLAN_CIPHER_AES_TKIP
-        Serial.print("cipher: ");
-        Serial.println(ap[i].cipher);
-    }
-
-  } else {
-    Serial.println("No credentials stored");
-  }
-
-}
-#endif
 
 void blinkLED(){
 

@@ -147,7 +147,28 @@ Added #define DEBUG_MODE.  Entered DFU mode manually.  Debug flash.  Halts at th
 
 Change blah = again.  Debug flash.  Cannot find device [device ID], make sure it is connected to computer.
 
-Unplug and replug argon + debugger. DFU mode manually. Clean build + flash.  
+Unplug and replug argon + debugger. DFU mode manually. Clean build + flash.  Debugger halts on correct line.
+
+Delete int blah = 3; line.  Reflash.  Still won't enter DFU mode automatically.   
+
+------>  Pushed code for Sampath to test tomorrow.  Ask him to put a debug point at line 126.  Run code until it halts at that line.  Then make a minor change like declare a useless variable, and press restart on vscode debug panel.
+
+Give up and go back to putting in DFU mode manually every time.  
+
+Plan:
+
+-write function to overwrite garbage with null char since it seems to default to that anyway
+-write your circular function
+-start integrating with XeThru code
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Friday August 7/20
+
+Removed all calls to C string functions, strlen(), strcpy().  Plug in argon/debugger, clean debug build + flash.  Debugger doesn't land on correct line.  
+
+Add two more EEPROM.put() lines.  Debug flash.  LIBUSB timeout.  So those aren't the problem either.
+
 
 
 
