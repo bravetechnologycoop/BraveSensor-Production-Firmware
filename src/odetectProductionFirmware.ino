@@ -1,7 +1,19 @@
+/*
+ * Project odetectProductionFirmware
+ * Description: Particle Argon/Photon firmware for Brave
+ *              ODetect project.
+ * Author: Sampath Satti, Wayne, Sajan, Heidi Fedorak
+ * 
+ * Sampath, Wayne, Sajan - wrote original XeThru code
+ * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
+ *                 and added remote wifi creds update and IM21 
+ *                 BLE door sensor features.
+ *
+ * 
+ */
+
 #include "xethru.h"
 #include "wifi.h"
-
-
 
 //*************************macros for setup/debugging that need to be altered during setup*************************
 

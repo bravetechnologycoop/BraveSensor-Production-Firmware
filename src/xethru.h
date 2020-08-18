@@ -1,29 +1,37 @@
-
-// Written by: �yvind Nydal Dahl
-// Company: XeThru / Novelda
-// July 2018
-
-
-// SERIAL PORTS:
-// These definitions work for Arduino Mega, but must be changed for other Arduinos.
-//  * Note: Using Serial as SerialRadar seems to give a few CRC errors. I'm not seeing this 
-//    using Serial1, Serial2, or Serial3. Could probably be solved by changing baud rate)
-// 
-
-
+/*
+ * 
+ * XeThru libraries:
+ * Written by: �yvind Nydal Dahl
+ * Company: XeThru / Novelda
+ * July 2018
+ * 
+ * Original code to read data from XeThru and transmit to 
+ * Particle cloud written by Sampath Satti, Wayne, and Sajan.
+ * 
+ * XeThru code upgraded to be scaleable by Heidi Fedorak:
+ *    -established separate .h and .cpp files for XeThru code
+ *    -redefined global variables appropriately
+ *    -established odetect_config.h file for all global defines
+ *    -removed delay(1000) and adapted PublishData() to control
+ *     rate of messages being published to the cloud
+ * 
+ * 
+ */
 
 
 //*************************defines and global variables that need to be altered during setup*************************
 
 #define USE_SERIAL  //when used, displays serial debugging messages
-
-char locationid[] = "HeidiTest";
-char deviceid[] = "H";
-char devicetype[] = "XeThru";
-
-
+#define LOCATIONID "HeidiTest"
+#define DEVICEID "H"
+#define DEVICETYPE "XeThru"
 
 //***************************macro defines******************************
+
+//SERIAL PORTS:
+//These definitions work for Arduino Mega, but must be changed for other Arduinos.
+//* Note: Using Serial as SerialRadar seems to give a few CRC errors. I'm not seeing this 
+//  using Serial1, Serial2, or Serial3. Could probably be solved by changing baud rate)
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
@@ -110,7 +118,9 @@ char devicetype[] = "XeThru";
 
 //***************************global variables******************************
 
-
+char locationid[] = LOCATIONID;
+char deviceid[] = DEVICEID;
+char devicetype[] = DEVICETYPE;
 
 LEDSystemTheme theme; // Enable custom theme
 unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar. 

@@ -4,10 +4,22 @@
 
 #include "Particle.h"
 #line 1 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+/*
+ * Project odetectProductionFirmware
+ * Description: Particle Argon/Photon firmware for Brave
+ *              ODetect project.
+ * Author: Sampath Satti, Wayne, Sajan, Heidi Fedorak
+ * 
+ * Sampath, Wayne, Sajan - wrote original XeThru code
+ * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
+ *                 and added remote wifi creds update and IM21 
+ *                 BLE door sensor features.
+ *
+ * 
+ */
+
 #include "xethru.h"
 #include "wifi.h"
-
-
 
 //*************************macros for setup/debugging that need to be altered during setup*************************
 
@@ -15,7 +27,7 @@
 
 void setup();
 void loop();
-#line 10 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 22 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #define DOORID_BYTE1 0x96
 #define DOORID_BITE2 0x59
 #define DOORid_BYTE3 0x27
