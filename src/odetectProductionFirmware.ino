@@ -7,6 +7,15 @@
 
 //#define PHOTON  //enables code for photon device
 
+#define DOORID_BYTE1 0x96
+#define DOORID_BITE2 0x59
+#define DOORid_BYTE3 0x27
+
+const size_t SCAN_RESULT_MAX = 30;
+
+BleScanResult scanResults[SCAN_RESULT_MAX];
+
+void checkDoor();
 
 //*************************System/Startup messages for Particle API***********
 
@@ -40,7 +49,9 @@ void setup() {
   // wait until a character sent from USB host
   waitUntil(SerialDebug.available);
   SerialDebug.println("Key press received, starting code...");
-  #endif
+  #endif 
+
+  BLE.on();
 
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
@@ -115,6 +126,8 @@ void loop() {
     connectToWifi(mySSIDs, myPasswords);
   }  
 
+  checkDoor();
+
   // For every loop we check to see if we have received any respiration data
 
     RespirationMessage msg;
@@ -148,6 +161,40 @@ void loop() {
     }
   delay(1000);
 
+}
+
+void checkDoor(){
+
+  // Only scan for 500 milliseconds
+  BLE.setScanTimeout(50);
+  int count = BLE.scan(scanResults, SCAN_RESULT_MAX);
+
+  //loop over all devices found in the BLE scan
+  for (int ii = 0; ii < count; ii++) {
+
+    uint8_t buf[BLE_MAX_ADV_DATA_LEN];
+
+    //place advertising data in a buffer array
+    scanResults[ii].advertisingData.get(BleAdvertisingDataType::MANUFACTURER_SPECIFIC_DATA, buf, BLE_MAX_ADV_DATA_LEN);
+    
+    //if advertising data contains door sensor's device ID, extract door status and publish it
+    if(buf[1] == DOORID_BYTE1 && buf[2] == DOORID_BITE2 && buf[3] == DOORid_BYTE3){
+
+      #if defined(USE_SERIAL)
+      SerialDebug.printlnf("Device address: %X:%X:%X:%X:%X:%X",scanResults[ii].address[5], scanResults[ii].address[4], 
+                            scanResults[ii].address[3], scanResults[ii].address[2],scanResults[ii].address[1],scanResults[ii].address[0]);
+      SerialDebug.printlnf("Advertising data: %X %X %X %X %X %X %X %X",buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+      SerialDebug.printlnf("Device ID = %X %X %X",buf[1], buf[2], buf[3]);
+      SerialDebug.printlnf("Door Status = %X", buf[5]);
+      SerialDebug.printlnf("Control: %X", buf[6]);
+      #endif
+
+      String data = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",
+                            buf[1], buf [2], buf[3], buf[5], buf[6]);
+
+      Particle.publish("Door", data, PRIVATE);
+    } //endif
+  }//end for
 }
 
 
