@@ -74,7 +74,7 @@ void setup() {
   #endif
  
   //loops through 5 different stored networks until connection established
-  connectToWifi(mySSIDs,myPasswords);
+  connectToWifi();
 
   //register cloud-connected function BEFORE connecting to cloud
   //these will let me change pwd[0] to fireweed4
@@ -121,7 +121,7 @@ void loop() {
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
   if(!WiFi.ready()){
-    connectToWifi(mySSIDs, myPasswords);
+    connectToWifi();
   }  
 
   // For every loop we check to see if we have received any respiration data

@@ -25,8 +25,8 @@
 //#define WRITE_ORIGINALS  //writes original ssid/passwords to flash 
 
 //set initial SSID/password pairs here
-char mySSIDs[5][64] = {"ClientSSID1", "Testbed", "ClientSSID1", "ClientSSID2", "BraveDiagnostics"};
-char myPasswords[5][64] = {"ClientPwd1", "fireweed5", "ClientPwd2", "ClientPwd3", "cowardlyarchaiccorp"};
+char mySSIDs[5][64] = {"Testbed", "Testbed", "ClientSSID1", "ClientSSID2", "BraveDiagnostics"};
+char myPasswords[5][64] = {"fireweed5", "fireweed5", "ClientPwd2", "ClientPwd3", "cowardlyarchaiccorp"};
 
 
 //*************************global macro defines**********************************
@@ -41,23 +41,17 @@ char myPasswords[5][64] = {"ClientPwd1", "fireweed5", "ClientPwd2", "ClientPwd3"
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
 
-//*************************global variable defines*******************
-int addr = -1;
-
-
 //*************************function declarations*************************
 
 void blinkLED();
-void connectToWifi(char array1[][64], char array2[][64]);
+void connectToWifi();
 int setWifiSSID(String);
 int setWifiPwd(String);   
 void writeToFlash();        
 void readFromFlash(); 
-//char* truncate(char mySSIDs[][MAXLEN]);
-
 
 //connects to one of 5 stored wifi networks
-void connectToWifi(char mySSIDs[][64], char myPasswords[][64]){
+void connectToWifi(){
 
   //turn off wifi module
   WiFi.off();
@@ -75,7 +69,7 @@ void connectToWifi(char mySSIDs[][64], char myPasswords[][64]){
 
     #if defined(USE_SERIAL)
     SerialDebug.print("Setting credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
@@ -127,54 +121,92 @@ void readFromFlash() {
 //A cloud function is set up to take one argument of the String datatype. 
 //This argument length is limited to a max of 622 characters (since 0.8.0). 
 //The String is UTF-8 encoded.
+//user should enter a string with format:
+//single digit for the index followed by SSID or password, no spaces
+//example:  2myNewSSID puts myNewSSID in mySSIDs[2]
 int setWifiSSID(String newSSID){
 
-  //increment mySSIDs and myPasswords array index here
-  //user must enter SSID before password or new password
-  //will be placed in different array element than SSID
-  if(addr == 3){
-    addr = 0;
-  } else{
-    addr++;
-  }
+  const char* indexHolder = newSSID.c_str(); 
 
-  strcpy(mySSIDs[addr], newSSID.c_str());
+  //can't use atoi() because if it fails it returns 0
+  //so we don't know if we accidentally entered a string that 
+  //starts with a non-integer, or if we've entered a string that
+  //starts with 0 on purpose
+  //int wifiBufferIndex = atoi(indexHolder);
+
+  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+  int wifiBufferIndex = (int)(*indexHolder) - 48;
+  
+  //if desired index is out of range, exit with error code -1
+  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+
+  //get the rest of the string, skipping 1st character because that is the index
+  const char* stringHolder = (newSSID.c_str()+1);
+
+  //copy ssid to correct element of global char array
+  strcpy(mySSIDs[wifiBufferIndex], stringHolder);
+
+  //backup in flash memory
   writeToFlash();
 
   //did it work?
   for(int i = 0; i < 5; i++){
     #if defined(USE_SERIAL)
     SerialDebug.print("New credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
-  return addr;
+  return wifiBufferIndex;
 
 }
 
+//user should enter a string with format:
+//single digit for the index followed by SSID or password, no spaces
+//example:  21password1 puts 1password1 in myPasswords[2]
 int setWifiPwd(String newPwd){
 
-  strcpy(myPasswords[addr], newPwd.c_str());
+  const char* indexHolder = newPwd.c_str(); 
+
+  //can't use atoi because if it fails it returns 0
+  //so we don't know if we accidentally entered a string that 
+  //starts with a non-integer, or if we've entered a string that
+  //starts with 0 on purpose
+  //int wifiBufferIndex = atoi(indexHolder);
+
+  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+  int wifiBufferIndex = (int)(*indexHolder) - 48;
+  
+  //if desired index is out of range, exit with error code -1
+  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+  //get the rest of the string, skipping 1st character because that is the index
+  const char* stringHolder = (newPwd.c_str()+1);
+
+  //copy password to correct element of global char array
+  strcpy(myPasswords[wifiBufferIndex], stringHolder);
+
+  //backup in flash memory
   writeToFlash();
  
   //did it work?
   for(int i = 0; i < 5; i++){
     #if defined(USE_SERIAL)
     SerialDebug.print("New credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
-
-    //String holderSSID = String(mySSIDs[i]);
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
-  return addr;
+  return wifiBufferIndex;
 
 }
 
