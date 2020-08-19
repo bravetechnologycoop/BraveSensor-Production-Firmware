@@ -6,7 +6,7 @@
  * July 2018
  * 
  * Original code to read data from XeThru and transmit to 
- * Particle cloud written by Sampath Satti, Wayne, and Sajan.
+ * Particle cloud written by Sampath Satti, Wayne Ng, and Sajan Rajdev.
  * 
  * XeThru code upgraded to be scaleable by Heidi Fedorak:
  *    -established separate .h and .cpp files for XeThru code

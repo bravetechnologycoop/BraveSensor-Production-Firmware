@@ -1,10 +1,13 @@
 /*
  * Project odetectProductionFirmware
+ * 
  * Description: Particle Argon/Photon firmware for Brave
  *              ODetect project.
- * Author: Sampath Satti, Wayne, Sajan, Heidi Fedorak
  * 
- * Sampath, Wayne, Sajan - wrote original XeThru code
+ * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
+ * 
+ * Sampath, Wayne Ng, Sajan Rajdev - wrote original XeThru code
+ * 
  * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
  *                 and added remote wifi creds update and IM21 
  *                 BLE door sensor features.
@@ -88,10 +91,9 @@ void setup() {
   #endif
  
   //loops through 5 different stored networks until connection established
-  connectToWifi(mySSIDs,myPasswords);
+  connectToWifi();
 
-  //register cloud-connected function BEFORE connecting to cloud
-  //these will let me change pwd[0] to fireweed4
+  //register cloud-connected functions BEFORE connecting to cloud
   Particle.function("changeSSID", setWifiSSID);
   Particle.function("changePwd", setWifiPwd);
   Particle.function("config", get_configuration_values); //XeThru code
@@ -99,29 +101,14 @@ void setup() {
   //connect to cloud
   Particle.connect();            
 
-  //publish vitals every 5 seconds
-  //documentation example says this goes in setup, hokay...
-  //Particle.publishVitals(60); -> from XeThru code
-  Particle.publishVitals(60);
-
+  //publish vitals every X seconds
+  Particle.publishVitals(120);
 
   //***XeThru code from here to end of setup()
   theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
   theme.apply(); // Apply theme settings 
 	
   xethru_reset();
-  
-  /*
-  // Initializes the XeThru with previously set configuration values if they exist
-  if(EEPROM.get(1) == 5) {
-      led = EEPROM.get(2);
-      noisemap = EEPROM.get(6);
-      sensitivity = EEPROM.get(10);
-      min_detect = EEPROM.get(14);
-      max_detect = EEPROM.get(18);
-  }
-  */
-  
   xethru_configuration();
 
 }
@@ -135,7 +122,7 @@ void loop() {
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
   if(!WiFi.ready()){
-    connectToWifi(mySSIDs, myPasswords);
+    connectToWifi();
   }  
 
   checkDoor();
@@ -193,12 +180,12 @@ void checkDoor(){
     if(buf[1] == DOORID_BYTE1 && buf[2] == DOORID_BITE2 && buf[3] == DOORid_BYTE3){
 
       #if defined(USE_SERIAL)
-      SerialDebug.printlnf("Device address: %X:%X:%X:%X:%X:%X",scanResults[ii].address[5], scanResults[ii].address[4], 
+      SerialDebug.printlnf("Device address: %02X:%02X:%02X:%02X:%02X:%02X",scanResults[ii].address[5], scanResults[ii].address[4], 
                             scanResults[ii].address[3], scanResults[ii].address[2],scanResults[ii].address[1],scanResults[ii].address[0]);
-      SerialDebug.printlnf("Advertising data: %X %X %X %X %X %X %X %X",buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
-      SerialDebug.printlnf("Device ID = %X %X %X",buf[1], buf[2], buf[3]);
-      SerialDebug.printlnf("Door Status = %X", buf[5]);
-      SerialDebug.printlnf("Control: %X", buf[6]);
+      SerialDebug.printlnf("Advertising data: %02X %02X %02X %02X %02X %02X %02X %02X",buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+      SerialDebug.printlnf("Device ID = %02X %02X %02X",buf[1], buf[2], buf[3]);
+      SerialDebug.printlnf("Door Status = %02X", buf[5]);
+      SerialDebug.printlnf("Control: %02X", buf[6]);
       #endif
 
       String data = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",

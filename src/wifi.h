@@ -20,15 +20,15 @@
 
 
 //set initial SSID/password pairs here
-#define CLIENTSSID1 "ClientSSID1"
-#define CLIENTSSID2 "Testbed"
+#define CLIENTSSID0 "ClientSSID1"
+#define CLIENTSSID1 "Testbed"
+#define CLIENTSSID2 "ClientSSID1"
 #define CLIENTSSID3 "ClientSSID1"
-#define CLIENTSSID4 "ClientSSID1"
 
-#define CLIENTPWD1 "ClientPWD1"
-#define CLIENTPWD2 "fireweed5"
+#define CLIENTPWD0 "ClientPWD1"
+#define CLIENTPWD1 "fireweed5"
+#define CLIENTPWD2 "ClientPWD1"
 #define CLIENTPWD3 "ClientPWD1"
-#define CLIENTPWD4 "ClientPWD1"
 
 //*************************global macro defines**********************************
 
@@ -42,13 +42,13 @@
 
 
 //******************global variable declarations*******************
-extern int wifiBufferIndex;
+//extern int wifiBufferIndex;
 extern char mySSIDs[5][MAXLEN];
 extern char myPasswords[5][MAXLEN];
 
 //*************************function declarations*************************
 
-void connectToWifi(char array1[][MAXLEN], char array2[][MAXLEN]);
+void connectToWifi();
 int setWifiSSID(String);
 int setWifiPwd(String);   
 void writeToFlash();        

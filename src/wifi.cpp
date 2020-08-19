@@ -14,16 +14,15 @@
 #include "wifi.h"
 
 //******************global variable initialization*******************
-int wifiBufferIndex = -1;
-char mySSIDs[5][MAXLEN] = {CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, CLIENTSSID4, "BraveDiagnostics"};
-char myPasswords[5][MAXLEN] = {CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, CLIENTPWD4, "cowardlyarchaiccorp"};
+char mySSIDs[5][MAXLEN] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveDiagnostics"};
+char myPasswords[5][MAXLEN] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
 
 
 
 //***********functions***************
 
 //connects to one of 5 stored wifi networks
-void connectToWifi(char mySSIDs[][MAXLEN], char myPasswords[][MAXLEN]){
+void connectToWifi(){
 
   //turn off wifi module
   WiFi.off();
@@ -96,18 +95,24 @@ void readFromFlash() {
 //A cloud function is set up to take one argument of the String datatype. 
 //This argument length is limited to a max of 622 characters (since 0.8.0). 
 //The String is UTF-8 encoded.
+//user should enter a string with format:
+//single digit for the index followed by SSID or password, no spaces
+//example:  2myNewSSID puts myNewSSID in mySSIDs[2]
 int setWifiSSID(String newSSID){
 
-  //increment mySSIDs and myPasswords array index here
-  //user must enter SSID before password or new password
-  //will be placed in different array element than SSID
-  if(wifiBufferIndex == 3){
-    wifiBufferIndex = 0;
-  } else{
-    wifiBufferIndex++;
-  }
+  //nifty thing about toInt(): it stops as soon as it hits the first non-numerical character
+  int wifiBufferIndex = newSSID.toInt(); 
 
-  strcpy(mySSIDs[wifiBufferIndex], newSSID.c_str());
+  //if desired index is out of range, exit with error code -1
+  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+  //get the rest of the string, skipping 1st character because that is the index
+  const char* stringHolder = (newSSID.c_str()+1);
+
+  //copy ssid to correct element of global char array
+  strcpy(mySSIDs[wifiBufferIndex], stringHolder);
+
+  //backup in flash memory
   writeToFlash();
 
   //did it work?
@@ -125,9 +130,24 @@ int setWifiSSID(String newSSID){
 
 }
 
+//user should enter a string with format:
+//single digit for the index followed by SSID or password, no spaces
+//example:  21password1 puts 1password1 in myPasswords[2]
 int setWifiPwd(String newPwd){
 
-  strcpy(myPasswords[wifiBufferIndex], newPwd.c_str());
+  //nifty thing about toInt(): it stops as soon as it hits the first non-numerical character
+  int wifiBufferIndex = newPwd.toInt(); 
+
+  //if desired index is out of range, exit with error code -1
+  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+  //get the rest of the string, skipping 1st character because that is the index
+  const char* stringHolder = (newPwd.c_str()+1);
+
+  //copy password to correct element of global char array
+  strcpy(myPasswords[wifiBufferIndex], stringHolder);
+
+  //backup in flash memory
   writeToFlash();
  
   //did it work?
@@ -138,8 +158,6 @@ int setWifiPwd(String newPwd){
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
-
-    //String holderSSID = String(mySSIDs[i]);
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
