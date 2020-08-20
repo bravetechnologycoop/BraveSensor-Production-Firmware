@@ -118,16 +118,27 @@
 
 //***************************global variables******************************
 
+//these are used in publishData() only, they can be moved there
 char locationid[] = LOCATIONID;
 char deviceid[] = DEVICEID;
 char devicetype[] = DEVICETYPE;
 
+//this used in setup() only
 LEDSystemTheme theme; // Enable custom theme
-unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar. 
+
+//used in send_command() and all the xethru_configuration() sub-functions
+unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
+
+//see logbook notes for where this is used, this one is complicated
+//might be easier to leave as global
 unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
+
+//not used anywhere at all, can delete
 const char * states[7] = { "Breathing", "Movement", "Movement tracking", "No movement", "Initializing", "", "Unknown" };
 
  // XeThru configuration variables
+ //these can be made defines so they don't have to be global variables
+ //they are used (and passed, why, if they're global you shouldn't have to do that, weird...) in xethru_configuration()'s sub-functions
 int led = 0;
 int noisemap = 0;
 int sensitivity = 5;
@@ -135,30 +146,41 @@ float min_detect = 0.5;
 float max_detect = 4;   
 
 // Struct to hold respiration message from radar
+//this legit actually needs to be global
 typedef struct RespirationMessage {
   uint32_t state_code;
   float rpm;
   float distance;
-  uint32_t signal_quality;
+  uint32_t signal_quality;  //this is filled from xethru data but never published or used anywhere
   float movement_slow;
   float movement_fast;
   float breathing_pattern;
 };
 
-//int get_respiration_data(RespirationMessage*); //- extra f/n declaration Heidi duplicated in the correct section above
-
 // Initialize arrays and variables
+//these are filled with data in loop(), transmitted to cloud and re-set to "" in publishData()
+//this makes more sense as a struct which can be initialized in loop()
+//could combine with struct above, or could make it a "bulk message" struct?
 char distance[500] = "";
 char rpm[500] = "";
+//breaths -> breathing pattern
 char breaths[500] = "";
+//slow -> movement slow
 char slow[500] = "";
+//fast -> movement fast
 char fast[500] = "";
+//x_state -> state_code
 char x_state[500] = "";
+
+//this seems to be used in loop() only, hard to tell though...
 int i = 0;
+
+//this doesn't seem to be used anywhere at all, can delete...
 int state = 1;
+
+//these three also not used anywhere, can delete...
 float prevSOC = 100;
 int charging = FALSE;
-
 double rssi;
 
 
@@ -201,6 +223,7 @@ void xethru_reset() {
   digitalWrite(RESET_PIN, LOW);
   delay(100);
   digitalWrite(RESET_PIN, HIGH);
+
 }
 
 
@@ -714,9 +737,9 @@ int receive_data() {
     }
 
     // Wait 10 ms if nothing is available yet
-    if (!SerialRadar.available())
-      delay(10);
-  }
+    if (!SerialRadar.available())  delay(10);
+
+  } //endwhile
 
   // Wait 10 ms if nothing is available yet
   if (!SerialRadar.available())

@@ -117,7 +117,7 @@ void setup() {
 void loop() {
 
   #if defined(USE_SERIAL)
-  SerialDebug.print("you're looping");
+  SerialDebug.println("you're looping");
   #endif
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect

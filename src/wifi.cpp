@@ -100,11 +100,21 @@ void readFromFlash() {
 //example:  2myNewSSID puts myNewSSID in mySSIDs[2]
 int setWifiSSID(String newSSID){
 
-  //nifty thing about toInt(): it stops as soon as it hits the first non-numerical character
-  int wifiBufferIndex = newSSID.toInt(); 
+  const char* indexHolder = newSSID.c_str(); 
 
+  //can't use atoi() because if it fails it returns 0
+  //so we don't know if we accidentally entered a string that 
+  //starts with a non-integer, or if we've entered a string that
+  //starts with 0 on purpose
+  //int wifiBufferIndex = atoi(indexHolder);
+
+  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+  int wifiBufferIndex = (int)(*indexHolder) - 48;
+  
   //if desired index is out of range, exit with error code -1
   if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
 
   //get the rest of the string, skipping 1st character because that is the index
   const char* stringHolder = (newSSID.c_str()+1);
@@ -119,7 +129,7 @@ int setWifiSSID(String newSSID){
   for(int i = 0; i < 5; i++){
     #if defined(USE_SERIAL)
     SerialDebug.print("New credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
@@ -135,9 +145,18 @@ int setWifiSSID(String newSSID){
 //example:  21password1 puts 1password1 in myPasswords[2]
 int setWifiPwd(String newPwd){
 
-  //nifty thing about toInt(): it stops as soon as it hits the first non-numerical character
-  int wifiBufferIndex = newPwd.toInt(); 
+  const char* indexHolder = newPwd.c_str(); 
 
+  //can't use atoi because if it fails it returns 0
+  //so we don't know if we accidentally entered a string that 
+  //starts with a non-integer, or if we've entered a string that
+  //starts with 0 on purpose
+  //int wifiBufferIndex = atoi(indexHolder);
+
+  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+  int wifiBufferIndex = (int)(*indexHolder) - 48;
+  
   //if desired index is out of range, exit with error code -1
   if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
 
@@ -154,7 +173,7 @@ int setWifiPwd(String newPwd){
   for(int i = 0; i < 5; i++){
     #if defined(USE_SERIAL)
     SerialDebug.print("New credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
