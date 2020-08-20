@@ -13,10 +13,10 @@
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not 
 //interrupted by system/network management functions
-SYSTEM_THREAD(ENABLED);
+//SYSTEM_THREAD(ENABLED);
 //when using manual mode the user code will run immediately when
 //the device is powered on
-SYSTEM_MODE(MANUAL);
+//SYSTEM_MODE(MANUAL);
 
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
@@ -65,7 +65,7 @@ void setup() {
   #endif
  
   //loops through 5 different stored networks until connection established
-  connectToWifi();
+  //connectToWifi();
 
   //register cloud-connected function BEFORE connecting to cloud
   //these will let me change pwd[0] to fireweed4
@@ -74,7 +74,7 @@ void setup() {
   Particle.function("config", get_configuration_values); //XeThru code
 
   //connect to cloud
-  Particle.connect();            
+  //Particle.connect();            
 
   //publish vitals every 5 seconds
   //documentation example says this goes in setup, hokay...

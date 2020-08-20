@@ -19,14 +19,14 @@
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not 
 //interrupted by system/network management functions
-void setup();
-void loop();
-#line 16 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
-SYSTEM_THREAD(ENABLED);
+//SYSTEM_THREAD(ENABLED);
 //when using manual mode the user code will run immediately when
 //the device is powered on
-SYSTEM_MODE(MANUAL);
+//SYSTEM_MODE(MANUAL);
 
+void setup();
+void loop();
+#line 21 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif

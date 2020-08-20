@@ -74,8 +74,6 @@ void connectToWifi(){
     SerialDebug.println(myPasswords[i]);
     #endif
 
-    //WiFi.setCredentials(ssidHolder,pwdHolder);
-
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
 
     WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
