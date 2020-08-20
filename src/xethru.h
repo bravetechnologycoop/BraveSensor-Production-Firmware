@@ -114,17 +114,7 @@
 
 #define RPM_THRESHOLD 15
 
-
-
 //***************************global variables******************************
-
-//these are used in publishData() only, they can be moved there
-char locationid[] = LOCATIONID;
-char deviceid[] = DEVICEID;
-char devicetype[] = DEVICETYPE;
-
-//this used in setup() only
-LEDSystemTheme theme; // Enable custom theme
 
 //used in send_command() and all the xethru_configuration() sub-functions
 unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
@@ -133,17 +123,27 @@ unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
 //might be easier to leave as global
 unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
-//not used anywhere at all, can delete
-const char * states[7] = { "Breathing", "Movement", "Movement tracking", "No movement", "Initializing", "", "Unknown" };
-
  // XeThru configuration variables
  //these can be made defines so they don't have to be global variables
- //they are used (and passed, why, if they're global you shouldn't have to do that, weird...) in xethru_configuration()'s sub-functions
-int led = 0;
-int noisemap = 0;
-int sensitivity = 5;
-float min_detect = 0.5;
-float max_detect = 4;   
+ //they are used (and passed, why, if they're global you shouldn't have to do 
+ //that, weird...) in xethru_configuration()'s sub-functions and in particle console
+ //function get_configuration_values()
+ #define XETHRU_LED_SETTING 0
+ #define XETHRU_NOISEMAP_SETTING 0
+ #define XETHRU_SENSITIVITY_SETTING 5
+ #define XETHRU_MIN_DETECT_SETTING 0.5
+ #define XETHRU_MAX_DETECT_SETTING 4
+
+typdef struct XethruConfigSettings{
+
+   int led = XETHRU_LED_SETTING;
+   int noisemap = XETHRU_NOISEMAP_SETTING;
+   int sensitivity = XETHRU_SENSITIVITY_SETTING;
+   float min_detect = XETHRU_MIN_DETECT_SETTING;
+   float max_detect = XETHRU_MAX_DETECT_SETTING;
+
+ } XeThruConfigSettings;
+
 
 // Struct to hold respiration message from radar
 //this legit actually needs to be global
@@ -155,7 +155,7 @@ typedef struct RespirationMessage {
   float movement_slow;
   float movement_fast;
   float breathing_pattern;
-};
+} RespirationMessage;
 
 // Initialize arrays and variables
 //these are filled with data in loop(), transmitted to cloud and re-set to "" in publishData()
@@ -230,6 +230,8 @@ void xethru_reset() {
 
 void xethru_configuration() {
 
+  int xethru_led_setting = XETHRU_LED_SETTING;
+
   // Set up serial communication
   SerialRadar.begin(115200);
 
@@ -250,7 +252,7 @@ void xethru_configuration() {
   configure_noisemap(noisemap);
   
   // Set LED control
-  set_led_control(led); // 0: OFF; 1: SIMPLE; 2: FULL
+  set_led_control(xethru_led_setting); // 0: OFF; 1: SIMPLE; 2: FULL
 
   // Set detection zone
   set_detection_zone(min_detect, max_detect); // First variable = Lower limit, Second variable = Upper limit
@@ -271,11 +273,12 @@ void xethru_configuration() {
 
 
 
+//function called in particle console to get new xethru config values
 
 int get_configuration_values(String command) { // command is a long string with all the config values
     // Parse the command
     int split1 = command.indexOf(',');
-    led = command.substring(0,split1).toInt();
+    xethru_led_setting = command.substring(0,split1).toInt();
     int split2 = command.indexOf(',', split1+1);
     noisemap = command.substring(split1+1,split2).toInt();
     int split3 = command.indexOf(',', split2+1);
@@ -317,27 +320,34 @@ int get_configuration_values(String command) { // command is a long string with 
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishData() {
 
-    char buf[1024];
-    // The data values can't be inserted on the publish message so it must be printed into a buffer first.
-    // The backslash is used as an escape character for the quotation marks.
+  //these are used in publishData() only, they can be moved there
+  char locationid[] = LOCATIONID;
+  char deviceid[] = DEVICEID;
+  char devicetype[] = DEVICETYPE;
+
+  char buf[1024];
+  // The data values can't be inserted on the publish message so it must be printed into a buffer first.
+  // The backslash is used as an escape character for the quotation marks.
     
-//	snprintf(buf, sizeof(buf), "{\"a\":%d, \"b\":%s}", data, *data);
+  //	snprintf(buf, sizeof(buf), "{\"a\":%d, \"b\":%s}", data, *data);
 	snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%s\", \"distance\":\"%s\", \"rpm\":\"%s\", \"slow\":\"%s\", \"fast\":\"%s\", \"state\":\"%s\"}", devicetype, locationid, deviceid, distance, rpm, slow, fast, x_state);
-//	snprintf(buf, sizeof(buf), "{\"distance\":\"%s\", \"rpm\":\"%s\", \"breaths\":\"%s\"}", distance, rpm, breaths);
-//	Serial.printlnf("publishing %s", buf);
-//	Particle.publish("XeThru", buf, PRIVATE);
-    Particle.publish("Sleep", buf, PRIVATE);
-	
-    //Particle.publish("data", String(data));
-    //strcpy(data1, "");
-    
-    //Clears the data arrays to be filled again
-    strcpy(rpm, "");
-    strcpy(distance, "");
-    strcpy(breaths, "");
-    strcpy(slow, "");
-    strcpy(fast, "");
-    strcpy(x_state, "");
+  //	snprintf(buf, sizeof(buf), "{\"distance\":\"%s\", \"rpm\":\"%s\", \"breaths\":\"%s\"}", distance, rpm, breaths);
+  //	Serial.printlnf("publishing %s", buf);
+  //	Particle.publish("XeThru", buf, PRIVATE);
+
+
+  Particle.publish("XeThru", buf, PRIVATE);
+
+  //Particle.publish("data", String(data));
+  //strcpy(data1, "");
+  
+  //Clears the data arrays to be filled again
+  strcpy(rpm, "");
+  strcpy(distance, "");
+  strcpy(breaths, "");
+  strcpy(slow, "");
+  strcpy(fast, "");
+  strcpy(x_state, "");
 }
 
 

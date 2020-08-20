@@ -37,10 +37,10 @@ void checkDoor();
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not 
 //interrupted by system/network management functions
-SYSTEM_THREAD(ENABLED);
+//SYSTEM_THREAD(ENABLED);
 //when using manual mode the user code will run immediately when
 //the device is powered on
-SYSTEM_MODE(MANUAL);
+//SYSTEM_MODE(MANUAL);
 
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
@@ -105,6 +105,7 @@ void setup() {
   Particle.publishVitals(120);
 
   //***XeThru code from here to end of setup()
+  LEDSystemTheme theme; // Enable custom theme
   theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
   theme.apply(); // Apply theme settings 
 	
