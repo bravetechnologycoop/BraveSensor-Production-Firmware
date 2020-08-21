@@ -182,3 +182,36 @@ int setWifiPwd(String newPwd){
   return wifiBufferIndex;
 
 }
+
+void wifiCredsSetup(){
+
+  //read the first two bytes of memory. Particle docs say all
+  //bytes of flash initialized to OxF. First two bytes are 0xFFFF
+  //on new boards, note 0xFFFF does not correspond to any ASCII chars
+  #if defined(WRITE_ORIGINALS)
+  EEPROM.put(ADDRSSIDS,0xFFFF);
+  #endif
+
+  uint16_t checkForContent;
+  EEPROM.get(ADDRSSIDS,checkForContent);
+
+  //if memory has not been written to yet, write the original set of 
+  //passwords and connect to them.  If memory has been written to 
+  //then console functions to update wifi creds have been called before
+  //We want to connect to what was written there by the console functions
+  //so we read from flash and then connect to those credentials  
+  if(checkForContent == 0xFFFF) {
+    writeWifiToFlash();
+  } else {
+    readWifiFromFlash();
+  }
+
+  #if defined(WRITE_ORIGINALS)
+  readWifiFromFlash();
+  #endif
+
+  #if defined(MANUAL_MODE)
+  connectToWifi();
+  #endif
+
+}

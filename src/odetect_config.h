@@ -6,6 +6,8 @@
 
 //#define PHOTON  //enables code for photon device
 #define USE_SERIAL  //when used, displays serial debugging messages
+//#define PHOTON  //enables code for photon device
+//#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //*************Wifi Settings*******************
 
@@ -41,13 +43,9 @@
 #define DEVICEID "H"
 #define DEVICETYPE "XeThru"
 
- // XeThru configuration variables
- //these can be made defines so they don't have to be global variables
- //they are used (and passed, why, if they're global you shouldn't have to do 
- //that, weird...) in xethru_configuration()'s sub-functions and in particle console
- //function get_configuration_values()
- #define XETHRU_LED_SETTING 0
- #define XETHRU_NOISEMAP_SETTING 0
- #define XETHRU_SENSITIVITY_SETTING 5
- #define XETHRU_MIN_DETECT_SETTING 0.5
- #define XETHRU_MAX_DETECT_SETTING 4
+// XeThru configuration variables
+#define XETHRU_LED_SETTING 0
+#define XETHRU_NOISEMAP_SETTING 0
+#define XETHRU_SENSITIVITY_SETTING 5
+#define XETHRU_MIN_DETECT_SETTING 0.5
+#define XETHRU_MAX_DETECT_SETTING 4
