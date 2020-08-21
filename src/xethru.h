@@ -133,7 +133,7 @@ typedef struct RespirationMessage {
   float movement_slow;
   float movement_fast;
   float breathing_pattern;
-};
+}RespirationMessage;
 
 //int get_respiration_data(RespirationMessage*); //- extra f/n declaration Heidi duplicated in the correct section above
 
@@ -159,7 +159,7 @@ void xethru_reset();
 void xethru_configuration();
 int get_configuration_values(String command);
 void publishData();
-int get_respiration_data(RespirationMessage * resp_msg);
+int get_respiration_data(RespirationMessage* resp_msg);
 void stop_module();
 void set_sensitivity(uint32_t sensitivity);
 void set_detection_zone(float zone_start, float zone_end);
