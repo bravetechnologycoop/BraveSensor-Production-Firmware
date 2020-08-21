@@ -6,7 +6,7 @@
  * 
  * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
  * 
- * Sampath, Wayne Ng, Sajan Rajdev - wrote original XeThru code
+ * Sampath Sattie, Wayne Ng, Sajan Rajdev - wrote original XeThru code
  * 
  * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
  *                 and added remote wifi creds update and IM21 
@@ -74,7 +74,7 @@ void setup() {
   #endif         
 
   //publish vitals every X seconds
-  Particle.publishVitals(120);
+  Particle.publishVitals(60);
 
 }  //end setup()
 
