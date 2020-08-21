@@ -1,11 +1,15 @@
 #include "Particle.h"
+#include "odetect_config.h"
 #include "im21door.h"
 
+//******************global variable initialization*******************
 
 //these variables only need to be "global" to door code
 //not entire program, so they are not defined as externs in header file
 const size_t SCAN_RESULT_MAX = 30;
 BleScanResult scanResults[SCAN_RESULT_MAX];
+
+//****************IM21 BLE door sensor functions****************
 
 void checkDoor(){
 
@@ -24,7 +28,7 @@ void checkDoor(){
     //if advertising data contains door sensor's device ID, extract door status and publish it
     if(buf[1] == DOORID_BYTE1 && buf[2] == DOORID_BITE2 && buf[3] == DOORid_BYTE3){
 
-      #if defined(USE_SERIAL)
+      #if defined(SERIAL_DEBUG)
       SerialDebug.printlnf("Device address: %02X:%02X:%02X:%02X:%02X:%02X",scanResults[ii].address[5], scanResults[ii].address[4], 
                             scanResults[ii].address[3], scanResults[ii].address[2],scanResults[ii].address[1],scanResults[ii].address[0]);
       SerialDebug.printlnf("Advertising data: %02X %02X %02X %02X %02X %02X %02X %02X",buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);

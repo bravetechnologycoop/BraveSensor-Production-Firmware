@@ -15,24 +15,18 @@
  * 
  */
 
+#include "odetect_config.h"
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
-
-//*************************macros for setup/debugging that need to be altered during setup*************************
-
-//#define PHOTON  //enables code for photon device
-//#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //*************************System/Startup messages for Particle API***********
 
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
-//enable system thread to ensure application loop is not 
-//interrupted by system/network management functions
-SYSTEM_THREAD(ENABLED);
-//when using manual mode the user code will run immediately when
-//the device is powered on
+//enable system thread to ensure application loop is not interrupted by system/network management functions
+SYSTEM_THREAD(ENABLED); 
+//when using manual mode the user code will run immediately when the device is powered on
 SYSTEM_MODE(MANUAL);
 #endif
 
@@ -43,23 +37,25 @@ STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  //*************global setup******************
-
-  #if defined(USE_SERIAL)
-  //start comms with serial terminal for debugging...
-  SerialDebug.begin(115200);
-  // wait until a character sent from USB host
-  waitUntil(SerialDebug.available);
-  SerialDebug.println("Key press received, starting code...");
+  //set up serial debugging if set in odetect_config.h file
+  #if defined(SERIAL_DEBUG)
+    //start comms with serial terminal for debugging...
+    SerialDebug.begin(115200);
+    // wait until a character sent from USB host
+    waitUntil(SerialDebug.available);
+    SerialDebug.println("Key press received, starting code...");
   #endif 
 
+  //turn off BLE/mesh if using Particle debug build
   #if defined(DEBUG_BUILD)
   //mesh and BLE are not compatible with Particle debugger. "Known issue"
     Mesh.off();
     BLE.off();
+    SerialDebug.println("**********BLE is OFF*********");
   #else
     //if we're not debugging, then we need the door sensor to run...
     BLE.on();
+    SerialDebug.println("**********BLE is ON*********");
   #endif
 
   xethruSetup();
@@ -71,8 +67,10 @@ void setup() {
   Particle.function("changePwd", setWifiPwd);    //wifi code
   Particle.function("config", get_configuration_values); //XeThru code
 
+  //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)
   Particle.connect();
+  Particle.process();
   #endif         
 
   //publish vitals every X seconds
@@ -85,7 +83,12 @@ void setup() {
 // it is the arduino substitute for while(1) in main()
 void loop() {
 
-  #if defined(USE_SERIAL)
+  //see odetect_config.h for info on manual mode
+  #if defined(MANUAL_MODE)
+  Particle.process();
+  #endif    
+
+  #if defined(SERIAL_DEBUG)
   SerialDebug.print("you're looping");
   #endif
 

@@ -1,14 +1,27 @@
+/*
+ * Project  IM21BLE
+ * 
+ * Description:  Program Particle Argon to receive door open
+ *  and door closed advertising data from IM21 bluetooth low 
+ *  energy door sensors.
+ * 
+ * Author: Heidi Fedorak
+ * Date:  August 2020
+ * 
+ */
+
 #ifndef IM21DOOR_H
 #define IM21DOOR_H
 
-#define USE_SERIAL  //when used, displays serial debugging messages
+//*************************global macro defines**********************************
 
-#define DOORID_BYTE1 0x96
-#define DOORID_BITE2 0x59
-#define DOORid_BYTE3 0x27
+#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
-#define SerialDebug Serial
 
+//******************global variable declarations*******************
+
+
+//*************************function declarations*******************
 void checkDoor();
 
 #endif

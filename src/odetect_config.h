@@ -1,19 +1,42 @@
-
+/*
+ * Project:  Programmer input/setup 
+ * 
+ * Description:  
+ * 
+ *  This file contains all oDetect #define macros that 
+ *  must be set by a human during oDetect setup, for example device ID's,
+ *  Particle wifi credentials, etc etc.  
+ *
+ *  This file also contains macros for code execution options. For example 
+ *  using debug messages displayed to a serial port or not, running Particle 
+ *  device in manual mode or not, etc etc.
+ * 
+ * Directions:
+ * 
+ *  This file must be included in every .cpp file, and in the .ino file.
+ *  Normally global header files would be included via gcc's AC_CONFIG_HEADERS
+ *  or AH_HEADER macro. I, however, FLAT OUT REFUSE to screw with the Particle 
+ *  makefiles! I don't want to be stuck with broken code and a broken toolchain
+ *  for the next six months!!  grrrrrrr.....
+ * 
+ * Author: Heidi Fedorak
+ * Date:  August 2020
+ * 
+ */
+#ifndef ODETECT_CONFIG_H
+#define ODETECT_CONFIG_H
 
 
 //*************global settings*****************
 
 
 //#define PHOTON  //enables code for photon device
-#define USE_SERIAL  //when used, displays serial debugging messages
-//#define PHOTON  //enables code for photon device
+#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //*************Wifi Settings*******************
 
-//writes original ssid/passwords to flash - see documentation for
-//when and how to use this
-
+//writes original ssid/passwords to flash - see documentation for when and how to use this
 //#define WRITE_ORIGINALS  
 
 //set initial SSID/password pairs here
@@ -21,18 +44,22 @@
 //Do not leave any SSID or password undefined: empty
 //elements in char array will throw an error
 
-#define CLIENTSSID1 "ClientSSID1"
-#define CLIENTSSID2 "Testbed"
+#define CLIENTSSID0 "ClientSSID1"
+#define CLIENTSSID1 "Testbed"
+#define CLIENTSSID2 "ClientSSID1"
 #define CLIENTSSID3 "ClientSSID1"
-#define CLIENTSSID4 "ClientSSID1"
 
-#define CLIENTPWD1 "ClientPWD1"
-#define CLIENTPWD2 "fireweed5"
+#define CLIENTPWD0 "ClientPWD1"
+#define CLIENTPWD1 "fireweed5"
+#define CLIENTPWD2 "ClientPWD1"
 #define CLIENTPWD3 "ClientPWD1"
-#define CLIENTPWD4 "ClientPWD1"
 
 //*************Bluetooth Door Sensor Settings***********
 
+//door ID for each individual IM21 broadcast in advertising data is 3 bytes
+//found on sticker on button: bottom row of numbers/letters, take the first
+//three bytes listed and enter them in reverse order. For example if bottom 
+//row of numbers/letters on sticker is 1a2b3c45, door ID will be 3c 2b 1a. 
 #define DOORID_BYTE1 0x96
 #define DOORID_BITE2 0x59
 #define DOORid_BYTE3 0x27
@@ -49,3 +76,6 @@
 #define XETHRU_SENSITIVITY_SETTING 5
 #define XETHRU_MIN_DETECT_SETTING 0.5
 #define XETHRU_MAX_DETECT_SETTING 4
+
+
+#endif

@@ -11,6 +11,7 @@
  * 
  */
 #include "Particle.h"
+#include "odetect_config.h"
 #include "wifi.h"
 
 //******************global variable initialization*******************
@@ -18,7 +19,7 @@
 char mySSIDs[5][MAXLEN] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveDiagnostics"};
 char myPasswords[5][MAXLEN] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
 
-//***********functions***************
+//***********wifi functions***************
 
 //connects to one of 5 stored wifi networks
 void connectToWifi(){
@@ -37,7 +38,7 @@ void connectToWifi(){
   //no docs on them.
   for(int i = 0; i < 5; i++){
 
-    #if defined(USE_SERIAL)
+    #if defined(SERIAL_DEBUG)
     SerialDebug.print("Setting credential set: ");
     SerialDebug.println(i+1);
     SerialDebug.println(mySSIDs[i]);
@@ -55,13 +56,13 @@ void connectToWifi(){
 
     //wifi.ready() returns true when connected and false when not
     if(WiFi.ready()) {
-      #if defined(USE_SERIAL)
+      #if defined(SERIAL_DEBUG)
       SerialDebug.println("Connected to wifi.");
       #endif
       //if we're connected, stop trying credentials
       break;
     } else {
-      #if defined(USE_SERIAL)
+      #if defined(SERIAL_DEBUG)
       SerialDebug.println("***Failed to connect to wifi***");
       #endif
       //else not connected, so continue on to next set of credentials
@@ -126,7 +127,7 @@ int setWifiSSID(String newSSID){
 
   //did it work?
   for(int i = 0; i < 5; i++){
-    #if defined(USE_SERIAL)
+    #if defined(SERIAL_DEBUG)
     SerialDebug.print("New credential set: ");
     SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
@@ -170,7 +171,7 @@ int setWifiPwd(String newPwd){
  
   //did it work?
   for(int i = 0; i < 5; i++){
-    #if defined(USE_SERIAL)
+    #if defined(SERIAL_DEBUG)
     SerialDebug.print("New credential set: ");
     SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);

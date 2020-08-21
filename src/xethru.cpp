@@ -1,10 +1,13 @@
 #include "Particle.h"
+#include "odetect_config.h"
 #include "xethru.h"
 
 //******************global variable initialization*******************
 
-unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
-unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
+//these don't need to be global, I think, but they are used so often it would 
+//take more time than I'm willing to spend fixing it. May revisit in the future.
+unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
+unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
 //***************************XeThru functions**********************************
 
@@ -184,7 +187,7 @@ void publishData(bundledRespirationMessages* bulkMessage) {
 //returns 1 if successful, 0 if not successful
 int get_respiration_data(RespirationMessage* resp_msg) {
 
-  // receive_data() fills recv_buf[] with data.
+  // receive_data() fills xethru_recv_buf[] with data.
   if (receive_data() < 1) {
       // Particle.publish("check", "This is not receiving data");
       return 0;
@@ -198,16 +201,16 @@ int get_respiration_data(RespirationMessage* resp_msg) {
   //
   
   // Check that it's a sleep message (XTS_ID_SLEEP_STATUS)
-  uint32_t xts_id = *((uint32_t*)&recv_buf[2]);
+  uint32_t xts_id = *((uint32_t*)&xethru_recv_buf[2]);
   if (xts_id == XTS_ID_SLEEP_STATUS) {
   
       // Extract the respiration message data:
-      resp_msg->state_code = *((uint32_t*)&recv_buf[10]);
-      resp_msg->rpm = *((float*)&recv_buf[14]);
-      resp_msg->distance = *((float*)&recv_buf[18]);
-      resp_msg->signal_quality = *((uint32_t*)&recv_buf[22]);
-      resp_msg->movement_slow = *((float*)&recv_buf[26]);
-      resp_msg->movement_fast = *((float*)&recv_buf[30]);
+      resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
+      resp_msg->rpm = *((float*)&xethru_recv_buf[14]);
+      resp_msg->distance = *((float*)&xethru_recv_buf[18]);
+      resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[22]);
+      resp_msg->movement_slow = *((float*)&xethru_recv_buf[26]);
+      resp_msg->movement_fast = *((float*)&xethru_recv_buf[30]);
       
       //Particle.publish("id1", String(xts_id));
       // Return OK
@@ -216,11 +219,11 @@ int get_respiration_data(RespirationMessage* resp_msg) {
   if (xts_id == XTS_ID_RESP_STATUS) {
       
       // Extract the respiration message data:
-      resp_msg->state_code = *((uint32_t*)&recv_buf[10]);
-      resp_msg->rpm = *((uint32_t*)&recv_buf[14]);                 //State_data (RPM) according to datasheet
-      resp_msg->distance = *((float*)&recv_buf[18]);
-      resp_msg->breathing_pattern = *((float*)&recv_buf[22]);
-      resp_msg->signal_quality = *((uint32_t*)&recv_buf[26]);
+      resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
+      resp_msg->rpm = *((uint32_t*)&xethru_recv_buf[14]);                 //State_data (RPM) according to datasheet
+      resp_msg->distance = *((float*)&xethru_recv_buf[18]);
+      resp_msg->breathing_pattern = *((float*)&xethru_recv_buf[22]);
+      resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[26]);
       
       //Particle.publish("id2", String(xts_id));
       // Return OK
@@ -238,9 +241,9 @@ void stop_module()
     SerialRadar.read();
     
   // Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_MOD_SETMODE;
-  send_buf[2] = XTS_SM_STOP;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_MOD_SETMODE;
+  xethru_send_buf[2] = XTS_SM_STOP;
   
   // Send the command
   send_command(3);
@@ -254,17 +257,17 @@ void stop_module()
 void set_sensitivity(uint32_t sensitivity) 
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_APPCOMMAND;
-  send_buf[2] = XTS_SPCA_SET;
-  send_buf[3] = XTS_ID_SENSITIVITY & 0xff;
-  send_buf[4] = (XTS_ID_SENSITIVITY >> 8) & 0xff;
-  send_buf[5] = (XTS_ID_SENSITIVITY >> 16) & 0xff;  
-  send_buf[6] = (XTS_ID_SENSITIVITY >> 24) & 0xff;
-  send_buf[7] = sensitivity & 0xff;
-  send_buf[8] = (sensitivity >> 8) & 0xff;
-  send_buf[9] = (sensitivity >> 16) & 0xff;  
-  send_buf[10] = (sensitivity >> 24) & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_APPCOMMAND;
+  xethru_send_buf[2] = XTS_SPCA_SET;
+  xethru_send_buf[3] = XTS_ID_SENSITIVITY & 0xff;
+  xethru_send_buf[4] = (XTS_ID_SENSITIVITY >> 8) & 0xff;
+  xethru_send_buf[5] = (XTS_ID_SENSITIVITY >> 16) & 0xff;  
+  xethru_send_buf[6] = (XTS_ID_SENSITIVITY >> 24) & 0xff;
+  xethru_send_buf[7] = sensitivity & 0xff;
+  xethru_send_buf[8] = (sensitivity >> 8) & 0xff;
+  xethru_send_buf[9] = (sensitivity >> 16) & 0xff;  
+  xethru_send_buf[10] = (sensitivity >> 24) & 0xff;
   
   //Send the command
   send_command(11);
@@ -279,17 +282,17 @@ void set_sensitivity(uint32_t sensitivity)
 void set_detection_zone(float zone_start, float zone_end) 
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_APPCOMMAND;
-  send_buf[2] = XTS_SPCA_SET;
-  send_buf[3] = XTS_ID_DETECTION_ZONE & 0xff;
-  send_buf[4] = (XTS_ID_DETECTION_ZONE >> 8) & 0xff;
-  send_buf[5] = (XTS_ID_DETECTION_ZONE >> 16) & 0xff;
-  send_buf[6] = (XTS_ID_DETECTION_ZONE >> 24) & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_APPCOMMAND;
+  xethru_send_buf[2] = XTS_SPCA_SET;
+  xethru_send_buf[3] = XTS_ID_DETECTION_ZONE & 0xff;
+  xethru_send_buf[4] = (XTS_ID_DETECTION_ZONE >> 8) & 0xff;
+  xethru_send_buf[5] = (XTS_ID_DETECTION_ZONE >> 16) & 0xff;
+  xethru_send_buf[6] = (XTS_ID_DETECTION_ZONE >> 24) & 0xff;
   
   // Copy the bytes of the floats to send buffer
-  memcpy(send_buf+7, &zone_start, 4);
-  memcpy(send_buf+11, &zone_end, 4);
+  memcpy(xethru_send_buf+7, &zone_start, 4);
+  memcpy(xethru_send_buf+11, &zone_end, 4);
   
   //Send the command
   send_command(15);
@@ -304,9 +307,9 @@ void set_detection_zone(float zone_start, float zone_end)
 void run_profile() 
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_MOD_SETMODE;
-  send_buf[2] = XTS_SM_RUN;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_MOD_SETMODE;
+  xethru_send_buf[2] = XTS_SM_RUN;
 
   //Send the command
   send_command(3);
@@ -325,9 +328,9 @@ void set_debug_level()
   // Bit 4: Debug
     
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_DEBUG_LEVEL;
-  send_buf[2] = 0x1f;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_DEBUG_LEVEL;
+  xethru_send_buf[2] = 0x1f;
 
   //Send the command
   send_command(3);
@@ -345,9 +348,9 @@ void set_led_control(uint32_t control)
   // 2: FULL
     
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_MOD_SETLEDCONTROL;
-  send_buf[2] = control & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_MOD_SETLEDCONTROL;
+  xethru_send_buf[2] = control & 0xff;
 
   //Send the command
   send_command(3);
@@ -360,12 +363,12 @@ void set_led_control(uint32_t control)
 void load_profile(uint32_t profile)
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_MOD_LOADAPP;
-  send_buf[2] = profile & 0xff;
-  send_buf[3] = (profile >> 8) & 0xff;
-  send_buf[4] = (profile >> 16) & 0xff;  
-  send_buf[5] = (profile >> 24) & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_MOD_LOADAPP;
+  xethru_send_buf[2] = profile & 0xff;
+  xethru_send_buf[3] = (profile >> 8) & 0xff;
+  xethru_send_buf[4] = (profile >> 16) & 0xff;  
+  xethru_send_buf[5] = (profile >> 24) & 0xff;
   
   //Send the command
   send_command(6);
@@ -376,7 +379,7 @@ void load_profile(uint32_t profile)
 
 void configure_noisemap(uint32_t code) 
 {
-  // send_buf[3] Configuration:
+  // xethru_send_buf[3] Configuration:
   //
   // Bit 0: FORCE INITIALIZE NOISEMAP ON RESET
   // Bit 1: ADAPTIVE NOISEMAP ON
@@ -384,13 +387,13 @@ void configure_noisemap(uint32_t code)
   // 
 
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_MOD_NOISEMAP;
-  send_buf[2] = XTS_SPCN_SETCONTROL;
-  send_buf[3] = code & 0xff; // 0x06: Use default noisemap and adaptive noisemap
-  send_buf[4] = 0x00;
-  send_buf[5] = 0x00;
-  send_buf[6] = 0x00;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_MOD_NOISEMAP;
+  xethru_send_buf[2] = XTS_SPCN_SETCONTROL;
+  xethru_send_buf[3] = code & 0xff; // 0x06: Use default noisemap and adaptive noisemap
+  xethru_send_buf[4] = 0x00;
+  xethru_send_buf[5] = 0x00;
+  xethru_send_buf[6] = 0x00;
 
   //Send the command
   send_command(7);
@@ -403,17 +406,17 @@ void configure_noisemap(uint32_t code)
 void enable_output_message(uint32_t message) 
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_OUTPUT;
-  send_buf[2] = XTS_SPCO_SETCONTROL;
-  send_buf[3] = message & 0xff;
-  send_buf[4] = (message >> 8) & 0xff;
-  send_buf[5] = (message >> 16) & 0xff;
-  send_buf[6] = (message >> 24) & 0xff;
-  send_buf[7] = XTID_OUTPUT_CONTROL_ENABLE & 0xff;
-  send_buf[8] = (XTID_OUTPUT_CONTROL_ENABLE >> 8) & 0xff;
-  send_buf[9] = (XTID_OUTPUT_CONTROL_ENABLE >> 16) & 0xff;
-  send_buf[10] = (XTID_OUTPUT_CONTROL_ENABLE >> 24) & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_OUTPUT;
+  xethru_send_buf[2] = XTS_SPCO_SETCONTROL;
+  xethru_send_buf[3] = message & 0xff;
+  xethru_send_buf[4] = (message >> 8) & 0xff;
+  xethru_send_buf[5] = (message >> 16) & 0xff;
+  xethru_send_buf[6] = (message >> 24) & 0xff;
+  xethru_send_buf[7] = XTID_OUTPUT_CONTROL_ENABLE & 0xff;
+  xethru_send_buf[8] = (XTID_OUTPUT_CONTROL_ENABLE >> 8) & 0xff;
+  xethru_send_buf[9] = (XTID_OUTPUT_CONTROL_ENABLE >> 16) & 0xff;
+  xethru_send_buf[10] = (XTID_OUTPUT_CONTROL_ENABLE >> 24) & 0xff;
 
   //Send the command
   send_command(11);
@@ -426,17 +429,17 @@ void enable_output_message(uint32_t message)
 void disable_output_message(uint32_t message) 
 {
   //Fill send buffer
-  send_buf[0] = XT_START;
-  send_buf[1] = XTS_SPC_OUTPUT;
-  send_buf[2] = XTS_SPCO_SETCONTROL;
-  send_buf[3] = message & 0xff;
-  send_buf[4] = (message >> 8) & 0xff;
-  send_buf[5] = (message >> 16) & 0xff;
-  send_buf[6] = (message >> 24) & 0xff;
-  send_buf[7] = XTID_OUTPUT_CONTROL_DISABLE & 0xff;
-  send_buf[8] = (XTID_OUTPUT_CONTROL_DISABLE >> 8) & 0xff;
-  send_buf[9] = (XTID_OUTPUT_CONTROL_DISABLE >> 16) & 0xff;
-  send_buf[10] = (XTID_OUTPUT_CONTROL_DISABLE >> 24) & 0xff;
+  xethru_send_buf[0] = XT_START;
+  xethru_send_buf[1] = XTS_SPC_OUTPUT;
+  xethru_send_buf[2] = XTS_SPCO_SETCONTROL;
+  xethru_send_buf[3] = message & 0xff;
+  xethru_send_buf[4] = (message >> 8) & 0xff;
+  xethru_send_buf[5] = (message >> 16) & 0xff;
+  xethru_send_buf[6] = (message >> 24) & 0xff;
+  xethru_send_buf[7] = XTID_OUTPUT_CONTROL_DISABLE & 0xff;
+  xethru_send_buf[8] = (XTID_OUTPUT_CONTROL_DISABLE >> 8) & 0xff;
+  xethru_send_buf[9] = (XTID_OUTPUT_CONTROL_DISABLE >> 16) & 0xff;
+  xethru_send_buf[10] = (XTID_OUTPUT_CONTROL_DISABLE >> 24) & 0xff;
 
   //Send the command
   send_command(11);
@@ -460,11 +463,11 @@ void wait_for_ready_message()
     if (receive_data() < 1)
       continue;
 
-    if (recv_buf[1] != XTS_SPR_SYSTEM)
+    if (xethru_recv_buf[1] != XTS_SPR_SYSTEM)
       continue;
 
-    //uint32_t response_code = (uint32_t)recv_buf[2] | ((uint32_t)recv_buf[3] << 8) | ((uint32_t)recv_buf[4] << 16) | ((uint32_t)recv_buf[5] << 24);
-    uint32_t response_code = *((uint32_t*)&recv_buf[2]);
+    //uint32_t response_code = (uint32_t)xethru_recv_buf[2] | ((uint32_t)xethru_recv_buf[3] << 8) | ((uint32_t)xethru_recv_buf[4] << 16) | ((uint32_t)xethru_recv_buf[5] << 24);
+    uint32_t response_code = *((uint32_t*)&xethru_recv_buf[2]);
     if (response_code == XTS_SPRS_READY) {
       SerialDebug.println("Received XTS_SPRS_READY!");
       return;
@@ -487,7 +490,7 @@ void get_ack()
     SerialDebug.println("Error in response from radar");
     errorPublish("Error in response from radar");
   }
-  else if (recv_buf[1] != XTS_SPR_ACK) {  // Check response for ACK
+  else if (xethru_recv_buf[1] != XTS_SPR_ACK) {  // Check response for ACK
     SerialDebug.println("Did not receive ACK!");
     errorPublish("ACK not received");
   }
@@ -496,7 +499,7 @@ void get_ack()
 
 /*
  * Adds CRC, Escaping and Stop byte to the
- * send_buf and sends it over the SerialRadar.
+ * xethru_send_buf and sends it over the SerialRadar.
  */
 void send_command(int len) 
 { 
@@ -504,22 +507,22 @@ void send_command(int len)
   
   // Calculate CRC
   for (int i = 0; i < len; i++)
-    crc ^= send_buf[i];
+    crc ^= xethru_send_buf[i];
 
   // Add CRC to send buffer
-  send_buf[len] = crc;
+  xethru_send_buf[len] = crc;
   len++;
   
   // Go through send buffer and add escape characters where needed
   for (int i = 1; i < len; i++) {
-    if (send_buf[i] == XT_START || send_buf[i] == XT_STOP || send_buf[i] == XT_ESCAPE)
+    if (xethru_send_buf[i] == XT_START || xethru_send_buf[i] == XT_STOP || xethru_send_buf[i] == XT_ESCAPE)
     {
       // Shift following bytes one place up
       for (int u=len; u > i; u--)
-        send_buf[u] = send_buf[u-1];
+        xethru_send_buf[u] = xethru_send_buf[u-1];
 
       // Add escape byte at old byte location
-      send_buf[i] = XT_ESCAPE;
+      xethru_send_buf[i] = XT_ESCAPE;
 
       // Increase length by one
       len++;
@@ -530,13 +533,13 @@ void send_command(int len)
   } 
   
   // Send data (including CRC) and XT_STOP
-  SerialRadar.write(send_buf, len);
+  SerialRadar.write(xethru_send_buf, len);
   SerialRadar.write(XT_STOP);
 
   // Print out sent data for debugging:
   SerialDebug.print("Sent: ");  
   for (int i = 0; i < len; i++) {
-    SerialDebug.print(send_buf[i], HEX);  
+    SerialDebug.print(xethru_send_buf[i], HEX);  
     SerialDebug.print(" ");
   }
   SerialDebug.println(XT_STOP, HEX);
@@ -545,7 +548,7 @@ void send_command(int len)
   
 /* 
  * Receive data from radar module
- *  -Data is stored in the global array recv_buf[]
+ *  -Data is stored in the global array xethru_recv_buf[]
  *  -On success it returns number of bytes received (without escape bytes
  *  -On error it returns -1
  */
@@ -572,7 +575,7 @@ int receive_data() {
     else if (c == XT_START) 
     {
       // If it's the start character we fill the first character of the buffer and move on
-      recv_buf[0] = c;
+      xethru_recv_buf[0] = c;
       recv_len = 1;
       break;
     }
@@ -602,7 +605,7 @@ int receive_data() {
     // is it the stop byte?
     else if (c == XT_STOP) {
       // Fill response buffer, and increase counter
-      recv_buf[recv_len++] = c;
+      xethru_recv_buf[recv_len++] = c;
       break;  //Exit this loop 
     }
 
@@ -613,7 +616,7 @@ int receive_data() {
     }
     
     // Fill response buffer, and increase counter
-    recv_buf[recv_len++] = c;
+    xethru_recv_buf[recv_len++] = c;
 
     
 
@@ -626,7 +629,7 @@ int receive_data() {
   #if 0
   SerialDebug.print("Received: ");
   for (int i = 0; i < recv_len; i++) {
-    SerialDebug.print(recv_buf[i], HEX);
+    SerialDebug.print(xethru_recv_buf[i], HEX);
     SerialDebug.print(" ");
   }
   SerialDebug.println(" ");
@@ -638,8 +641,8 @@ int receive_data() {
     return 0; //Many sleep messages at once cause no message sometimes.
   }
   // If stop character was not received, return with error.
-  if (recv_buf[recv_len-1] != XT_STOP) {
-    recv_buf[recv_len++] = XT_STOP; // If the message is missing the Stop Byte, just append it at the end.
+  if (xethru_recv_buf[recv_len-1] != XT_STOP) {
+    xethru_recv_buf[recv_len++] = XT_STOP; // If the message is missing the Stop Byte, just append it at the end.
     //char boof[1024];
 	//snprintf(boof, sizeof(boof), "Length of received buffer: %d", recv_len);
     //Particle.publish("Length", boof, PRIVATE); //Checks how far into the message it gets
@@ -654,10 +657,10 @@ int receive_data() {
   
   // CRC is calculated without the crc itself and the stop byte, hence the -2 in the counter
   for (int i = 0; i < recv_len-2; i++) 
-    crc ^= recv_buf[i];
+    crc ^= xethru_recv_buf[i];
   
   // Check if calculated CRC matches the recieved
-  if (crc == recv_buf[recv_len-2]) 
+  if (crc == xethru_recv_buf[recv_len-2]) 
   {
     return recv_len;  // Return length of received data (without escape bytes) upon success
   }
@@ -667,7 +670,7 @@ int receive_data() {
     SerialDebug.print("CRC mismatch: ");
     SerialDebug.print(crc, HEX);
     SerialDebug.print(" != ");
-    SerialDebug.println(recv_buf[recv_len-2], HEX);
+    SerialDebug.println(xethru_recv_buf[recv_len-2], HEX);
     return -1; // Return -1 upon crc failure
   } 
 }

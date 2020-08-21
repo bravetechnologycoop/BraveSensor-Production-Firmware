@@ -12,25 +12,7 @@
 #ifndef WIFI_H
 #define WIFI_H
 
-//*************************defines and global variables that need to be altered during setup*************************
-
-#define USE_SERIAL  //when used, displays serial debugging messages
-
-//#define WRITE_ORIGINALS  //writes original ssid/passwords to flash 
-
-
-//set initial SSID/password pairs here
-#define CLIENTSSID0 "ClientSSID1"
-#define CLIENTSSID1 "Testbed"
-#define CLIENTSSID2 "ClientSSID1"
-#define CLIENTSSID3 "ClientSSID1"
-
-#define CLIENTPWD0 "ClientPWD1"
-#define CLIENTPWD1 "fireweed5"
-#define CLIENTPWD2 "ClientPWD1"
-#define CLIENTPWD3 "ClientPWD1"
-
-//*************************global macro defines**********************************
+//*************************macro defines**********************************
 
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
 #define ADDRSSIDS 0

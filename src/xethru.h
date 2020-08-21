@@ -21,21 +21,6 @@
 #ifndef XETHRU_H
 #define XETHRU_H
 
-
-//*************************defines and global variables that need to be altered during setup*************************
-
-#define USE_SERIAL  //when used, displays serial debugging messages
-#define LOCATIONID "HeidiTest"
-#define DEVICEID "H"
-#define DEVICETYPE "XeThru"
-
-// XeThru configuration variables
-#define XETHRU_LED_SETTING 0
-#define XETHRU_NOISEMAP_SETTING 0
-#define XETHRU_SENSITIVITY_SETTING 5
-#define XETHRU_MIN_DETECT_SETTING 0.5
-#define XETHRU_MAX_DETECT_SETTING 4
-
 //***************************macro defines******************************
 
 //SERIAL PORTS:
@@ -124,12 +109,12 @@
 
 #define RPM_THRESHOLD 15
 
-//***************************global variables******************************
+//***************************global variable declarations******************************
 
 //these two could be local to setup() and loop() respectively, I think, but
 //easier to leave them as global (for now)
-extern unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
-extern unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
+extern unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
+extern unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
 // struct to contain XeThru configuration variables
 // initialized in setup() by calling init_XeThruConfigSettings()
