@@ -26,6 +26,13 @@
 #define DEVICEID "H"
 #define DEVICETYPE "XeThru"
 
+// XeThru configuration variables
+#define XETHRU_LED_SETTING 0
+#define XETHRU_NOISEMAP_SETTING 0
+#define XETHRU_SENSITIVITY_SETTING 5
+#define XETHRU_MIN_DETECT_SETTING 0.5
+#define XETHRU_MAX_DETECT_SETTING 4
+
 //***************************macro defines******************************
 
 //SERIAL PORTS:
@@ -123,30 +130,26 @@ unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
 //might be easier to leave as global
 unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
- // XeThru configuration variables
- //these can be made defines so they don't have to be global variables
- //they are used (and passed, why, if they're global you shouldn't have to do 
- //that, weird...) in xethru_configuration()'s sub-functions and in particle console
- //function get_configuration_values()
- #define XETHRU_LED_SETTING 0
- #define XETHRU_NOISEMAP_SETTING 0
- #define XETHRU_SENSITIVITY_SETTING 5
- #define XETHRU_MIN_DETECT_SETTING 0.5
- #define XETHRU_MAX_DETECT_SETTING 4
 
-typdef struct XethruConfigSettings{
 
-   int led = XETHRU_LED_SETTING;
-   int noisemap = XETHRU_NOISEMAP_SETTING;
-   int sensitivity = XETHRU_SENSITIVITY_SETTING;
-   float min_detect = XETHRU_MIN_DETECT_SETTING;
-   float max_detect = XETHRU_MAX_DETECT_SETTING;
+// struct to contain XeThru configuration variables
+// initialized in setup() by calling init_XeThruConfigSettings()
+// initial values set by programmer in odetect_config.h defines
+// can be updated via particle console function, so I believe
+// this needs to be a global struct
+typedef struct XeThruConfigSettings{
+
+  int led; 
+  int noisemap;
+  int sensitivity; 
+  float min_detect;
+  float max_detect; 
 
  } XeThruConfigSettings;
 
 
 // Struct to hold respiration message from radar
-//this legit actually needs to be global
+// I believe this needs to be a global struct - confirm, are they used in setup()?
 typedef struct RespirationMessage {
   uint32_t state_code;
   float rpm;
@@ -159,6 +162,7 @@ typedef struct RespirationMessage {
 
 // Initialize arrays and variables
 //these are filled with data in loop(), transmitted to cloud and re-set to "" in publishData()
+//they are not called from setup() so they don't have to be global.
 //this makes more sense as a struct which can be initialized in loop()
 //could combine with struct above, or could make it a "bulk message" struct?
 char distance[500] = "";
@@ -172,26 +176,14 @@ char fast[500] = "";
 //x_state -> state_code
 char x_state[500] = "";
 
-//this seems to be used in loop() only, hard to tell though...
-int i = 0;
-
-//this doesn't seem to be used anywhere at all, can delete...
-int state = 1;
-
-//these three also not used anywhere, can delete...
-float prevSOC = 100;
-int charging = FALSE;
-double rssi;
-
-
 //***************************function declarations***************
 
 
 void xethru_reset();
-void xethru_configuration();
+void xethru_configuration(XeThruConfigSettings* config_settings);
 int get_configuration_values(String command);
 void publishData();
-int get_respiration_data(RespirationMessage * resp_msg);
+int get_respiration_data(RespirationMessage* resp_msg);
 void stop_module();
 void set_sensitivity(uint32_t sensitivity);
 void set_detection_zone(float zone_start, float zone_end);
@@ -207,6 +199,7 @@ void wait_for_ready_message();
 void get_ack();
 void send_command(int len);
 int receive_data();
+void init_XeThruConfigSettings(XeThruConfigSettings* originals);
 
 
 //***************************XeThru functions**********************************
@@ -228,9 +221,7 @@ void xethru_reset() {
 
 
 
-void xethru_configuration() {
-
-  int xethru_led_setting = XETHRU_LED_SETTING;
+void xethru_configuration(XeThruConfigSettings &xethruConfig) {
 
   // Set up serial communication
   SerialRadar.begin(115200);
@@ -249,16 +240,16 @@ void xethru_configuration() {
   load_profile(XTS_ID_APP_RESPIRATION_2);
 
    // Configure the noisemap
-  configure_noisemap(noisemap);
+  configure_noisemap(xethruConfig.noisemap);
   
   // Set LED control
-  set_led_control(xethru_led_setting); // 0: OFF; 1: SIMPLE; 2: FULL
+  set_led_control(xethruConfig.led); // 0: OFF; 1: SIMPLE; 2: FULL
 
   // Set detection zone
-  set_detection_zone(min_detect, max_detect); // First variable = Lower limit, Second variable = Upper limit
+  set_detection_zone(xethruConfig.min_detect, xethruConfig.max_detect); // First variable = Lower limit, Second variable = Upper limit
 
   // Set sensitivity
-  set_sensitivity(sensitivity);
+  set_sensitivity(xethruConfig.sensitivity);
 
 
   // Enable only the Sleep message, disable all others
@@ -274,39 +265,41 @@ void xethru_configuration() {
 
 
 //function called in particle console to get new xethru config values
-
 int get_configuration_values(String command) { // command is a long string with all the config values
-    // Parse the command
-    int split1 = command.indexOf(',');
-    xethru_led_setting = command.substring(0,split1).toInt();
-    int split2 = command.indexOf(',', split1+1);
-    noisemap = command.substring(split1+1,split2).toInt();
-    int split3 = command.indexOf(',', split2+1);
-    sensitivity = command.substring(split2+1,split3).toInt();
-    int split4 = command.indexOf(',', split3+1);
-    min_detect = command.substring(split3+1,split4).toFloat();
-    int split5 = command.indexOf(',', split4+1);
-    max_detect = command.substring(split4+1,split5).toFloat();
 
-    Particle.publish("min_detect", String(min_detect));
-    Particle.publish("max_detect", String(max_detect));
+  XeThruConfigSettings newConfig;
 
-    xethru_reset();
-    xethru_configuration();
-    
-    /*
-    //Saves the values into the EEPROM so it is initialized with the most recent values if the Photon gets reset
-    //sets a value for the first EEPROM byte so it does not use default values if reset
-    EEPROM.put(1, 5);
-    //each of the variables is 4 bytes long
-    EEPROM.put(2, led);
-    EEPROM.put(6, noisemap);
-    EEPROM.put(10, sensitivity);
-    EEPROM.put(14, min_detect);
-    EEPROM.put(18, max_detect);
-    */
-    
-    return 1;
+  // Parse the command
+  int split1 = command.indexOf(',');
+  newConfig.led = command.substring(0,split1).toInt();
+  int split2 = command.indexOf(',', split1+1);
+  newConfig.noisemap = command.substring(split1+1,split2).toInt();
+  int split3 = command.indexOf(',', split2+1);
+  newConfig.sensitivity = command.substring(split2+1,split3).toInt();
+  int split4 = command.indexOf(',', split3+1);
+  newConfig.min_detect = command.substring(split3+1,split4).toFloat();
+  int split5 = command.indexOf(',', split4+1);
+  newConfig.max_detect = command.substring(split4+1,split5).toFloat();
+
+  Particle.publish("min_detect", String(newConfig.min_detect));
+  Particle.publish("max_detect", String(newConfig.max_detect));
+
+  xethru_reset();
+  xethru_configuration(&newConfig);
+  
+  /*
+  //Saves the values into the EEPROM so it is initialized with the most recent values if the Photon gets reset
+  //sets a value for the first EEPROM byte so it does not use default values if reset
+  EEPROM.put(1, 5);
+  //each of the variables is 4 bytes long
+  EEPROM.put(2, led);
+  EEPROM.put(6, noisemap);
+  EEPROM.put(10, sensitivity);
+  EEPROM.put(14, min_detect);
+  EEPROM.put(18, max_detect);
+  */
+  
+  return 1;
 }
 
 
@@ -839,4 +832,14 @@ int receive_data() {
     SerialDebug.println(recv_buf[recv_len-2], HEX);
     return -1; // Return -1 upon crc failure
   } 
+}
+
+void init_XeThruConfigSettings(XeThruConfigSettings &xethruConfig){
+
+  xethruConfig.led = XETHRU_LED_SETTING;
+  xethruConfig.noisemap = XETHRU_NOISEMAP_SETTING;
+  xethruConfig.sensitivity = XETHRU_SENSITIVITY_SETTING;
+  xethruConfig.min_detect = XETHRU_MIN_DETECT_SETTING;
+  xethruConfig.max_detect = XETHRU_MAX_DETECT_SETTING;
+
 }

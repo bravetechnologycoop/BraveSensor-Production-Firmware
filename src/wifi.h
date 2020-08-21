@@ -41,17 +41,16 @@
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
 
-//******************global variable declarations*******************
-//extern int wifiBufferIndex;
-extern char mySSIDs[5][MAXLEN];
-extern char myPasswords[5][MAXLEN];
+//******************global struct declarations*******************
+
 
 //*************************function declarations*************************
 
 void connectToWifi();
 int setWifiSSID(String);
 int setWifiPwd(String);   
-void writeToFlash();        
-void readFromFlash(); 
+void writeWifiToFlash();        
+void readWifiFromFlash(); 
+void initializeOriginalWifiCreds();
 
 #endif

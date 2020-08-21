@@ -46,17 +46,37 @@ void checkDoor();
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif
 
+//******************global variables************************
+//THE ONLY VARIABLES THAT GO HERE SHOULD BE ONES NEEDED BY
+//BOTH setup() AND loop() !!!
+
+typedef struct XeThruConfigSettings{
+
+  int led; 
+  int noisemap;
+  int sensitivity; 
+  float min_detect;
+  float max_detect; 
+
+}XeThruConfigSettings;
+
+
+// Struct to hold respiration message from radar
+// I believe this needs to be a global struct - confirm, are they used in setup()?
+typedef struct RespirationMessage {
+  uint32_t state_code;
+  float rpm;
+  float distance;
+  uint32_t signal_quality;  //this is filled from xethru data but never published or used anywhere
+  float movement_slow;
+  float movement_fast;
+  float breathing_pattern;
+}RespirationMessage;
 
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  #if defined(DEBUG_BUILD)
-  Mesh.off();
-  BLE.off();
-  #endif
-
-  pinMode(D6, INPUT_PULLUP);  //XeThru code
-
+  //*************global setup******************
 
   #if defined(USE_SERIAL)
   //start comms with serial terminal for debugging...
@@ -66,7 +86,35 @@ void setup() {
   SerialDebug.println("Key press received, starting code...");
   #endif 
 
-  BLE.on();
+  #if defined(DEBUG_BUILD)
+    Mesh.off();
+    BLE.off();
+  #else
+    //if we're not debugging, then we need the door sensor to run...
+    BLE.on();
+  #endif
+
+  //**********XeThru setup*****************
+
+  pinMode(D6, INPUT_PULLUP); 
+  LEDSystemTheme theme; // Enable custom theme
+  theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
+  theme.apply(); // Apply theme settings 
+	
+  XeThruConfigSettings xethruConfig;
+
+  init_XeThruConfigSettings(&xethruConfig);
+
+  xethru_reset();
+  xethru_configuration(&xethruConfig);
+
+
+  //*********Door sensor setup***********
+
+
+
+
+  //***************Wifi Creds setup*************
 
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
@@ -78,24 +126,28 @@ void setup() {
   uint16_t checkForContent;
   EEPROM.get(ADDRSSIDS,checkForContent);
 
-  //if memory has not been written to yet, write the initial set of 
-  //passwords.  else read what's already in there.
+  //if memory has not been written to yet, write the original set of 
+  //passwords and connect to them.  If memory has been written to 
+  //then console functions to update wifi creds have been called before
+  //We want to connect to what was written there by the console functions
+  //so we read from flash and then connect to those credentials  
   if(checkForContent == 0xFFFF) {
-    writeToFlash();
+    writeWifiToFlash();
   } else {
-    readFromFlash();
+    readWifiFromFlash();
   }
 
   #if defined(WRITE_ORIGINALS)
-  readFromFlash();
+  readWifiFromFlash();
   #endif
- 
-  //loops through 5 different stored networks until connection established
-  connectToWifi();
 
-  //register cloud-connected functions BEFORE connecting to cloud
-  Particle.function("changeSSID", setWifiSSID);
-  Particle.function("changePwd", setWifiPwd);
+  connectToWifi();
+ 
+  //*******Particle console function declarations*******
+  //Must be declared in setup(), but BEFORE connecting to the cloud
+
+  Particle.function("changeSSID", setWifiSSID);  //wifi code
+  Particle.function("changePwd", setWifiPwd);    //wifi code
   Particle.function("config", get_configuration_values); //XeThru code
 
   //connect to cloud
@@ -104,17 +156,11 @@ void setup() {
   //publish vitals every X seconds
   Particle.publishVitals(120);
 
-  //***XeThru code from here to end of setup()
-  LEDSystemTheme theme; // Enable custom theme
-  theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
-  theme.apply(); // Apply theme settings 
-	
-  xethru_reset();
-  xethru_configuration();
+}  //end setup()
 
-}
 
 // loop() runs over and over again, as quickly as it can execute.
+// it is the arduino substitute for while(1) in main()
 void loop() {
 
   #if defined(USE_SERIAL)
@@ -129,36 +175,39 @@ void loop() {
   checkDoor();
 
   // For every loop we check to see if we have received any respiration data
+  static int i;
+  RespirationMessage msg;
+  if(get_respiration_data(&msg)) {
+        
+    if(msg.state_code != XTS_VAL_RESP_STATE_INITIALIZING || msg.state_code != XTS_VAL_RESP_STATE_ERROR || msg.state_code != XTS_VAL_RESP_STATE_UNKNOWN) {
 
-    RespirationMessage msg;
-    if(get_respiration_data(&msg)) {
+      // Appends the data received to the end of the array
+      if(i%DATA_PER_MESSAGE!=0) {
+          strcat(rpm, String(msg.rpm)+" ");
+          strcat(distance, String(msg.distance)+" ");
+          strcat(breaths, String(msg.breathing_pattern)+" ");
+          strcat(slow, String(msg.movement_slow)+" ");
+          strcat(fast, String(msg.movement_fast)+" ");
+          strcat(x_state, String(msg.state_code)+" ");     
+          i++;
+      }
+      // If the number of data points is enough, append the data without a space and publish the data to the Particle Cloud.
+      if(i%DATA_PER_MESSAGE==0) {
           
-        if(msg.state_code != XTS_VAL_RESP_STATE_INITIALIZING || msg.state_code != XTS_VAL_RESP_STATE_ERROR || msg.state_code != XTS_VAL_RESP_STATE_UNKNOWN) {
-            // Appends the data received to the end of the array
-            if(i%DATA_PER_MESSAGE!=0) {
-                strcat(rpm, String(msg.rpm)+" ");
-                strcat(distance, String(msg.distance)+" ");
-                strcat(breaths, String(msg.breathing_pattern)+" ");
-                strcat(slow, String(msg.movement_slow)+" ");
-                strcat(fast, String(msg.movement_fast)+" ");
-                strcat(x_state, String(msg.state_code)+" ");     
-                i++;
-            }
-            // If the number of data points is enough, append the data without a space and publish the data to the Particle Cloud.
-            if(i%DATA_PER_MESSAGE==0) {
-                
-                strcat(rpm, String(msg.rpm));
-                strcat(distance, String(msg.distance));
-                strcat(breaths, String(msg.breathing_pattern));
-                strcat(slow, String(msg.movement_slow));
-                strcat(fast, String(msg.movement_fast));
-                strcat(x_state, String(msg.state_code));
-                publishData();
-                i++;
-                //delay(1000);
-            }
-        }
-    }
+          strcat(rpm, String(msg.rpm));
+          strcat(distance, String(msg.distance));
+          strcat(breaths, String(msg.breathing_pattern));
+          strcat(slow, String(msg.movement_slow));
+          strcat(fast, String(msg.movement_fast));
+          strcat(x_state, String(msg.state_code));
+          publishData();
+          i++;
+      } //endif
+        
+    }//endif
+
+  }//endif
+
   delay(1000);
 
 }

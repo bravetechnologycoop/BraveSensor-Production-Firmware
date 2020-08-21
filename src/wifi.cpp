@@ -14,10 +14,9 @@
 #include "wifi.h"
 
 //******************global variable initialization*******************
+
 char mySSIDs[5][MAXLEN] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveDiagnostics"};
 char myPasswords[5][MAXLEN] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
-
-
 
 //***********functions***************
 
@@ -47,7 +46,7 @@ void connectToWifi(){
 
     //WiFi.setCredentials(ssidHolder,pwdHolder);
 
-    WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
+    WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
 
     WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
     
@@ -74,7 +73,7 @@ void connectToWifi(){
 }  //end connectToWifi()
 
 
-void writeToFlash() {
+void writeWifiToFlash() {
 
   //EEPROM.put() will compare object data to data currently in EEPROM
   //to avoid re-writing values that haven't changed
@@ -83,7 +82,7 @@ void writeToFlash() {
 
 }
 
-void readFromFlash() {
+void readWifiFromFlash() {
 
   EEPROM.get(ADDRSSIDS,mySSIDs);  
   EEPROM.get(ADDRPWDS,myPasswords);
@@ -123,7 +122,7 @@ int setWifiSSID(String newSSID){
   strcpy(mySSIDs[wifiBufferIndex], stringHolder);
 
   //backup in flash memory
-  writeToFlash();
+  writeWifiToFlash();
 
   //did it work?
   for(int i = 0; i < 5; i++){
@@ -167,7 +166,7 @@ int setWifiPwd(String newPwd){
   strcpy(myPasswords[wifiBufferIndex], stringHolder);
 
   //backup in flash memory
-  writeToFlash();
+  writeWifiToFlash();
  
   //did it work?
   for(int i = 0; i < 5; i++){
