@@ -12,7 +12,7 @@
  * 
  * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
  * 
- * Sampath, Wayne Ng, Sajan Rajdev - wrote original XeThru code
+ * Sampath Sattie, Wayne Ng, Sajan Rajdev - wrote original XeThru code
  * 
  * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
  *                 and added remote wifi creds update and IM21 
@@ -83,7 +83,7 @@ void setup() {
   #endif         
 
   //publish vitals every X seconds
-  Particle.publishVitals(120);
+  //Particle.publishVitals(60);
 
 }  //end setup()
 
@@ -98,7 +98,9 @@ void loop() {
   #endif    
 
   #if defined(SERIAL_DEBUG)
-  SerialDebug.print("you're looping");
+  static int j = 0;
+  if (j <= 5) SerialDebug.print("you're looping");
+  j++;
   #endif
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
@@ -110,8 +112,6 @@ void loop() {
   checkDoor();
   // For every loop we check to see if we have received any respiration data
   checkXethru();
-
-  delay(1000);
 
 }
 

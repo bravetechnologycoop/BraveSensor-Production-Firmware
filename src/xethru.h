@@ -12,7 +12,7 @@
  *    -established separate .h and .cpp files for XeThru code
  *    -redefined global variables appropriately
  *    -established odetect_config.h file for all global defines
- *    -removed delay(1000) and adapted PublishData() to control
+ *    -removed delay(1000) and adapted publishXethruData() to control
  *     rate of messages being published to the cloud
  * 
  * 
@@ -140,8 +140,8 @@ typedef struct RespirationMessage {
 
 //this struct is initialized with init_bundledRespriationMessages()
 //this struct is filled with data in loop() sub-function checkXethru()
-//and transmitted to cloud by calling publishData() from checkXethru() 
-//Then it is reinitialized to "" by calling init_ function from publishData()
+//and transmitted to cloud by calling publishXethruData() from checkXethru() 
+//Then it is reinitialized to "" by calling init_ function from publishXethruData()
 typedef struct bundledRespriationMessages{
   char distance[500];
   char rpm[500];
@@ -157,7 +157,7 @@ void checkXethru();
 void xethru_reset();
 void xethru_configuration(XeThruConfigSettings* config_settings);
 int get_configuration_values(String command);
-void publishData(bundledRespirationMessages* bulkMessages);
+void publishXethruData(bundledRespirationMessages* bulkMessages);
 int get_respiration_data(RespirationMessage* resp_msg);
 void stop_module();
 void set_sensitivity(uint32_t sensitivity);

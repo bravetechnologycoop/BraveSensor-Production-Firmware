@@ -17,7 +17,7 @@ void checkXethru(){
 
   static int i;
   RespirationMessage msg;
-  bundledRespirationMessages messages;
+  static bundledRespirationMessages messages;
 
   //set all char arrays in this struct = ""
   init_bundledRespriationMessages(&messages);
@@ -45,13 +45,13 @@ void checkXethru(){
           strcat(messages.slow, String(msg.movement_slow));
           strcat(messages.fast, String(msg.movement_fast));
           strcat(messages.x_state, String(msg.state_code));
-          publishData(&messages);
+          publishXethruData(&messages);
           i++;
       } //endif
         
-    }//endif
+    }//end if message is correct
 
-  }//endif
+  }//end if there is a message
 
 }
 
@@ -131,8 +131,8 @@ int get_configuration_values(String command) { // command is a long string with 
   int split5 = command.indexOf(',', split4+1);
   newConfig.max_detect = command.substring(split4+1,split5).toFloat();
 
-  Particle.publish("min_detect", String(newConfig.min_detect));
-  Particle.publish("max_detect", String(newConfig.max_detect));
+  //Particle.publish("min_detect", String(newConfig.min_detect));
+  //Particle.publish("max_detect", String(newConfig.max_detect));
 
   xethru_reset();
   xethru_configuration(&newConfig);
@@ -154,9 +154,10 @@ int get_configuration_values(String command) { // command is a long string with 
 
 // Takes the data received from the XeThru message and publishes it to the Particle Cloud
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
-void publishData(bundledRespirationMessages* bulkMessage) {
+void publishXethruData(bundledRespirationMessages* bulkMessage) {
 
-  //these are used in publishData() only, they can be moved there
+  static unsigned long xethruPublishTime = 0;
+
   char locationid[] = LOCATIONID;
   char deviceid[] = DEVICEID;
   char devicetype[] = DEVICETYPE;
@@ -172,8 +173,17 @@ void publishData(bundledRespirationMessages* bulkMessage) {
   //	Serial.printlnf("publishing %s", buf);
   //	Particle.publish("XeThru", buf, PRIVATE);
 
-
-  Particle.publish("XeThru", buf, PRIVATE);
+  if(millis() - xethruPublishTime > 2000) {
+    //Particle.publish("XeThru", buf, PRIVATE);
+    #if defined(SERIAL_DEBUG)
+    SerialDebug.println(buf);
+    #endif
+    xethruPublishTime = millis();
+  } else {
+    #if defined(SERIAL_DEBUG)
+    SerialDebug.println("xethru publish < 2000ms...");
+    #endif
+  }
 
   //Particle.publish("data", String(data));
   //strcpy(data1, "");
@@ -450,7 +460,7 @@ void disable_output_message(uint32_t message)
 
 // Publishes an error message to be stored in database
 void errorPublish(String message) {
-    Particle.publish("Error", message, PRIVATE);
+    //Particle.publish("Error", message, PRIVATE);
 }
 
 

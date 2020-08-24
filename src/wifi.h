@@ -24,6 +24,7 @@
 
 
 //******************global variable declarations*******************
+//variables used in setup() and loop() have to be global
 extern char mySSIDs[5][MAXLEN];
 extern char myPasswords[5][MAXLEN];
 

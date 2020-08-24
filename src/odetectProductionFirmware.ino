@@ -74,7 +74,7 @@ void setup() {
   #endif         
 
   //publish vitals every X seconds
-  Particle.publishVitals(60);
+  //Particle.publishVitals(60);
 
 }  //end setup()
 
@@ -89,7 +89,9 @@ void loop() {
   #endif    
 
   #if defined(SERIAL_DEBUG)
-  SerialDebug.print("you're looping");
+  static int j = 0;
+  if (j <= 5) SerialDebug.print("you're looping");
+  j++;
   #endif
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
@@ -101,8 +103,6 @@ void loop() {
   checkDoor();
   // For every loop we check to see if we have received any respiration data
   checkXethru();
-
-  delay(1000);
 
 }
 
