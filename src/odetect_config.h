@@ -29,7 +29,8 @@
 
 //*************global settings*****************
 
-
+//#define DOOR_PARTICLE
+#define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
 #define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.

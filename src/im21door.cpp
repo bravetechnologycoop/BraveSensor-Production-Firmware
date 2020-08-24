@@ -40,7 +40,7 @@ void checkDoor(){
       String data = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",
                             buf[1], buf [2], buf[3], buf[5], buf[6]);
 
-      //Particle.publish("Door", data, PRIVATE);
+      Particle.publish("Door", data, PRIVATE);
 
     } //endif
   }//end for

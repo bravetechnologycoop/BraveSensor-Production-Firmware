@@ -131,8 +131,8 @@ int get_configuration_values(String command) { // command is a long string with 
   int split5 = command.indexOf(',', split4+1);
   newConfig.max_detect = command.substring(split4+1,split5).toFloat();
 
-  //Particle.publish("min_detect", String(newConfig.min_detect));
-  //Particle.publish("max_detect", String(newConfig.max_detect));
+  Particle.publish("min_detect", String(newConfig.min_detect));
+  Particle.publish("max_detect", String(newConfig.max_detect));
 
   xethru_reset();
   xethru_configuration(&newConfig);
@@ -173,15 +173,15 @@ void publishXethruData(bundledRespirationMessages* bulkMessage) {
   //	Serial.printlnf("publishing %s", buf);
   //	Particle.publish("XeThru", buf, PRIVATE);
 
-  if(millis() - xethruPublishTime > 2000) {
-    //Particle.publish("XeThru", buf, PRIVATE);
+  if(millis() - xethruPublishTime > 1000) {
+    Particle.publish("XeThru", buf, PRIVATE);
     #if defined(SERIAL_DEBUG)
     SerialDebug.println(buf);
     #endif
     xethruPublishTime = millis();
   } else {
     #if defined(SERIAL_DEBUG)
-    SerialDebug.println("xethru publish < 2000ms...");
+    SerialDebug.println("xethru publish < 1000ms...");
     #endif
   }
 
@@ -460,7 +460,7 @@ void disable_output_message(uint32_t message)
 
 // Publishes an error message to be stored in database
 void errorPublish(String message) {
-    //Particle.publish("Error", message, PRIVATE);
+    Particle.publish("Error", message, PRIVATE);
 }
 
 

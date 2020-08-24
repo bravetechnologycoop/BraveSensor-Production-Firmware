@@ -16,9 +16,14 @@
  */
 
 #include "odetect_config.h"
-#include "xethru.h"
 #include "wifi.h"
+#if defined(XETHRU_PARTICLE)
+#include "xethru.h"
+#endif
+
+#if defined(DOOR_PARTICLE)
 #include "im21door.h"
+#endif
 
 //*************************System/Startup messages for Particle API***********
 
@@ -51,21 +56,41 @@ void setup() {
   //mesh and BLE are not compatible with Particle debugger. "Known issue"
     Mesh.off();
     BLE.off();
+    #if defined(SERIAL_DEBUG)
     SerialDebug.println("**********BLE is OFF*********");
-  #else
+    #endif
+  #elif defined(DOOR_PARTICLE)
     //if we're not debugging, then we need the door sensor to run...
     BLE.on();
+    #if defined(SERIAL_DEBUG)
     SerialDebug.println("**********BLE is ON*********");
+    #endif
+  #elif defined(XETHRU_PARTICLE)
+    //if we're not using the door sensor, we don't need ble...
+    BLE.off();
+    #if defined(SERIAL_DEBUG)
+    SerialDebug.println("**********BLE is OFF*********");
+    #endif
+  #else
+    //we should never get here since one of DOOR_PARTICLE and XETHRU_PARTICLE
+    //must be defined.  Throw error.
+    SerialDebug.println("You're missing DOOR_PARTICLE or XETHRU_PARTICLE define...");
   #endif
 
-  xethruSetup();
+  #if defined(XETHRU_PARTICLE)
+    xethruSetup();
+  #endif
+
   //doorSensorSetup() -> consists only of BLE.on, handled above
   wifiCredsSetup();
 
   //particle console function declarations, belongs in setup() as per docs
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
+
+  #if defined(XETHRU_PARTICLE)
   Particle.function("config", get_configuration_values); //XeThru code
+  #endif
 
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)
@@ -74,7 +99,7 @@ void setup() {
   #endif         
 
   //publish vitals every X seconds
-  //Particle.publishVitals(60);
+  Particle.publishVitals(60);
 
 }  //end setup()
 
@@ -99,10 +124,15 @@ void loop() {
     connectToWifi();
   }  
 
-  //for every loop check the door data
-  checkDoor();
+  #if defined(DOOR_PARTICLE)
+    //for every loop check for and print door data
+    checkDoor();
+  #endif
+
+  #if defined(XETHRU_PARTICLE)
   // For every loop we check to see if we have received any respiration data
   checkXethru();
+  #endif
 
 }
 
