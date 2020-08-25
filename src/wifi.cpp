@@ -45,7 +45,7 @@ void connectToWifi(){
     SerialDebug.println(myPasswords[i]);
     #endif
 
-    //WiFi.setCredentials(ssidHolder,pwdHolder);
+    time_t timeStarted = Time.now();
 
     WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
 
@@ -58,12 +58,14 @@ void connectToWifi(){
     if(WiFi.ready()) {
       #if defined(SERIAL_DEBUG)
       SerialDebug.println("Connected to wifi.");
+      SerialDebug.printlnf("Connected at %s (Time.now() %d seconds, connection process took %d seconds).\n", Time.timeStr().c_str(), Time.now(), Time.now() - timeStarted);
       #endif
       //if we're connected, stop trying credentials
       break;
     } else {
       #if defined(SERIAL_DEBUG)
       SerialDebug.println("***Failed to connect to wifi***");
+      SerialDebug.printlnf("WARNING: connection failed at %s (Time.now() %d seconds, timeout was %d seconds).\n", Time.timeStr().c_str(), Time.now(), Time.now() - timeStarted);
       #endif
       //else not connected, so continue on to next set of credentials
       continue;

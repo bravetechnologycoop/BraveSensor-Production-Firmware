@@ -32,7 +32,7 @@
 //#define DOOR_PARTICLE
 #define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
-#define SERIAL_DEBUG  //when used, displays serial debugging messages
+//#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //*************Wifi Settings*******************
@@ -45,12 +45,12 @@
 //Do not leave any SSID or password undefined: empty
 //elements in char array will throw an error
 
-#define CLIENTSSID0 "ClientSSID1"
+#define CLIENTSSID0 "Testbed"
 #define CLIENTSSID1 "Testbed"
 #define CLIENTSSID2 "ClientSSID1"
 #define CLIENTSSID3 "ClientSSID1"
 
-#define CLIENTPWD0 "ClientPWD1"
+#define CLIENTPWD0 "fireweed"
 #define CLIENTPWD1 "fireweed5"
 #define CLIENTPWD2 "ClientPWD1"
 #define CLIENTPWD3 "ClientPWD1"

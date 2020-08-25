@@ -13,7 +13,7 @@ unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from
 
 
 //called from loop(), this is the main operation of the Xethru device
-void checkXethru(){
+void checkXethru(){  
 
   static int i;
   RespirationMessage msg;
@@ -156,7 +156,7 @@ int get_configuration_values(String command) { // command is a long string with 
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishXethruData(bundledRespirationMessages* bulkMessage) {
 
-  static unsigned long xethruPublishTime = 0;
+  //static unsigned long xethruPublishTime = 0;
 
   char locationid[] = LOCATIONID;
   char deviceid[] = DEVICEID;
@@ -173,7 +173,9 @@ void publishXethruData(bundledRespirationMessages* bulkMessage) {
   //	Serial.printlnf("publishing %s", buf);
   //	Particle.publish("XeThru", buf, PRIVATE);
 
-  if(millis() - xethruPublishTime > 1000) {
+  Particle.publish("XeThru", buf, PRIVATE);  
+
+/*  if(millis() - xethruPublishTime > 1000) {
     Particle.publish("XeThru", buf, PRIVATE);
     #if defined(SERIAL_DEBUG)
     SerialDebug.println(buf);
@@ -184,7 +186,7 @@ void publishXethruData(bundledRespirationMessages* bulkMessage) {
     SerialDebug.println("xethru publish < 1000ms...");
     #endif
   }
-
+*/
   //Particle.publish("data", String(data));
   //strcpy(data1, "");
   
