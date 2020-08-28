@@ -39,13 +39,12 @@ void connectToWifi(){
   for(int i = 0; i < 5; i++){
 
     #if defined(SERIAL_DEBUG)
+    time_t timeStarted = Time.now();
     SerialDebug.print("Setting credential set: ");
     SerialDebug.println(i+1);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
-
-    time_t timeStarted = Time.now();
 
     WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
 

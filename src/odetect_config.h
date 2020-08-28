@@ -29,10 +29,10 @@
 
 //*************global settings*****************
 
-//#define DOOR_PARTICLE
-#define XETHRU_PARTICLE
+#define DOOR_PARTICLE
+//#define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
-//#define SERIAL_DEBUG  //when used, displays serial debugging messages
+#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //*************Wifi Settings*******************
@@ -62,8 +62,8 @@
 //three bytes listed and enter them in reverse order. For example if bottom 
 //row of numbers/letters on sticker is 1a2b3c45, door ID will be 3c 2b 1a. 
 #define DOORID_BYTE1 0x96
-#define DOORID_BITE2 0x59
-#define DOORid_BYTE3 0x27
+#define DOORID_BYTE2 0x59
+#define DOORID_BYTE3 0x27
 
 //************XeThru Settings**************
 

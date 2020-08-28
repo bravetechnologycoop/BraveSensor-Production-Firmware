@@ -22,6 +22,6 @@
 
 
 //*************************function declarations*******************
-void checkDoor();
+int checkDoor();
 
 #endif
