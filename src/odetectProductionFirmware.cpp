@@ -22,22 +22,15 @@
  */
 
 #include "odetect_config.h"
-#include "wifi.h"
-
-
-void setup();
-void loop();
-#line 22 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
-#if defined(XETHRU_PARTICLE)
 #include "xethru.h"
-#endif
-
-#if defined(DOOR_PARTICLE)
+#include "wifi.h"
 #include "im21door.h"
-#endif
 
 //*************************System/Startup messages for Particle API***********
 
+void setup();
+void loop();
+#line 25 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -67,21 +60,22 @@ void setup() {
   //mesh and BLE are not compatible with Particle debugger. "Known issue"
     Mesh.off();
     BLE.off();
-    #if defined(SERIAL_DEBUG)
     SerialDebug.println("**********BLE is OFF*********");
-    #endif
   #else
-    //if we're not debugging, then we need the door sensor to run...
-    BLE.on();
-    #if defined(SERIAL_DEBUG)
-    SerialDebug.println("**********BLE is ON*********");
+    #if defined(PHOTON)
+    //if we're using a photon that doesn't have BLE, calling BLE will 
+    //cause an error.  need to have nothing here so BLE.on or BLE.off
+    //are skipped entirely
     #endif
+    //if we're not debugging, or a photon, then ble can be on for all other modes:
+    //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
+    BLE.on();
+    SerialDebug.println("**********BLE is ON*********");
   #endif
 
   #if defined(XETHRU_PARTICLE)
-    xethruSetup();
+  xethruSetup();
   #endif
-
   //doorSensorSetup() -> consists only of BLE.on, handled above
   wifiCredsSetup();
 
@@ -96,6 +90,7 @@ void setup() {
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)
   Particle.connect();
+  Particle.process();
   #endif         
 
   //publish vitals every X seconds
@@ -114,7 +109,7 @@ void loop() {
   #endif    
 
   #if defined(SERIAL_DEBUG)
-  static int j = 0;
+  static int j = 1;
   if (j <= 5) SerialDebug.print("you're looping");
   j++;
   #endif
@@ -124,13 +119,12 @@ void loop() {
     connectToWifi();
   }  
 
+  //for every loop check the door data
   #if defined(DOOR_PARTICLE)
-    //for every loop check for and print door data
-    checkDoor();
+  checkDoor();
   #endif
-
-  #if defined(XETHRU_PARTICLE)
   // For every loop we check to see if we have received any respiration data
+  #if defined(XETHRU_PARTICLE)
   checkXethru();
   delay(1000);
   #endif

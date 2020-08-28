@@ -23,6 +23,9 @@
 
 //***************************macro defines******************************
 
+//EEPROM address to store configuration settings
+#define ADDR_XETHRUCONFIG 640
+
 //SERIAL PORTS:
 //These definitions work for Arduino Mega, but must be changed for other Arduinos.
 //* Note: Using Serial as SerialRadar seems to give a few CRC errors. I'm not seeing this 
@@ -100,18 +103,9 @@
 #define TX_BUF_LENGTH 64
 #define RX_BUF_LENGTH 64
 
-#define DATA_PER_MESSAGE 1
-
-#define STATE_NO_PRESENCE   0
-#define STATE_MOVEMENT      1
-#define STATE_BREATH_TRACK  2
-#define STATE_OD            3
-
-#define RPM_THRESHOLD 15
-
 //***************************global variable declarations******************************
 
-//these two could be local to setup() and loop() respectively, I think, but
+//send_buf and recv_buf could be local to setup() and loop() respectively, I think, but
 //easier to leave them as global (for now)
 extern unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
 extern unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
@@ -138,45 +132,49 @@ typedef struct RespirationMessage {
   float breathing_pattern;
 } RespirationMessage;
 
-//this struct is initialized with init_bundledRespriationMessages()
-//this struct is filled with data in loop() sub-function checkXethru()
-//and transmitted to cloud by calling publishXethruData() from checkXethru() 
-//Then it is reinitialized to "" by calling init_ function from publishXethruData()
-typedef struct bundledRespriationMessages{
-  char distance[500];
-  char rpm[500];
-  char breaths[500];
-  char slow[500];
-  char fast[500];
-  char x_state[500];
-} bundledRespirationMessages;
-
 //***************************function declarations***************
 
+//console functions
+int get_configuration_values(String command);
+
+//loop() functions and sub-functions:
 void checkXethru();
+int get_respiration_data(RespirationMessage* resp_msg);
+void publishXethruData(RespirationMessage* message);
+
+//setup() functions and sub-functions:
+void xethruSetup();
+XeThruConfigSettings init_XeThruConfigSettings();
 void xethru_reset();
 void xethru_configuration(XeThruConfigSettings* config_settings);
-int get_configuration_values(String command);
-void publishXethruData(bundledRespirationMessages* bulkMessages);
-int get_respiration_data(RespirationMessage* resp_msg);
+
+//called from init_XeThruConfigSettings():
+void initOriginals(XeThruConfigSettings* xethruConfig);
+//called from console function and init_XeThruConfigSettings():
+void writeXethruToFlash(XeThruConfigSettings* xethruConfig);
+XeThruConfigSettings readXethruFromFlash();
+
+//called from xethru_configuration():
+void wait_for_ready_message();
 void stop_module();
-void set_sensitivity(uint32_t sensitivity);
-void set_detection_zone(float zone_start, float zone_end);
-void run_profile();
 void set_debug_level();
-void set_led_control(uint32_t control);
 void load_profile(uint32_t profile);
 void configure_noisemap(uint32_t code);
+void set_led_control(uint32_t control);
+void set_detection_zone(float zone_start, float zone_end);
+void set_sensitivity(uint32_t sensitivity);
 void enable_output_message(uint32_t message);
 void disable_output_message(uint32_t message);
-void errorPublish(String message);
-void wait_for_ready_message();
-void get_ack();
-void send_command(int len);
-int receive_data();
-void init_XeThruConfigSettings(XeThruConfigSettings* originals);
-void xethruSetup();
-void init_bundledRespriationMessages(bundledRespriationMessages* messages);
+void run_profile();
 
+//called from most of the xethru_configuration() sub-functions:
+void send_command(int len);
+void get_ack();
+
+//called from get_ack() and receive_data():
+void errorPublish(String message);
+
+//called from get_respiration_data(), wait_for_ready_message(), get_ack()
+int receive_data();
 
 #endif

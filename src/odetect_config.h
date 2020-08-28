@@ -29,8 +29,8 @@
 
 //*************global settings*****************
 
-#define DOOR_PARTICLE
-//#define XETHRU_PARTICLE
+//#define DOOR_PARTICLE
+#define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
 #define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
@@ -38,7 +38,7 @@
 //*************Wifi Settings*******************
 
 //writes original ssid/passwords to flash - see documentation for when and how to use this
-//#define WRITE_ORIGINALS  
+//#define WRITE_ORIGINAL_WIFI  
 
 //set initial SSID/password pairs here
 //always use the "" string format
@@ -66,6 +66,8 @@
 #define DOORID_BYTE3 0x27
 
 //************XeThru Settings**************
+
+//#define WRITE_ORIGINAL_XETHRU
 
 #define LOCATIONID "HeidiTest"
 #define DEVICEID "H"

@@ -190,7 +190,7 @@ void wifiCredsSetup(){
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
   //on new boards, note 0xFFFF does not correspond to any ASCII chars
-  #if defined(WRITE_ORIGINALS)
+  #if defined(WRITE_ORIGINAL_WIFI)
   EEPROM.put(ADDRSSIDS,0xFFFF);
   #endif
 
@@ -208,7 +208,7 @@ void wifiCredsSetup(){
     readWifiFromFlash();
   }
 
-  #if defined(WRITE_ORIGINALS)
+  #if defined(WRITE_ORIGINAL_WIFI)
   readWifiFromFlash();
   #endif
 
