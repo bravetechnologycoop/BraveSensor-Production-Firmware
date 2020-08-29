@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 // Written by: �yvind Nydal Dahl
 // Company: XeThru / Novelda
@@ -11,11 +12,33 @@
 // 
 
 
+=======
+/*
+ * 
+ * XeThru libraries:
+ * Written by: �yvind Nydal Dahl
+ * Company: XeThru / Novelda
+ * July 2018
+ * 
+ * Original code to read data from XeThru and transmit to 
+ * Particle cloud written by Sampath Satti, Wayne Ng, and Sajan Rajdev.
+ * 
+ * XeThru code upgraded to be scaleable by Heidi Fedorak:
+ *    -established separate .h and .cpp files for XeThru code
+ *    -redefined global variables appropriately
+ *    -established odetect_config.h file for all global defines
+ *    -removed delay(1000) and adapted PublishData() to control
+ *     rate of messages being published to the cloud
+ * 
+ * 
+ */
+>>>>>>> IM21BLE
 
 
 //*************************defines and global variables that need to be altered during setup*************************
 
 #define USE_SERIAL  //when used, displays serial debugging messages
+<<<<<<< HEAD
 
 char locationid[] = "HeidiTest";
 char deviceid[] = "H";
@@ -25,6 +48,26 @@ char devicetype[] = "XeThru";
 
 //***************************macro defines******************************
 
+=======
+#define LOCATIONID "HeidiTest"
+#define DEVICEID "H"
+#define DEVICETYPE "XeThru"
+
+// XeThru configuration variables
+#define XETHRU_LED_SETTING 0
+#define XETHRU_NOISEMAP_SETTING 0
+#define XETHRU_SENSITIVITY_SETTING 5
+#define XETHRU_MIN_DETECT_SETTING 0.5
+#define XETHRU_MAX_DETECT_SETTING 4
+
+//***************************macro defines******************************
+
+//SERIAL PORTS:
+//These definitions work for Arduino Mega, but must be changed for other Arduinos.
+//* Note: Using Serial as SerialRadar seems to give a few CRC errors. I'm not seeing this 
+//  using Serial1, Serial2, or Serial3. Could probably be solved by changing baud rate)
+
+>>>>>>> IM21BLE
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
@@ -106,6 +149,7 @@ char devicetype[] = "XeThru";
 
 #define RPM_THRESHOLD 15
 
+<<<<<<< HEAD
 
 
 //***************************global variables******************************
@@ -125,10 +169,42 @@ float min_detect = 0.5;
 float max_detect = 4;   
 
 // Struct to hold respiration message from radar
+=======
+//***************************global variables******************************
+
+//used in send_command() and all the xethru_configuration() sub-functions
+unsigned char send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
+
+//see logbook notes for where this is used, this one is complicated
+//might be easier to leave as global
+unsigned char recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
+
+
+
+// struct to contain XeThru configuration variables
+// initialized in setup() by calling init_XeThruConfigSettings()
+// initial values set by programmer in odetect_config.h defines
+// can be updated via particle console function, so I believe
+// this needs to be a global struct
+typedef struct XeThruConfigSettings{
+
+  int led; 
+  int noisemap;
+  int sensitivity; 
+  float min_detect;
+  float max_detect; 
+
+ } XeThruConfigSettings;
+
+
+// Struct to hold respiration message from radar
+// I believe this needs to be a global struct - confirm, are they used in setup()?
+>>>>>>> IM21BLE
 typedef struct RespirationMessage {
   uint32_t state_code;
   float rpm;
   float distance;
+<<<<<<< HEAD
   uint32_t signal_quality;
   float movement_slow;
   float movement_fast;
@@ -151,12 +227,39 @@ int charging = FALSE;
 
 double rssi;
 
+=======
+  uint32_t signal_quality;  //this is filled from xethru data but never published or used anywhere
+  float movement_slow;
+  float movement_fast;
+  float breathing_pattern;
+} RespirationMessage;
+
+// Initialize arrays and variables
+//these are filled with data in loop(), transmitted to cloud and re-set to "" in publishData()
+//they are not called from setup() so they don't have to be global.
+//this makes more sense as a struct which can be initialized in loop()
+//could combine with struct above, or could make it a "bulk message" struct?
+char distance[500] = "";
+char rpm[500] = "";
+//breaths -> breathing pattern
+char breaths[500] = "";
+//slow -> movement slow
+char slow[500] = "";
+//fast -> movement fast
+char fast[500] = "";
+//x_state -> state_code
+char x_state[500] = "";
+>>>>>>> IM21BLE
 
 //***************************function declarations***************
 
 
 void xethru_reset();
+<<<<<<< HEAD
 void xethru_configuration();
+=======
+void xethru_configuration(XeThruConfigSettings* config_settings);
+>>>>>>> IM21BLE
 int get_configuration_values(String command);
 void publishData();
 int get_respiration_data(RespirationMessage* resp_msg);
@@ -175,6 +278,10 @@ void wait_for_ready_message();
 void get_ack();
 void send_command(int len);
 int receive_data();
+<<<<<<< HEAD
+=======
+void init_XeThruConfigSettings(XeThruConfigSettings* originals);
+>>>>>>> IM21BLE
 
 
 //***************************XeThru functions**********************************
@@ -191,11 +298,19 @@ void xethru_reset() {
   digitalWrite(RESET_PIN, LOW);
   delay(100);
   digitalWrite(RESET_PIN, HIGH);
+<<<<<<< HEAD
+=======
+
+>>>>>>> IM21BLE
 }
 
 
 
+<<<<<<< HEAD
 void xethru_configuration() {
+=======
+void xethru_configuration(XeThruConfigSettings &xethruConfig) {
+>>>>>>> IM21BLE
 
   // Set up serial communication
   SerialRadar.begin(115200);
@@ -214,6 +329,7 @@ void xethru_configuration() {
   load_profile(XTS_ID_APP_RESPIRATION_2);
 
    // Configure the noisemap
+<<<<<<< HEAD
   configure_noisemap(noisemap);
   
   // Set LED control
@@ -224,6 +340,18 @@ void xethru_configuration() {
 
   // Set sensitivity
   set_sensitivity(sensitivity);
+=======
+  configure_noisemap(xethruConfig.noisemap);
+  
+  // Set LED control
+  set_led_control(xethruConfig.led); // 0: OFF; 1: SIMPLE; 2: FULL
+
+  // Set detection zone
+  set_detection_zone(xethruConfig.min_detect, xethruConfig.max_detect); // First variable = Lower limit, Second variable = Upper limit
+
+  // Set sensitivity
+  set_sensitivity(xethruConfig.sensitivity);
+>>>>>>> IM21BLE
 
 
   // Enable only the Sleep message, disable all others
@@ -238,6 +366,7 @@ void xethru_configuration() {
 
 
 
+<<<<<<< HEAD
 
 int get_configuration_values(String command) { // command is a long string with all the config values
     // Parse the command
@@ -271,6 +400,44 @@ int get_configuration_values(String command) { // command is a long string with 
     */
     
     return 1;
+=======
+//function called in particle console to get new xethru config values
+int get_configuration_values(String command) { // command is a long string with all the config values
+
+  XeThruConfigSettings newConfig;
+
+  // Parse the command
+  int split1 = command.indexOf(',');
+  newConfig.led = command.substring(0,split1).toInt();
+  int split2 = command.indexOf(',', split1+1);
+  newConfig.noisemap = command.substring(split1+1,split2).toInt();
+  int split3 = command.indexOf(',', split2+1);
+  newConfig.sensitivity = command.substring(split2+1,split3).toInt();
+  int split4 = command.indexOf(',', split3+1);
+  newConfig.min_detect = command.substring(split3+1,split4).toFloat();
+  int split5 = command.indexOf(',', split4+1);
+  newConfig.max_detect = command.substring(split4+1,split5).toFloat();
+
+  Particle.publish("min_detect", String(newConfig.min_detect));
+  Particle.publish("max_detect", String(newConfig.max_detect));
+
+  xethru_reset();
+  xethru_configuration(&newConfig);
+  
+  /*
+  //Saves the values into the EEPROM so it is initialized with the most recent values if the Photon gets reset
+  //sets a value for the first EEPROM byte so it does not use default values if reset
+  EEPROM.put(1, 5);
+  //each of the variables is 4 bytes long
+  EEPROM.put(2, led);
+  EEPROM.put(6, noisemap);
+  EEPROM.put(10, sensitivity);
+  EEPROM.put(14, min_detect);
+  EEPROM.put(18, max_detect);
+  */
+  
+  return 1;
+>>>>>>> IM21BLE
 }
 
 
@@ -284,6 +451,7 @@ int get_configuration_values(String command) { // command is a long string with 
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishData() {
 
+<<<<<<< HEAD
     char buf[1024];
     // The data values can't be inserted on the publish message so it must be printed into a buffer first.
     // The backslash is used as an escape character for the quotation marks.
@@ -305,6 +473,36 @@ void publishData() {
     strcpy(slow, "");
     strcpy(fast, "");
     strcpy(x_state, "");
+=======
+  //these are used in publishData() only, they can be moved there
+  char locationid[] = LOCATIONID;
+  char deviceid[] = DEVICEID;
+  char devicetype[] = DEVICETYPE;
+
+  char buf[1024];
+  // The data values can't be inserted on the publish message so it must be printed into a buffer first.
+  // The backslash is used as an escape character for the quotation marks.
+    
+  //	snprintf(buf, sizeof(buf), "{\"a\":%d, \"b\":%s}", data, *data);
+	snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%s\", \"distance\":\"%s\", \"rpm\":\"%s\", \"slow\":\"%s\", \"fast\":\"%s\", \"state\":\"%s\"}", devicetype, locationid, deviceid, distance, rpm, slow, fast, x_state);
+  //	snprintf(buf, sizeof(buf), "{\"distance\":\"%s\", \"rpm\":\"%s\", \"breaths\":\"%s\"}", distance, rpm, breaths);
+  //	Serial.printlnf("publishing %s", buf);
+  //	Particle.publish("XeThru", buf, PRIVATE);
+
+
+  Particle.publish("XeThru", buf, PRIVATE);
+
+  //Particle.publish("data", String(data));
+  //strcpy(data1, "");
+  
+  //Clears the data arrays to be filled again
+  strcpy(rpm, "");
+  strcpy(distance, "");
+  strcpy(breaths, "");
+  strcpy(slow, "");
+  strcpy(fast, "");
+  strcpy(x_state, "");
+>>>>>>> IM21BLE
 }
 
 
@@ -704,9 +902,15 @@ int receive_data() {
     }
 
     // Wait 10 ms if nothing is available yet
+<<<<<<< HEAD
     if (!SerialRadar.available())
       delay(10);
   }
+=======
+    if (!SerialRadar.available())  delay(10);
+
+  } //endwhile
+>>>>>>> IM21BLE
 
   // Wait 10 ms if nothing is available yet
   if (!SerialRadar.available())
@@ -796,4 +1000,17 @@ int receive_data() {
     SerialDebug.println(recv_buf[recv_len-2], HEX);
     return -1; // Return -1 upon crc failure
   } 
+<<<<<<< HEAD
+=======
+}
+
+void init_XeThruConfigSettings(XeThruConfigSettings &xethruConfig){
+
+  xethruConfig.led = XETHRU_LED_SETTING;
+  xethruConfig.noisemap = XETHRU_NOISEMAP_SETTING;
+  xethruConfig.sensitivity = XETHRU_SENSITIVITY_SETTING;
+  xethruConfig.min_detect = XETHRU_MIN_DETECT_SETTING;
+  xethruConfig.max_detect = XETHRU_MAX_DETECT_SETTING;
+
+>>>>>>> IM21BLE
 }
