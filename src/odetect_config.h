@@ -49,11 +49,15 @@
 #define CLIENTSSID1 "Testbed"
 #define CLIENTSSID2 "ClientSSID1"
 #define CLIENTSSID3 "ClientSSID1"
+//pasword needed to publish SSIDs in flash to the cloud
+#define PASSWORD_FOR_SSIDS "testing"
 
 #define CLIENTPWD0 "fireweed"
 #define CLIENTPWD1 "fireweed5"
 #define CLIENTPWD2 "ClientPWD1"
 #define CLIENTPWD3 "ClientPWD1"
+//pasword needed to publish passwords in flash to the cloud
+#define PASSWORD_FOR_PASSWORDS "testing"
 
 //*************Bluetooth Door Sensor Settings***********
 

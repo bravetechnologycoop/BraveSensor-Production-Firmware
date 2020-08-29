@@ -24,32 +24,42 @@ char myPasswords[5][MAXLEN] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "
 //connects to one of 5 stored wifi networks
 void connectToWifi(){
 
-  //turn off wifi module
+  time_t disconnectCounter = Time.now();
+
+  //store the number of times object needs to be written to flash
+  int wifiLogCount = readWifiLogFromFlash();
+  wifiLogCount++;
+  writeWifiLogToFlash(wifiLogCount);
+
+  #if defined(SERIAL_DEBUG)
+  SerialDebug.println("Wifi connection lost, attempting reconnect");
+  SerialDebug.printlnf("wifiLogCount = %i", wifiLogCount);
+  #endif
+
+
+  //disconnect from cloud and then turn off wifi module
+  Particle.disconnect();
   WiFi.off();
-
-  //clears credentials from any previously connected networks
   WiFi.clearCredentials();
-
-  //turn on wifi module
   WiFi.on();
+  //wait for module to turn on, and for any recently changed network
+  //to be able to accept new connections
+  delay(15000);
 
-  //store these credentials in temporary memory, specifically in an object of type
+  //set current credentials in temporary memory, specifically in an object of type
   //WiFiCredentials. Look at source code to understand objects as there are 
   //no docs on them.
   for(int i = 0; i < 5; i++){
-
     #if defined(SERIAL_DEBUG)
     time_t timeStarted = Time.now();
     SerialDebug.print("Setting credential set: ");
-    SerialDebug.println(i+1);
+    SerialDebug.println(i);
     SerialDebug.println(mySSIDs[i]);
     SerialDebug.println(myPasswords[i]);
     #endif
 
     WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
-
     WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
-    
     //wait for wifi to connect or for 15 seconds, whichever is sooner
     waitFor(WiFi.ready, 15000);  
 
@@ -57,14 +67,25 @@ void connectToWifi(){
     if(WiFi.ready()) {
       #if defined(SERIAL_DEBUG)
       SerialDebug.println("Connected to wifi.");
-      SerialDebug.printlnf("Connected at %s (Time.now() %d seconds, connection process took %d seconds).\n", Time.timeStr().c_str(), Time.now(), Time.now() - timeStarted);
+      SerialDebug.printlnf("connection process took %d seconds.\n", Time.now() - timeStarted);
+      SerialDebug.printlnf("Now wait 10s for cloud connection to re-establish");
+      #endif
+      //if we're re-connected, also reconnect to cloud
+      Particle.connect();
+      //pause for a few moments to allow reconnection
+      delay(10000);
+      char buffer[1024];
+      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect (s)\":\"%lu\"}", Time.now()-disconnectCounter);
+      Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
+      #if defined(SERIAL_DEBUG)
+      SerialDebug.println(buffer);
       #endif
       //if we're connected, stop trying credentials
       break;
     } else {
       #if defined(SERIAL_DEBUG)
       SerialDebug.println("***Failed to connect to wifi***");
-      SerialDebug.printlnf("WARNING: connection failed at %s (Time.now() %d seconds, timeout was %d seconds).\n", Time.timeStr().c_str(), Time.now(), Time.now() - timeStarted);
+      SerialDebug.printlnf("Connection timeout was %d seconds.\n", Time.now() - timeStarted);
       #endif
       //else not connected, so continue on to next set of credentials
       continue;
@@ -74,6 +95,21 @@ void connectToWifi(){
 
 }  //end connectToWifi()
 
+void writeWifiLogToFlash(int wifiLogCount) {
+
+  //EEPROM.put() will compare object data to data currently in EEPROM
+  //to avoid re-writing values that haven't changed
+  EEPROM.put(ADDR_CONNECT_LOG,wifiLogCount);  
+
+}
+
+int readWifiLogFromFlash() {
+
+  int holder;
+  EEPROM.get(ADDR_CONNECT_LOG,holder); 
+
+  return holder;
+}
 
 void writeWifiToFlash() {
 
@@ -91,6 +127,29 @@ void readWifiFromFlash() {
 
 }
 
+
+int wifiLog(String logCommand){
+
+  int returnFlag = -1;
+  const char* command = logCommand.c_str();
+
+  if(*command == 'e'){
+    //if e = echo, function returns the log int
+    returnFlag = readWifiLogFromFlash();
+  } else if (*command == 'c') {
+    //if c = clear, reset the log int to 0
+    writeWifiLogToFlash(0);
+    returnFlag = readWifiLogFromFlash();
+  } else {
+    //bad input, return -1
+    returnFlag = -1;
+  }
+
+  return returnFlag;
+
+}
+
+
 //change wifi SSID from the cloud
 
 //A cloud function is set up to take one argument of the String datatype. 
@@ -102,7 +161,20 @@ void readWifiFromFlash() {
 int setWifiSSID(String newSSID){
 
   const char* indexHolder = newSSID.c_str(); 
+  
+  //compare input to password
+  const char* printSSIDs = PASSWORD_FOR_SSIDS;
+  int test = strcmp(indexHolder,printSSIDs);
+  //if input matches password, print SSIDs to cloud
+  if(test == 0){
+    readWifiLogFromFlash();
+    char holder[640];
+	  snprintf(holder, sizeof(holder), "{\"mySSIDs[0]\":\"%s\", \"mySSIDs[1]\":\"%s\", \"mySSIDs[2]\":\"%s\", \"mySSIDs[3]\":\"%s\", \"mySSIDs[4]\":\"%s\", \"connected to:\":\"%s\"}", 
+            mySSIDs[0], mySSIDs[1], mySSIDs[2], mySSIDs[3], mySSIDs[4],WiFi.SSID());
+    Particle.publish("echo SSIDs", holder, PRIVATE);
+  }
 
+  //if input doesn't match password, check first char of string for index digit
   //can't use atoi() because if it fails it returns 0
   //so we don't know if we accidentally entered a string that 
   //starts with a non-integer, or if we've entered a string that
@@ -148,6 +220,19 @@ int setWifiPwd(String newPwd){
 
   const char* indexHolder = newPwd.c_str(); 
 
+  //compare input to password
+  const char* printPwds = PASSWORD_FOR_SSIDS;
+  int test = strcmp(indexHolder,printPwds);
+  //if input matches password, print SSIDs to cloud
+  if(test == 0){
+    readWifiLogFromFlash();
+    char holder[640];
+	  snprintf(holder, sizeof(holder), "{\"myPasswords[0]\":\"%s\", \"myPasswords[1]\":\"%s\", \"myPasswords[2]\":\"%s\", \"myPasswords[3]\":\"%s\", \"myPasswords[4]\":\"%s\", \"connected to:\":\"%s\"}", 
+            myPasswords[0], myPasswords[1], myPasswords[2], myPasswords[3], myPasswords[4], WiFi.SSID());
+    Particle.publish("echo wifi passwords", holder, PRIVATE);
+  }  
+
+  //if input doesn't match password, check first char of string for index digit
   //can't use atoi because if it fails it returns 0
   //so we don't know if we accidentally entered a string that 
   //starts with a non-integer, or if we've entered a string that
@@ -190,10 +275,6 @@ void wifiCredsSetup(){
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
   //on new boards, note 0xFFFF does not correspond to any ASCII chars
-  #if defined(WRITE_ORIGINAL_WIFI)
-  EEPROM.put(ADDRSSIDS,0xFFFF);
-  #endif
-
   uint16_t checkForContent;
   EEPROM.get(ADDRSSIDS,checkForContent);
 
@@ -204,11 +285,16 @@ void wifiCredsSetup(){
   //so we read from flash and then connect to those credentials  
   if(checkForContent == 0xFFFF) {
     writeWifiToFlash();
+    writeWifiLogToFlash(0);
   } else {
     readWifiFromFlash();
   }
 
+  //if not new Particle, and we want to overwrite flash with original wifi
+  //credentials and re-initialize log, we set this define in odetect_config.h
   #if defined(WRITE_ORIGINAL_WIFI)
+  writeWifiToFlash();
+  writeWifiLogToFlash(0);
   readWifiFromFlash();
   #endif
 

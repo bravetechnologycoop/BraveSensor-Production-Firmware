@@ -24,7 +24,7 @@
 //***************************macro defines******************************
 
 //EEPROM address to store configuration settings
-#define ADDR_XETHRUCONFIG 640
+#define ADDR_XETHRUCONFIG 655
 
 //SERIAL PORTS:
 //These definitions work for Arduino Mega, but must be changed for other Arduinos.
@@ -135,7 +135,7 @@ typedef struct RespirationMessage {
 //***************************function declarations***************
 
 //console functions
-int get_configuration_values(String command);
+int xethruConfigValesFromConsole(String command);
 
 //loop() functions and sub-functions:
 void checkXethru();

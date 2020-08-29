@@ -94,8 +94,8 @@ void publishXethruData(RespirationMessage* message) {
   char buf[1024];
   // The data values can't be inserted on the publish message so it must be printed into a buffer first.
   // The backslash is used as an escape character for the quotation marks.
-	snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%s\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
-            devicetype, locationid, deviceid, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
+  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%s\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
+        devicetype, locationid, deviceid, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
 
   Particle.publish("XeThru", buf, PRIVATE);  
 }
@@ -107,9 +107,9 @@ void publishXethruData(RespirationMessage* message) {
 void xethruSetup(){
 
   pinMode(D6, INPUT_PULLUP); 
-  LEDSystemTheme theme; // Enable custom theme
-  theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
-  theme.apply(); // Apply theme settings 
+  //LEDSystemTheme theme; // Enable custom theme
+  //theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
+  //theme.apply(); // Apply theme settings 
 	
   XeThruConfigSettings xethruConfig;
 
@@ -218,39 +218,49 @@ void xethru_configuration(XeThruConfigSettings* configSettings) {
 /*****************particle console functions********************************/
 
 //particle console function to get new xethru config values
-int get_configuration_values(String command) { // command is a long string with all the config values
+int xethruConfigValesFromConsole(String command) { // command is a long string with all the config values
 
-  XeThruConfigSettings newConfig;
-
-  // Parse the command
-  // command is in the form "led,noisemap,sensitivity,min_detect,max_detect"
-  // where variable names are replaced with appropriate numbers
-  // "1, 2, 3, 2.5, 3.5"
-  int split1 = command.indexOf(',');
-  newConfig.led = command.substring(0,split1).toInt();
-  int split2 = command.indexOf(',', split1+1);
-  newConfig.noisemap = command.substring(split1+1,split2).toInt();
-  int split3 = command.indexOf(',', split2+1);
-  newConfig.sensitivity = command.substring(split2+1,split3).toInt();
-  int split4 = command.indexOf(',', split3+1);
-  newConfig.min_detect = command.substring(split3+1,split4).toFloat();
-  int split5 = command.indexOf(',', split4+1);
-  newConfig.max_detect = command.substring(split4+1,split5).toFloat();
-
-  writeXethruToFlash(&newConfig);
-
-   #if defined(SERIAL_DEBUG)
-   //did it get written correctly?
-   XeThruConfigSettings holder = readXethruFromFlash();
-    SerialDebug.println("xethruConfig after console function called:");
-    SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+  const char* checkForEcho = command.c_str();
+  if(*checkForEcho == 'e'){
+    XeThruConfigSettings holder = readXethruFromFlash();
+    char buffer[512];
+    snprintf(buffer, sizeof(buffer), "{\"led\":\"%d\", \"max_detect\":\"%f\", \"min_detect\":\"%f\", \"noisemap\":\"%d\", \"sensitivity\":\"%d\"}", 
             holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
-  #endif 
+    Particle.publish("Current Xethru config settings",buffer,PRIVATE);
+  } else //else we have a command to parse
+  {
+    // command is in the form "led,noisemap,sensitivity,min_detect,max_detect"
+    // where variable names are replaced with appropriate numbers
+    // 1, 2, 3, 2.5, 3.5
+    XeThruConfigSettings newConfig;
+    int split1 = command.indexOf(',');
+    newConfig.led = command.substring(0,split1).toInt();
+    int split2 = command.indexOf(',', split1+1);
+    newConfig.noisemap = command.substring(split1+1,split2).toInt();
+    int split3 = command.indexOf(',', split2+1);
+    newConfig.sensitivity = command.substring(split2+1,split3).toInt();
+    int split4 = command.indexOf(',', split3+1);
+    newConfig.min_detect = command.substring(split3+1,split4).toFloat();
+    int split5 = command.indexOf(',', split4+1);
+    newConfig.max_detect = command.substring(split4+1,split5).toFloat();
 
-  xethru_reset();
-  xethru_configuration(&newConfig);
-   
+    
+    writeXethruToFlash(&newConfig);
+
+    #if defined(SERIAL_DEBUG)
+    //did it get written correctly?
+    XeThruConfigSettings holder = readXethruFromFlash();
+      SerialDebug.println("xethruConfig after console function called:");
+      SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+              holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
+    #endif 
+
+    xethru_reset();
+    xethru_configuration(&newConfig);
+  } //end if-else
+
   return 1;
+
 }
 
 /**********sub-functions for all of the above***************/

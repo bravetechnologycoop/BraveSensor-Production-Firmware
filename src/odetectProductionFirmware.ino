@@ -73,9 +73,10 @@ void setup() {
   //particle console function declarations, belongs in setup() as per docs
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
+  Particle.function("getWifiLog", wifiLog);       //wifi code
 
   #if defined(XETHRU_PARTICLE)
-  Particle.function("config", get_configuration_values); //XeThru code
+  Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
   #endif
 
   //see odetect_config.h for info on manual mode

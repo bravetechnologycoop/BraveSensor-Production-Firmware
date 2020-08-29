@@ -17,6 +17,7 @@
 //addresses of the start locations in EEPROM for the 5 SSID/password pairs
 #define ADDRSSIDS 0
 #define ADDRPWDS 320
+#define ADDR_CONNECT_LOG 645
 //max string length of any SSID or password (including null char)
 #define MAXLEN 64
 
@@ -38,5 +39,8 @@ void writeWifiToFlash();
 void readWifiFromFlash(); 
 void initializeOriginalWifiCreds();
 void wifiCredsSetup();
+void writeWifiLogToFlash(int wifiLogCount);
+int readWifiLogFromFlash();
+int wifiLog(String logCommand);
 
 #endif
