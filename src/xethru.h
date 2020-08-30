@@ -23,8 +23,7 @@
 
 //***************************macro defines******************************
 
-//EEPROM address to store configuration settings
-#define ADDR_XETHRUCONFIG 655
+
 
 //SERIAL PORTS:
 //These definitions work for Arduino Mega, but must be changed for other Arduinos.

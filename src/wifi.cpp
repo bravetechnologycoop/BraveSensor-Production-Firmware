@@ -75,7 +75,7 @@ void connectToWifi(){
       //pause for a few moments to allow reconnection
       delay(10000);
       char buffer[1024];
-      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect (s)\":\"%lu\"}", Time.now()-disconnectCounter);
+      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%lu\"}", Time.now()-disconnectCounter);
       Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
       #if defined(SERIAL_DEBUG)
       SerialDebug.println(buffer);

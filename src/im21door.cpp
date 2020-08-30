@@ -3,10 +3,127 @@
 #include "odetect_config.h"
 #include "im21door.h"
 
-//******************global variable initialization*******************
+
+/**********global variables********************/
+
+//not defined as extern so "global" to this file only
+IM21DoorIDStruct CurrentDoorID;
 
 
-//****************IM21 BLE door sensor functions****************
+
+
+/*****************particle console functions********************************/
+
+//particle console function to get/set door sensor ID
+int doorSensorIDFromConsole(String command) { // command is a long string with all the config values
+
+  const char* checkForEcho = command.c_str();
+  if(*checkForEcho == 'e'){
+    IM21DoorIDStruct holder = readDoorIDFromFlash();
+    char buffer[512];
+    snprintf(buffer, sizeof(buffer), "{\"byte1\":\"%02X\", \"byte2\":\"%02X\", \"byte3\":\"%02X\"}", 
+            holder.byte1,holder.byte2,holder.byte3); 
+    Particle.publish("Current door sensor ID: ",buffer,PRIVATE);
+  } else //else we have a command to parse
+  {
+    const char* byteholder1;
+    const char* byteholder2;
+    const char* byteholder3;
+    int split1 = command.indexOf(',');
+    byteholder1 = command.substring(0,split1).c_str();
+    CurrentDoorID.byte1 = (uint8_t)strtol(byteholder1,NULL,16);
+    int split2 = command.indexOf(',', split1+1);
+    byteholder2 = command.substring(split1+1,split2).c_str();
+    CurrentDoorID.byte2 = (uint8_t)strtol(byteholder2,NULL,16);
+    int split3 = command.indexOf(',', split2+1);
+    byteholder3 = command.substring(split2+1,split3).c_str();
+    CurrentDoorID.byte3 = (uint8_t)strtol(byteholder3,NULL,16);
+
+    writeDoorIDToFlash(&CurrentDoorID);
+  
+    #if defined(SERIAL_DEBUG)
+    //did it get written correctly?
+    IM21DoorIDStruct holder = readDoorIDFromFlash();
+    SerialDebug.println("Contents of flash after console function called:");
+    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",holder.byte1,holder.byte2,holder.byte3); 
+    //did it get copied to CurrentDoorID correctly?
+    SerialDebug.println("Door Sensor ID after console function called:");
+    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);     
+    #endif 
+
+  } //end if-else
+
+  return 1;
+
+}
+
+
+
+
+//********************setup() functions*************************/
+//called from Setup()
+void doorSensorSetup(){
+
+   //read the first two bytes of memory. Particle docs say all
+  //bytes of flash initialized to OxF. First two bytes are 0xFFFF
+  //on new boards, note 0xFFFF does not correspond to any ASCII chars
+
+  uint16_t checkForContent;
+  EEPROM.get(ADDR_IM21DOORID,checkForContent);
+  //if memory has not been written to yet, write the original settings
+  //If memory has been written to then console function to update 
+  //settings has been called before, so read what was written there
+  if(checkForContent == 0xFFFF) {
+    initOriginals(&CurrentDoorID);
+    writeDoorIDToFlash(&CurrentDoorID);
+  } else {
+    CurrentDoorID = readDoorIDFromFlash();
+  }
+
+  #if defined(WRITE_ORIGINAL_DOORID)
+  initOriginals(&CurrentDoorID);
+  writeDoorIDToFlash(&CurrentDoorID);
+  CurrentDoorID = readDoorIDFromFlash();
+  #endif
+
+  #if defined(SERIAL_DEBUG)
+    SerialDebug.println("DoorID at end of setup() is:");
+    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",
+            CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);
+  #endif
+
+}
+
+//doorSensorSetup() sub-functions
+void initOriginals(IM21DoorIDStruct* structToInitialize){
+
+  structToInitialize->byte1 = DOORID_BYTE1;
+  structToInitialize->byte2 = DOORID_BYTE2;
+  structToInitialize->byte3 = DOORID_BYTE3;
+
+}
+
+void writeDoorIDToFlash(IM21DoorIDStruct* structPtr) {
+
+  //EEPROM.put() will compare object data to data currently in EEPROM
+  //to avoid re-writing values that haven't changed
+  //passing put() dereferenced pointer to door ID struct
+  EEPROM.put(ADDR_IM21DOORID,*structPtr);  
+
+}
+
+IM21DoorIDStruct readDoorIDFromFlash() {
+
+  IM21DoorIDStruct holder;
+  EEPROM.get(ADDR_IM21DOORID,holder);
+  return holder;  
+
+}
+
+
+
+//**********************loop() functions**************************/
+
 
 //initiates 500ms ble scan for advertising data from door sensor with DOORID specified in odetect_config.h
 //if duplicated data is detected, return -2
@@ -44,7 +161,7 @@ int checkDoor(){
     //place advertising data in doorAdvertisingData buffer array
     scanResults[ii].advertisingData.get(BleAdvertisingDataType::MANUFACTURER_SPECIFIC_DATA, doorAdvertisingData, BLE_MAX_ADV_DATA_LEN);
     //if advertising data contains door sensor's device ID, extract door status and publish it
-    if(doorAdvertisingData[1] == DOORID_BYTE1 && doorAdvertisingData[2] == DOORID_BYTE2 && doorAdvertisingData[3] == DOORID_BYTE3){
+    if(doorAdvertisingData[1] == CurrentDoorID.byte1 && doorAdvertisingData[2] == CurrentDoorID.byte2 && doorAdvertisingData[3] == CurrentDoorID.byte3){
 
       //load the door sensor's current control flag
       currentControl = doorAdvertisingData[6];

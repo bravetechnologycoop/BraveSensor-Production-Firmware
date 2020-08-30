@@ -147,6 +147,9 @@ XeThruConfigSettings init_XeThruConfigSettings(){
   }
 
   #if defined(WRITE_ORIGINAL_XETHRU)
+  XeThruConfigSettings holder;
+  initOriginals(&holder);
+  writeXethruToFlash(&holder);
   xethruConfig = readXethruFromFlash();
   #endif
 
@@ -244,15 +247,14 @@ int xethruConfigValesFromConsole(String command) { // command is a long string w
     int split5 = command.indexOf(',', split4+1);
     newConfig.max_detect = command.substring(split4+1,split5).toFloat();
 
-    
     writeXethruToFlash(&newConfig);
 
     #if defined(SERIAL_DEBUG)
     //did it get written correctly?
     XeThruConfigSettings holder = readXethruFromFlash();
-      SerialDebug.println("xethruConfig after console function called:");
-      SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-              holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
+    SerialDebug.println("xethruConfig after console function called:");
+    SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+            holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
     #endif 
 
     xethru_reset();

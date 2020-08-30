@@ -14,10 +14,6 @@
 
 //*************************macro defines**********************************
 
-//addresses of the start locations in EEPROM for the 5 SSID/password pairs
-#define ADDRSSIDS 0
-#define ADDRPWDS 320
-#define ADDR_CONNECT_LOG 645
 //max string length of any SSID or password (including null char)
 #define MAXLEN 64
 

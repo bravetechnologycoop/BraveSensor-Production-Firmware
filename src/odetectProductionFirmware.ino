@@ -67,7 +67,10 @@ void setup() {
   #if defined(XETHRU_PARTICLE)
   xethruSetup();
   #endif
-  //doorSensorSetup() -> consists only of BLE.on, handled above
+  #if defined(DOOR_PARTICLE)
+  doorSensorSetup();
+  #endif
+
   wifiCredsSetup();
 
   //particle console function declarations, belongs in setup() as per docs
@@ -77,6 +80,9 @@ void setup() {
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
+  #endif
+  #if defined(DOOR_PARTICLE)
+  Particle.function("doorSensorID",doorSensorIDFromConsole);
   #endif
 
   //see odetect_config.h for info on manual mode
@@ -102,7 +108,7 @@ void loop() {
 
   #if defined(SERIAL_DEBUG)
   static int j = 1;
-  if (j <= 5) SerialDebug.print("you're looping");
+  if (j <= 1) SerialDebug.println("you're looping");
   j++;
   #endif
 

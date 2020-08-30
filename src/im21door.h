@@ -19,9 +19,27 @@
 
 
 //******************global variable declarations*******************
-
+typedef struct IM21DoorIDStruct {
+    uint8_t byte1;
+    uint8_t byte2;
+    uint8_t byte3;
+} IM21DoorIDStruct;
 
 //*************************function declarations*******************
+
+//console functions
+int doorSensorIDFromConsole(String command);
+
+//setup() functions
+void doorSensorSetup();
+//called from doorSensorSetup() and doorSensorIDFromConsole():
+void initOriginals(IM21DoorIDStruct* structToInitialize);
+void writeDoorIDToFlash(IM21DoorIDStruct* structPtr);
+IM21DoorIDStruct readDoorIDFromFlash();
+
+//loop() functions
 int checkDoor();
+
+
 
 #endif
