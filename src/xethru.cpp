@@ -17,7 +17,7 @@ void checkXethru(){
 
   static int i;
   RespirationMessage msg;
-  bundledRespirationMessages messages;
+  static bundledRespirationMessages messages;
 
   //set all char arrays in this struct = ""
   init_bundledRespriationMessages(&messages);
@@ -156,7 +156,6 @@ int get_configuration_values(String command) { // command is a long string with 
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishData(bundledRespirationMessages* bulkMessage) {
 
-  //these are used in publishData() only, they can be moved there
   char locationid[] = LOCATIONID;
   char deviceid[] = DEVICEID;
   char devicetype[] = DEVICETYPE;
@@ -172,6 +171,7 @@ void publishData(bundledRespirationMessages* bulkMessage) {
   //	Serial.printlnf("publishing %s", buf);
   //	Particle.publish("XeThru", buf, PRIVATE);
 
+  
 
   Particle.publish("XeThru", buf, PRIVATE);
 
