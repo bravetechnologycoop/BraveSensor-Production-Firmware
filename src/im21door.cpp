@@ -23,7 +23,7 @@ int doorSensorIDFromConsole(String command) { // command is a long string with a
     char buffer[512];
     snprintf(buffer, sizeof(buffer), "{\"byte1\":\"%02X\", \"byte2\":\"%02X\", \"byte3\":\"%02X\"}", 
             holder.byte1,holder.byte2,holder.byte3); 
-    Particle.publish("Current door sensor ID: ",buffer,PRIVATE);
+    Particle.publish("Current Door Sensor ID: ",buffer, PRIVATE);
   } else //else we have a command to parse
   {
     const char* byteholder1;
@@ -213,7 +213,7 @@ int checkDoor(){
     }
 
     if(doorWarning) {
-        String doorData = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\", \"warning\": \"First door event after powering on, or missed a door event!\" }",
+        String doorData = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\", \"warning\": \"Missed a door event, OR new doorID, OR Particle was rebooted.\" }",
                             doorAdvertisingData[1], doorAdvertisingData [2], doorAdvertisingData[3], doorAdvertisingData[5], doorAdvertisingData[6]);
         Particle.publish("Door Warning", doorData, PRIVATE);
         returnFlag = 0;
