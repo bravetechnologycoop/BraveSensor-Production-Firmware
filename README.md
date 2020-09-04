@@ -23,8 +23,8 @@ New development branch begun by Heidi Fedorak.  Feature branches for this develo
         - [Setting Client Wifi Credentials](#setting-client-wifi-credentials)
     - [Door Sensor Settings](#im21-bluetooth-door-sensor)
     - [Xethru Settings](#xethru-settings)
-        - [LOCATIONID, DEVICEID, DEVICETYPE](#)
-        - [CONFIGURATION VARIABLES](#configuration-variables)
+        - [locationID, deviceID, devicetype](#locationid-deviceid-devicetype)
+        - [Configuration Variables](#configuration-variables)
 3. [Console Function Instructions](#console-function-instructions)
     - [ChangeSSID(String)](#changessid(string))
     - [ChangePwd(String)](#changepwd(string))
@@ -153,7 +153,7 @@ The IM21 door sensors each have a sticker on them with their door IDs.  On the b
 
 ### XeThru Settings
 
-#### LOCATIONID, DEVICEID, DEVICETYPE
+#### locationID, deviceID, devicetype
 
 Each of these must be initialised to a string array containing the correct information for your particular install.
 
@@ -343,8 +343,6 @@ Information about the events the Particle firmware currently publishes to the cl
 **Event description:**  Publishes Xethru breath sensor information and data.  
 
 **Event data:**
-
-Sampath, are there any descriptions you want to add to this list?
 
 1. **devicetype** - “Xethru”
 2. **locationID** - UID corresponding to each bathroom and must batch with the row entry on the backend locations table. Current locationID entries look thus “REACH_1”, “REACH_3”, “EastsideWorks”.
