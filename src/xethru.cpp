@@ -522,7 +522,7 @@ void disable_output_message(uint32_t message)
 
 // Publishes an error message to be stored in database
 void errorPublish(String message) {
-    Particle.publish("Error", message, PRIVATE);
+    Particle.publish("Xethru Error", message, PRIVATE);
 }
 
 
