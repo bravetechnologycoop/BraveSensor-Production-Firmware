@@ -3,7 +3,7 @@
 /******************************************************/
 
 #include "Particle.h"
-#line 1 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 1 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 /*
  * Project odetectProductionFirmware
  * 
@@ -30,7 +30,7 @@
 
 void setup();
 void loop();
-#line 25 "/home/heidi/Documents/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 25 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -85,7 +85,7 @@ void setup() {
   //particle console function declarations, belongs in setup() as per docs
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
-  Particle.function("getWifiLog", wifiLog);       //wifi code
+  Particle.function("getWifiog", wifiLog);       //wifi code
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code

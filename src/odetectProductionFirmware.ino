@@ -64,6 +64,18 @@ void setup() {
     SerialDebug.println("**********BLE is ON*********");
   #endif
 
+  //particle console function declarations, belongs in setup() as per docs
+  Particle.function("changeSSID", setWifiSSID);  //wifi code
+  Particle.function("changePwd", setWifiPwd);    //wifi code
+  Particle.function("getWifiog", wifiLog);       //wifi code
+
+  #if defined(XETHRU_PARTICLE)
+  Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
+  #endif
+  #if defined(DOOR_PARTICLE)
+  Particle.function("doorSensorID",doorSensorIDFromConsole);
+  #endif
+
   #if defined(XETHRU_PARTICLE)
   xethruSetup();
   #endif
@@ -72,18 +84,6 @@ void setup() {
   #endif
 
   wifiCredsSetup();
-
-  //particle console function declarations, belongs in setup() as per docs
-  Particle.function("changeSSID", setWifiSSID);  //wifi code
-  Particle.function("changePwd", setWifiPwd);    //wifi code
-  Particle.function("getWifiLog", wifiLog);       //wifi code
-
-  #if defined(XETHRU_PARTICLE)
-  Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
-  #endif
-  #if defined(DOOR_PARTICLE)
-  Particle.function("doorSensorID",doorSensorIDFromConsole);
-  #endif
 
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)
