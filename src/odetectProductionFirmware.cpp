@@ -37,6 +37,8 @@ void loop();
 SYSTEM_THREAD(ENABLED); 
 //when using manual mode the user code will run immediately when the device is powered on
 SYSTEM_MODE(MANUAL);
+#else
+SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
 #if defined(PHOTON)
@@ -73,15 +75,6 @@ void setup() {
     SerialDebug.println("**********BLE is ON*********");
   #endif
 
-  #if defined(XETHRU_PARTICLE)
-  xethruSetup();
-  #endif
-  #if defined(DOOR_PARTICLE)
-  doorSensorSetup();
-  #endif
-
-  wifiCredsSetup();
-
   //particle console function declarations, belongs in setup() as per docs
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
@@ -93,6 +86,15 @@ void setup() {
   #if defined(DOOR_PARTICLE)
   Particle.function("doorSensorID",doorSensorIDFromConsole);
   #endif
+
+  #if defined(XETHRU_PARTICLE)
+  xethruSetup();
+  #endif
+  #if defined(DOOR_PARTICLE)
+  doorSensorSetup();
+  #endif
+
+  wifiCredsSetup();
 
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)

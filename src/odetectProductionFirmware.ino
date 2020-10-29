@@ -28,6 +28,8 @@
 SYSTEM_THREAD(ENABLED); 
 //when using manual mode the user code will run immediately when the device is powered on
 SYSTEM_MODE(MANUAL);
+#else
+SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
 #if defined(PHOTON)
