@@ -44,13 +44,6 @@ void checkINS3331() {
         qValues.concat(quadrature);
         qValues.concat(',');
       }
-
-      #if defined(SERIAL_DEBUG)
-      SerialDebug.println("INS data to publish:");
-      SerialDebug.printlnf(iValues, qValues);
-      SerialDebug.printlnf("%02x:%02x:%04x", ins3331_recv_buf[7], ins3331_recv_buf[8], ((int(ins3331_recv_buf[7]) << 8) & 0xff00) + (int(ins3331_recv_buf[8])) );
-      SerialDebug.printlnf("inphase %d, quadrature %d", inphase, quadrature);
-      #endif
     }
     frame_count++;
   }
@@ -71,7 +64,7 @@ void checkINS3331() {
 
 String publishINSdata(String iValues, String qValues){
   String data = "{ \"deviceid\": ";
-  data.concat("\"Test\", ");
+  data.concat(INS_DEVICEID);
   data.concat("\"inPhase\": ");
   data.concat(iValues);
   data.concat(", ");

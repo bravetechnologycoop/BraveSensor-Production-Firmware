@@ -33,7 +33,7 @@
 //#define XETHRU_PARTICLE
 #define INS3331_PARTICLE
 //#define PHOTON  //enables code for photon device
-#define SERIAL_DEBUG  //when used, displays serial debugging messages
+//#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 
@@ -90,8 +90,8 @@
 
 //#define WRITE_ORIGINAL_XETHRU
 
-#define LOCATIONID "HeidiTest"
-#define DEVICEID "H"
+#define LOCATIONID "Heidis House"
+#define DEVICEID "HeidiTest"
 #define DEVICETYPE "XeThru"
 
 // XeThru configuration variables
@@ -102,9 +102,9 @@
 #define XETHRU_MAX_DETECT_SETTING 4
 
 //************INS3331 Settings**************
-#define LOCATIONID "HeidiTest"
-#define DEVICEID "H"
-#define DEVICETYPE "INS3331"
+#define INS_LOCATIONID "Heidis House"
+#define INS_DEVICEID "HeidiTest"
+#define INS_DEVICETYPE "INS3331"
 
 
 #endif
