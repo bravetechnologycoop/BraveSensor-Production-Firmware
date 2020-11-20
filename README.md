@@ -302,7 +302,7 @@ The IM21 door sensors each have a sticker on them with their door IDs.  On the b
 
 All console functions only accept a single arduino String.  It is not necessary to enter the string with surrounding `“”` quotes.  The different strings this function accepts are:
 
-1. Three byte door ID separated by colons, for example 3C:2B:1A  See Additional Information section above for where to locate an IM21 door sensor’s door ID.  
+1. Three byte door ID separated by commas, for example 3C,2B,1A  See Additional Information section above for where to locate an IM21 door sensor’s door ID.  
 2. e - echos, aka publish to cloud, the door ID the Particle is currently connected to
 
 **Return(s):**
