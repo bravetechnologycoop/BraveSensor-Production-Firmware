@@ -208,7 +208,7 @@ int checkDoor(){
     if(publishDoorData) {
         String doorData = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",
                             doorAdvertisingData[1], doorAdvertisingData [2], doorAdvertisingData[3], doorAdvertisingData[5], doorAdvertisingData[6]);
-        Particle.publish("Door", doorData, PRIVATE);
+        Particle.publish("IM21", doorData, PRIVATE);
         returnFlag = 0;
     }
 
