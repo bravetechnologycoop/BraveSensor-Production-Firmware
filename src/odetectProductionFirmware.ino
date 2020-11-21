@@ -19,6 +19,7 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "xm132.h"
 
 //*************************System/Startup messages for Particle API***********
 
@@ -71,16 +72,14 @@ void setup() {
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
-  #endif
-  #if defined(DOOR_PARTICLE)
-  Particle.function("doorSensorID",doorSensorIDFromConsole);
-  #endif
-
-  #if defined(XETHRU_PARTICLE)
   xethruSetup();
   #endif
   #if defined(DOOR_PARTICLE)
+  Particle.function("doorSensorID",doorSensorIDFromConsole);
   doorSensorSetup();
+  #endif
+  #if defined(XM132_PARTICLE)
+  xm132Setup();
   #endif
 
   wifiCredsSetup();

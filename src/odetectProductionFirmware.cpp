@@ -25,12 +25,13 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "xm132.h"
 
 //*************************System/Startup messages for Particle API***********
 
 void setup();
 void loop();
-#line 25 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 26 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -73,15 +74,6 @@ void setup() {
     SerialDebug.println("**********BLE is ON*********");
   #endif
 
-  #if defined(XETHRU_PARTICLE)
-  xethruSetup();
-  #endif
-  #if defined(DOOR_PARTICLE)
-  doorSensorSetup();
-  #endif
-
-  wifiCredsSetup();
-
   //particle console function declarations, belongs in setup() as per docs
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
@@ -89,10 +81,17 @@ void setup() {
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
+  xethruSetup();
   #endif
   #if defined(DOOR_PARTICLE)
   Particle.function("doorSensorID",doorSensorIDFromConsole);
+  doorSensorSetup();
   #endif
+  #if defined(XM132_PARTICLE)
+  xm132Setup();
+  #endif
+
+  wifiCredsSetup();
 
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)

@@ -24,12 +24,6 @@
 //***************************macro defines******************************
 
 
-
-//SERIAL PORTS:
-//These definitions work for Arduino Mega, but must be changed for other Arduinos.
-//* Note: Using Serial as SerialRadar seems to give a few CRC errors. I'm not seeing this 
-//  using Serial1, Serial2, or Serial3. Could probably be solved by changing baud rate)
-
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
