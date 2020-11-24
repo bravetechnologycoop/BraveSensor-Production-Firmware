@@ -32,7 +32,7 @@
 void setup();
 void loop();
 #line 26 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
-SerialLogHandler logHandler(LOG_LEVEL_INFO);
+SerialLogHandler logHandler(LOG_LEVEL_ALL);
 
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:

@@ -23,7 +23,7 @@
 
 //*************************System/Startup messages for Particle API***********
 
-SerialLogHandler logHandler(LOG_LEVEL_INFO);
+SerialLogHandler logHandler(LOG_LEVEL_ALL);
 
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
