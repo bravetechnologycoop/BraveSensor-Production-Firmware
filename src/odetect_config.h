@@ -33,15 +33,15 @@
 #define XM132_PARTICLE
 //#define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
-#define SERIAL_DEBUG  //when used, displays serial debugging messages
-//#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
+//#define SERIAL_DEBUG  //when used, displays serial debugging messages
+#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 
 //**********FLASH ADDRESSES***********************
 
 //wifi
-#define ADDRSSIDS 0   						//sizeof = 320
-#define ADDRPWDS 320							//sizeof = 320
+#define ADDRSSIDS 0   					//sizeof = 320
+#define ADDRPWDS 320					//sizeof = 320
 #define ADDR_CONNECT_LOG 645			//sizeof = 4
 //xethru
 #define ADDR_XETHRUCONFIG 655			//sizeof = 20
