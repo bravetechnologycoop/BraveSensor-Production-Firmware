@@ -11,8 +11,6 @@ void xm132Setup(){
   //Start serial communication
   SerialRadar.begin(115200);
 
-
-
   Log.info("Entered XM132 Setup ");
 
   unsigned char write_value[4];
