@@ -72,9 +72,9 @@
 //found on sticker on button: bottom row of numbers/letters, take the first
 //three bytes listed and enter them in reverse order. For example if bottom
 //row of numbers/letters on sticker is 1a2b3c45, door ID will be 3c 2b 1a.
-#define DOORID_BYTE1 0x32
-#define DOORID_BYTE2 0xE8
-#define DOORID_BYTE3 0x51
+#define DOORID_BYTE1 0xEF
+#define DOORID_BYTE2 0x5F
+#define DOORID_BYTE3 0x27
 
 
 //************XeThru Settings**************

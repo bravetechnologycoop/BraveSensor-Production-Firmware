@@ -58,16 +58,19 @@ int doorSensorIDFromConsole(String command) { // command is a long string with a
 }
 
 
-
-
 //********************setup() functions*************************/
 //called from Setup()
 void doorSensorSetup(){
 
+  //configure digial pins of 4 bit bus to output
+  pinMode(DOOROPEN_PIN, OUTPUT);
+  pinMode(DOORCLOSED_PIN, OUTPUT);
+  pinMode(HEARTBEAT_PIN, OUTPUT);
+  pinMode(LOWBATTERY_PIN, OUTPUT);
+
    //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
   //on new boards, note 0xFFFF does not correspond to any ASCII chars
-
   uint16_t checkForContent;
   EEPROM.get(ADDR_IM21DOORID,checkForContent);
   //if memory has not been written to yet, write the original settings
@@ -148,7 +151,7 @@ int checkDoor(){
   static bool doorWarning;
   //OMG WTF is up with the overloading of this scan timeout function??
   //after measuring myself with millis(), 500 = 5 seconds, 50 = 500ms.
-  //why is there an order of magnitude difference??  Why is this function
+  //why is there an order of magnitude difference??  Why is this 
   //not documented in the Particle API or the Arduino API??
   //and who the fuck lists time in units of CENTISECONDS?!? OMG arraarRRRgh
   //setting scan timeout to 50ms = 5 centiseconds
@@ -208,7 +211,8 @@ int checkDoor(){
     if(publishDoorData) {
         String doorData = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",
                             doorAdvertisingData[1], doorAdvertisingData [2], doorAdvertisingData[3], doorAdvertisingData[5], doorAdvertisingData[6]);
-        Particle.publish("IM21", doorData, PRIVATE);
+        Particle.publish("Door Event", doorData, PRIVATE);
+        int busReturnFlag = publishViaBus(doorAdvertisingData[5]);
         returnFlag = 0;
     }
 
@@ -226,5 +230,40 @@ int checkDoor(){
 //if we reach here and haven't published, returnFlag = -1
 //if we have published, it will have been set to returnFlag = 0 above
 return returnFlag;
+
+}
+
+int publishViaBus(uint8_t doorData){
+
+  int doorDelay = 25;
+
+  if(doorData==DOOROPEN){
+    digitalWrite(DOOROPEN_PIN, HIGH);
+    delay(doorDelay);
+    digitalWrite(DOOROPEN_PIN, LOW);
+    return 0;
+  }
+  else if(doorData==DOORCLOSED){
+    digitalWrite(DOORCLOSED_PIN, HIGH);
+    delay(doorDelay);
+    digitalWrite(DOORCLOSED_PIN, LOW);
+    return 0;
+  }
+  else if((doorData==HEARTBEAT8) || (doorData==HEARTBEATA)){
+    digitalWrite(HEARTBEAT_PIN, HIGH);
+    delay(doorDelay);
+    digitalWrite(HEARTBEAT_PIN, LOW);
+    return 0;
+  }
+  else if(doorData==LOWBATTERY){
+    digitalWrite(LOWBATTERY_PIN, HIGH);
+    delay(doorDelay);
+    digitalWrite(LOWBATTERY_PIN, LOW);
+    return 0;
+  }
+  else {
+    return -1;
+  }
+
 
 }

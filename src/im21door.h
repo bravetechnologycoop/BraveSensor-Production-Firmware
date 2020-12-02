@@ -17,6 +17,17 @@
 
 #define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
+#define HEARTBEAT8 0x08
+#define HEARTBEATA 0x0A
+#define LOWBATTERY 0X04
+#define DOOROPEN 0x02
+#define DOORCLOSED 0x00
+
+#define DOOROPEN_PIN A0
+#define DOORCLOSED_PIN A1
+#define HEARTBEAT_PIN A2
+#define LOWBATTERY_PIN A3
+
 
 //******************global variable declarations*******************
 typedef struct IM21DoorIDStruct {
@@ -39,7 +50,7 @@ IM21DoorIDStruct readDoorIDFromFlash();
 
 //loop() functions
 int checkDoor();
-
+int publishViaBus(uint8_t doorData);
 
 
 #endif
