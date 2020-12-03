@@ -29,20 +29,23 @@
 //*************global settings*****************
 
 //#define DOOR_PARTICLE
-#define XETHRU_PARTICLE
+//#define XETHRU_PARTICLE
+#define INS3331_PARTICLE
 //#define PHOTON  //enables code for photon device
 //#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //**********FLASH ADDRESSES***********************
 //wifi
-#define ADDRSSIDS 0   					//sizeof = 320
-#define ADDRPWDS 320					//sizeof = 320
-#define ADDR_CONNECT_LOG 645			//sizeof = 4
+#define ADDRSSIDS 0   			//sizeof = 320
+#define ADDRPWDS 320			//sizeof = 320
+#define ADDR_CONNECT_LOG 645	//sizeof = 4
+
 //xethru
-#define ADDR_XETHRUCONFIG 655			//sizeof = 20
+#define ADDR_XETHRUCONFIG 655	//sizeof = 20
+
 //im21 door sensor
-#define ADDR_IM21DOORID 700				//sizeof = 3
+#define ADDR_IM21DOORID 700		//sizeof = 3
 
 
 //*************Wifi Settings*******************
@@ -79,13 +82,22 @@
 
 //************XeThru Settings**************
 //#define WRITE_ORIGINAL_XETHRU
-#define LOCATIONID "HeidiFedorak"
-#define DEVICEID "5"
-#define DEVICETYPE "Door"
+
+#define LOCATIONID "Heidis House"
+#define DEVICEID "HeidiTest"
+#define DEVICETYPE "XeThru"
+
 // XeThru configuration variables
 #define XETHRU_LED_SETTING 0
 #define XETHRU_NOISEMAP_SETTING 0
 #define XETHRU_SENSITIVITY_SETTING 5
 #define XETHRU_MIN_DETECT_SETTING 0.5
 #define XETHRU_MAX_DETECT_SETTING 4
+
+//************INS3331 Settings**************
+#define INS_LOCATIONID "Heidis House"
+#define INS_DEVICEID "HeidiTest"
+#define INS_DEVICETYPE "INS3331"
+
+
 #endif

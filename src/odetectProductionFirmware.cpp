@@ -25,12 +25,13 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "ins3331.h"
 
 //*************************System/Startup messages for Particle API***********
 
 void setup();
 void loop();
-#line 25 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 26 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -57,22 +58,14 @@ void setup() {
     SerialDebug.println("Key press received, starting code...");
   #endif 
 
-  //turn off BLE/mesh if using Particle debug build
-  #if defined(DEBUG_BUILD)
-  //mesh and BLE are not compatible with Particle debugger. "Known issue"
-    Mesh.off();
-    BLE.off();
-    SerialDebug.println("**********BLE is OFF*********");
+  #if defined(PHOTON)
+  //if we're using a photon that doesn't have BLE, calling BLE will 
+  //cause an error.  need to have nothing here so BLE.on or BLE.off
+  //are skipped entirely
   #else
-    #if defined(PHOTON)
-    //if we're using a photon that doesn't have BLE, calling BLE will 
-    //cause an error.  need to have nothing here so BLE.on or BLE.off
-    //are skipped entirely
-    #endif
-    //if we're not debugging, or a photon, then ble can be on for all other modes:
+    //if we're not using a photon, then ble can be on for all other modes:
     //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
     BLE.on();
-    SerialDebug.println("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
@@ -82,11 +75,17 @@ void setup() {
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
+  xethruSetup();
+  #endif
+  #if defined(INS3331_PARTICLE)
+  ins3331Setup();
   #endif
   #if defined(DOOR_PARTICLE)
   Particle.function("doorSensorID",doorSensorIDFromConsole);
+  doorSensorSetup();
   #endif
 
+<<<<<<< HEAD
   #if defined(XETHRU_PARTICLE)
   xethruSetup();
   #endif
@@ -94,6 +93,8 @@ void setup() {
   doorSensorSetup();
   #endif
 
+=======
+>>>>>>> addINScode
   wifiCredsSetup();
 
   //see odetect_config.h for info on manual mode
@@ -136,6 +137,9 @@ void loop() {
   #if defined(XETHRU_PARTICLE)
   checkXethru();
   delay(1000);
+  #endif
+  #if defined(INS3331_PARTICLE)
+  checkINS3331();
   #endif
 
 }

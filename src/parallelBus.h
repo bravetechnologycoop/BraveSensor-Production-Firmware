@@ -10,8 +10,8 @@
  * 
  */
 
-#ifndef FOURBITBUS_H
-#define FOURBITBUS_H
+#ifndef PARALLELBUS_H
+#define PARALLELBUS_H
 
 //*************************global macro defines**********************************
 
@@ -34,7 +34,7 @@ uint8_t lowBattery = 0;
 //console functions
 
 //setup() functions
-void fourBitBusSetup();
+void parallelBusSetup();
 
 //isr functions
 void doorOpenISR();
@@ -43,6 +43,6 @@ void heartbeatISR();
 void lowBatteryISR();
 
 //loop functions
-
+void checkParallelBus();
 
 #endif

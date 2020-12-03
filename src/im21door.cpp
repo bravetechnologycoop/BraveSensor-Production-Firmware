@@ -9,9 +9,6 @@
 //not defined as extern so "global" to this file only
 IM21DoorIDStruct CurrentDoorID;
 
-
-
-
 /*****************particle console functions********************************/
 
 //particle console function to get/set door sensor ID

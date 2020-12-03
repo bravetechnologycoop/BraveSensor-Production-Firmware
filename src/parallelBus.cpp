@@ -1,6 +1,6 @@
 #include "Particle.h"
 #include "odetect_config.h"
-#include "fourBitBus.h"
+#include "parallelBus.h"
 
 
 /**********global variables********************/
@@ -10,7 +10,7 @@
 
 //********************setup() functions*************************/
 //called from Setup()
-void fourBitBusSetup(){
+void parallelBusSetup(){
 
   //configure digial pins of 4 bit bus to output
   pinMode(DOOROPEN_PIN, INPUT_PULLUP);
@@ -50,8 +50,15 @@ void lowBatteryISR(void){
 
 }
 
-
-
 //**********************loop() functions**************************/
 
+void checkParallelBus(){
 
+  if(doorOpen == 1){
+    Log.info();
+    doorOpen = 0;
+  }
+  else if
+
+
+}
