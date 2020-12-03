@@ -28,10 +28,11 @@
 
 //*************global settings*****************
 
-#define DOOR_PARTICLE
-//#define XETHRU_PARTICLE
+#define DEBUG_LEVEL LOG_LEVEL_INFO
+
+//#define DOOR_PARTICLE
+#define XETHRU_PARTICLE
 //#define PHOTON  //enables code for photon device
-//#define SERIAL_DEBUG  //when used, displays serial debugging messages
 //#define MANUAL_MODE  //lets code be flashed via USB serial without a pre-existing wifi connection. Good for debuging.
 
 //**********FLASH ADDRESSES***********************
@@ -53,17 +54,17 @@
 //Do not leave any SSID or password undefined: empty
 //elements in char array will throw an error
 #define CLIENTSSID0 "Testbed"
-#define CLIENTSSID1 "HeidiHotspot"
-#define CLIENTSSID2 "Wolfpac Wi-Fi Network"
-#define CLIENTSSID3 "bravecoop"
+#define CLIENTSSID1 "Testbed"
+#define CLIENTSSID2 "Testbed"
+#define CLIENTSSID3 "Testbed"
 //pasword needed to publish SSIDs in flash to the cloud
-#define PASSWORD_FOR_SSIDS "bravecorp"
-#define CLIENTPWD0 "fireweed"
-#define CLIENTPWD1 "heidioriginalpassword"
-#define CLIENTPWD2 "wolfpack"
-#define CLIENTPWD3 "cowardlyarchaiccorp"
+#define PASSWORD_FOR_SSIDS "password"
+#define CLIENTPWD0 "password"
+#define CLIENTPWD1 "password"
+#define CLIENTPWD2 "password"
+#define CLIENTPWD3 "password"
 //pasword needed to publish passwords in flash to the cloud
-#define PASSWORD_FOR_PASSWORDS "bravecorp"
+#define PASSWORD_FOR_PASSWORDS "password"
 
 
 //*************Bluetooth Door Sensor Settings***********
