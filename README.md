@@ -13,7 +13,7 @@ New development branch begun by Heidi Fedorak.  Feature branches for this develo
     - [Global Settings](#global-settings)
         - [DOOR_PARTICLE](#door_particle)
         - [XETHRU_PARTICLE](#xethru_particle)
-        - [SERIAL_DEBUG](#serial_debug)
+        - [DEBUG_LEVEL](#debug_level)
         - [WRITE_ORIGINAL_XX](#write_original_xx)
         - [PHOTON](#photon)
         - [MANUAL MODE](#manual-mode)
@@ -64,9 +64,15 @@ A “Xethru Particle” connects to the Xethru breath sensor and relays breath d
 
 Do not define DOOR_PARTICLE at the same time unless you want both the door sensor and the Xethru breath sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
 
-#### SERIAL_DEBUG
+#### DEBUG_LEVEL
 
-Define this to display debug messages printed to a serial terminal. A serial connection to the Particle device through the USB terminal is required. Settings are: 115200 8N1. Note: code will not execute until a serial terminal has been opened and a key has been pressed within the terminal window.
+Define this as one of Particle's supported log levels, found [here](https://docs.particle.io/reference/device-os/firmware/argon/#logging-levels).  All debugging within ODetect firmware is done at the "info" log level, to see them displayed use LOG_LEVEL_INFO or higher.  Example:
+
+``` C++
+#define DEBUG_LEVEL LOG_LEVEL_INFO
+```
+
+If you are connect to the Particle device via USB, these logs can be read by opening a Particle [command line interface](https://docs.particle.io/reference/developer-tools/cli/) and using the command "particle serial monitor --follow".
 
 #### WRITE_ORIGINAL_xx
 
