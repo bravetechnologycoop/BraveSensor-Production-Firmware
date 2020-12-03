@@ -19,6 +19,8 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "fourBitBus.h"
+
 
 //*************************System/Startup messages for Particle API***********
 
@@ -80,6 +82,7 @@ void setup() {
 
   #if defined(XETHRU_PARTICLE)
   xethruSetup();
+  fourBitBusSetup();
   #endif
   #if defined(DOOR_PARTICLE)
   doorSensorSetup();
