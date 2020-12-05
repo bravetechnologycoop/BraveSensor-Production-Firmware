@@ -41,15 +41,13 @@ int doorSensorIDFromConsole(String command) { // command is a long string with a
 
     writeDoorIDToFlash(&CurrentDoorID);
   
-    #if defined(SERIAL_DEBUG)
     //did it get written correctly?
     IM21DoorIDStruct holder = readDoorIDFromFlash();
-    SerialDebug.println("Contents of flash after console function called:");
-    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",holder.byte1,holder.byte2,holder.byte3); 
+    Log.info("Contents of flash after console function called:");
+    Log.info("byte1: %02X, byte2: %02X, byte3: %02X",holder.byte1,holder.byte2,holder.byte3); 
     //did it get copied to CurrentDoorID correctly?
-    SerialDebug.println("Door Sensor ID after console function called:");
-    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);     
-    #endif 
+    Log.info("Door Sensor ID after console function called:");
+    Log.info("byte1: %02X, byte2: %02X, byte3: %02X",CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);     
 
   } //end if-else
 
@@ -86,11 +84,10 @@ void doorSensorSetup(){
   CurrentDoorID = readDoorIDFromFlash();
   #endif
 
-  #if defined(SERIAL_DEBUG)
-    SerialDebug.println("DoorID at end of setup() is:");
-    SerialDebug.printlnf("byte1: %02X, byte2: %02X, byte3: %02X",
-            CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);
-  #endif
+  Log.info("DoorID at end of setup() is:");
+  Log.info("byte1: %02X, byte2: %02X, byte3: %02X",
+          CurrentDoorID.byte1,CurrentDoorID.byte2,CurrentDoorID.byte3);
+
 
 }
 
@@ -174,35 +171,31 @@ int checkDoor(){
         door.unshift(doorAdvertisingData[5]);
         publishDoorData = TRUE;
         doorWarning = FALSE;
-        #if defined(SERIAL_DEBUG)
-        SerialDebug.println("**********************WE'RE PUBLISHING DOOR DATA***********************");
-        SerialDebug.printlnf("Device address: %02X:%02X:%02X:%02X:%02X:%02X",scanResults[ii].address[5], scanResults[ii].address[4], 
+        //debugging logs
+        Log.info("**********************WE'RE PUBLISHING DOOR DATA***********************");
+        Log.info("Device address: %02X:%02X:%02X:%02X:%02X:%02X",scanResults[ii].address[5], scanResults[ii].address[4], 
                               scanResults[ii].address[3], scanResults[ii].address[2],scanResults[ii].address[1],scanResults[ii].address[0]);
-        SerialDebug.printlnf("Advertising data: %02X %02X %02X %02X %02X %02X %02X %02X", doorAdvertisingData[0], doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3], doorAdvertisingData[4], doorAdvertisingData[5], doorAdvertisingData[6], doorAdvertisingData[7]);
-        SerialDebug.printlnf("Device ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
-        SerialDebug.printlnf("Door Status = %02X", doorAdvertisingData[5]);
-        SerialDebug.printlnf("Current, Last Control:  %02X, %02X", currentControl, lastControl);
-        SerialDebug.println("past 10 door events are:");
+        Log.info("Advertising data: %02X %02X %02X %02X %02X %02X %02X %02X", doorAdvertisingData[0], doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3], doorAdvertisingData[4], doorAdvertisingData[5], doorAdvertisingData[6], doorAdvertisingData[7]);
+        Log.info("Device ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
+        Log.info("Door Status = %02X", doorAdvertisingData[5]);
+        Log.info("Current, Last Control:  %02X, %02X", currentControl, lastControl);
+        Log.info("past 10 door events are:");
         String doorHistory = String::format("0: %02X, 1: %02X, 2: %02X, 3: %02X, 4: %02X, 5: %02X, 6: %02X, 7: %02X, 8: %02X, 9: %02X",
                                             door[0],door[1],door[2],door[3],door[4],door[5],door[6],door[7],door[8],door[9]);
-        SerialDebug.println(doorHistory);
-        #endif
+        Log.info(doorHistory);
+        //end debugging logs
       } else if(currentControl == lastControl) {
         //no new door data, we don't publish
         publishDoorData = FALSE;
         doorWarning = FALSE;
-        #if defined(SERIAL_DEBUG)
-        SerialDebug.printlnf("No new data from door ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
-        #endif
+        Log.info("No new data from door ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
       } else {
         //control has incremented by > 1. We are at first event, or have missed an event. Carry on, but publish warning.
         lastControl = currentControl;
         door.unshift(doorAdvertisingData[5]);
         publishDoorData = TRUE;
         doorWarning = TRUE;
-        #if defined(SERIAL_DEBUG)
-        SerialDebug.printlnf("first event or duplicate event from door ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
-        #endif
+        Log.info("first event or duplicate event from door ID = %02X %02X %02X",doorAdvertisingData[1], doorAdvertisingData[2], doorAdvertisingData[3]);
       }
 
     if(publishDoorData) {

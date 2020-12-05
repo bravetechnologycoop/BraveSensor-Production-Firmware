@@ -15,9 +15,6 @@
 
 //*************************global macro defines**********************************
 
-#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
-
-
 //******************global variable declarations*******************
 typedef struct IM21DoorIDStruct {
     uint8_t byte1;

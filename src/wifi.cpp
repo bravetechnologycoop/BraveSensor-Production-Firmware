@@ -31,11 +31,8 @@ void connectToWifi(){
   wifiLogCount++;
   writeWifiLogToFlash(wifiLogCount);
 
-  #if defined(SERIAL_DEBUG)
-  SerialDebug.println("Wifi connection lost, attempting reconnect");
-  SerialDebug.printlnf("wifiLogCount = %i", wifiLogCount);
-  #endif
-
+  Log.info("Wifi connection lost, attempting reconnect");
+  Log.info("wifiLogCount = %i", wifiLogCount);
 
   //disconnect from cloud and then turn off wifi module
   Particle.disconnect();
@@ -50,13 +47,11 @@ void connectToWifi(){
   //WiFiCredentials. Look at source code to understand objects as there are 
   //no docs on them.
   for(int i = 0; i < 5; i++){
-    #if defined(SERIAL_DEBUG)
     time_t timeStarted = Time.now();
-    SerialDebug.print("Setting credential set: ");
-    SerialDebug.println(i);
-    SerialDebug.println(mySSIDs[i]);
-    SerialDebug.println(myPasswords[i]);
-    #endif
+    Log.info("Setting credential set: %d", i);
+    Log.info(mySSIDs[i]);
+    Log.info(myPasswords[i]);
+
 
     WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
     WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
@@ -65,28 +60,24 @@ void connectToWifi(){
 
     //wifi.ready() returns true when connected and false when not
     if(WiFi.ready()) {
-      #if defined(SERIAL_DEBUG)
-      SerialDebug.println("Connected to wifi.");
-      SerialDebug.printlnf("connection process took %d seconds.\n", Time.now() - timeStarted);
-      SerialDebug.printlnf("Now wait 10s for cloud connection to re-establish");
-      #endif
+      Log.info("Connected to wifi.");
+      long int connectionLength = Time.now() - timeStarted;
+      Log.info("connection process took %ld seconds.\n", connectionLength);
+      Log.info("Now wait 10s for cloud connection to re-establish");
       //if we're re-connected, also reconnect to cloud
       Particle.connect();
       //pause for a few moments to allow reconnection
       delay(10000);
       char buffer[1024];
-      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%lu\"}", Time.now()-disconnectCounter);
+      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%ld\"}", Time.now()-disconnectCounter);
       Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
-      #if defined(SERIAL_DEBUG)
-      SerialDebug.println(buffer);
-      #endif
+      Log.info(buffer);
       //if we're connected, stop trying credentials
       break;
     } else {
-      #if defined(SERIAL_DEBUG)
-      SerialDebug.println("***Failed to connect to wifi***");
-      SerialDebug.printlnf("Connection timeout was %d seconds.\n", Time.now() - timeStarted);
-      #endif
+      Log.info("***Failed to connect to wifi***");
+      long int connectionLength = Time.now() - disconnectCounter;
+      Log.info("Connection timeout was %ld seconds.\n", connectionLength);
       //else not connected, so continue on to next set of credentials
       continue;
     }
@@ -200,12 +191,9 @@ int setWifiSSID(String newSSID){
 
   //did it work?
   for(int i = 0; i < 5; i++){
-    #if defined(SERIAL_DEBUG)
-    SerialDebug.print("New credential set: ");
-    SerialDebug.println(i);
-    SerialDebug.println(mySSIDs[i]);
-    SerialDebug.println(myPasswords[i]);
-    #endif
+    Log.info("New credential set: %d", i);
+    Log.info(mySSIDs[i]);
+    Log.info(myPasswords[i]);
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 
@@ -257,12 +245,9 @@ int setWifiPwd(String newPwd){
  
   //did it work?
   for(int i = 0; i < 5; i++){
-    #if defined(SERIAL_DEBUG)
-    SerialDebug.print("New credential set: ");
-    SerialDebug.println(i);
-    SerialDebug.println(mySSIDs[i]);
-    SerialDebug.println(myPasswords[i]);
-    #endif
+    Log.info("New credential set: %d", i);
+    Log.info(mySSIDs[i]);
+    Log.info(myPasswords[i]);
     WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
   }
 

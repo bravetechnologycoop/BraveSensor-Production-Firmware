@@ -32,7 +32,7 @@
 void setup();
 void loop();
 #line 26 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
-SerialLogHandler logHandler(LOG_LEVEL_ALL);
+SerialLogHandler logHandler(DEBUG_LEVEL);
 
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
@@ -40,6 +40,8 @@ SerialLogHandler logHandler(LOG_LEVEL_ALL);
 SYSTEM_THREAD(ENABLED); 
 //when using manual mode the user code will run immediately when the device is powered on
 SYSTEM_MODE(MANUAL);
+#else
+SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
 #if defined(PHOTON)
@@ -49,30 +51,23 @@ STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  Log.info("starting main setup");
-
-  //turn off BLE/mesh if using Particle debug build
-  #if defined(DEBUG_BUILD)
-  //mesh and BLE are not compatible with Particle debugger. "Known issue"
-    Mesh.off();
-    BLE.off();
-    Log.info("BLE is OFF");
-  #else
-    #if defined(PHOTON)
-    //if we're using a photon that doesn't have BLE, calling BLE will 
-    //cause an error.  need to have nothing here so BLE.on or BLE.off
-    //are skipped entirely
-    #endif
-    //if we're not debugging, or a photon, then ble can be on for all other modes:
-    //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
-    BLE.on();
-    Log.info("**********BLE is ON*********");
+  #if defined(PHOTON)
+  //if we're using a photon that doesn't have BLE, calling BLE will 
+  //cause an error.  need to have nothing here so BLE.on or BLE.off
+  //are skipped entirely
+  #else  
+  //if we're not debugging, or a photon, then ble can be on for all other modes
+  BLE.on();
+  Log.trace("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
+  //in manual or semi-automatic mode, these must be declared before Particle.connect() is called
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
   Particle.function("getWifiog", wifiLog);       //wifi code
+
+  wifiCredsSetup();
 
   #if defined(XETHRU_PARTICLE)
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
@@ -83,10 +78,9 @@ void setup() {
   doorSensorSetup();
   #endif
   #if defined(XM132_PARTICLE)
+  Log.trace("I'm in setup, about to enter xm132setup()");
   xm132Setup();
   #endif
-
-  wifiCredsSetup();
 
   //see odetect_config.h for info on manual mode
   #if defined(MANUAL_MODE)
@@ -110,7 +104,7 @@ void loop() {
   #endif    
 
   static int j = 1;
-  if (j <= 1) Log.info("you're looping");
+  if (j <= 3) Log.trace("you're looping");
   j++;
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
@@ -126,6 +120,9 @@ void loop() {
   #if defined(XETHRU_PARTICLE)
   checkXethru();
   delay(1000);
+  #endif
+  #if defined(XM132_PARTICLE)
+
   #endif
 
 }

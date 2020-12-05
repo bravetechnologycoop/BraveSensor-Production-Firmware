@@ -25,7 +25,6 @@
 
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
-#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
 // Pin definitions
 #define RESET_PIN D4 //Datasheet: E8, 26, MICRO_RST_N

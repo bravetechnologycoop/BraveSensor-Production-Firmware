@@ -25,26 +25,30 @@
 
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
-#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
 
 #define MODE_SELECTION_REGISTER 0x02
-#define POWER_BINS_SERVICE 0x01
-#define ENVELOPE_SERVICE 0x02
-#define SPARSE_SERVICE 0x04
-#define DISTANCE_SERVICE 0x200
-#define PRESENCE_SERVICE 0x400
+#define POWER_BINS_SERVICE {0x01, 0x00, 0x00, 0x00}
+#define ENVELOPE_SERVICE {0x02, 0x00, 0x00, 0x00}
+#define SPARSE_SERVICE {0x04, 0x00, 0x00, 0x00}
+#define DISTANCE_SERVICE {0x00, 0x02, 0x00, 0x00}
+#define PRESENCE_SERVICE {0x00, 0x04, 0x00, 0x00}
 
 #define MAIN_CONTROL_REGISTER 0x03
-#define STOP_SERVICE 0x00
-#define START_SERVICE 0x03
+#define STOP_SERVICE {0x00, 0x00, 0x00, 0x00}
+#define START_SERVICE {0x03, 0x00, 0x00, 0x00}
+#define CLEAR_STATUS_BITS {0x04, 0x00, 0x00, 0x00}
 
 #define STREAMING_CONTROL_REGISTER 0x05
-#define UART_OFF 0x00
-#define UART_ON 0x01
+#define UART_OFF {0x00, 0x00, 0x00, 0x00}
+#define UART_ON {0x01, 0x00, 0x00, 0x00}
+
+#define STATUS_REGISTER 0x06
+#define MODULE_CREATED_AND_ACTIVATED 0x03
 
 
 //***************************global variable declarations******************************
 
+#define SerialRadar Serial1
 
 //***************************function declarations***************
 
