@@ -17,6 +17,7 @@ workspaceconfig.code-workspace
 #ignore my debug log files
 debug.log
 ParticleFailureLog.txt
+*.log
 
 #don't ignore particle workbench's project properties
 #need it for when someone clones your repo and wants

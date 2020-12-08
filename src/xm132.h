@@ -26,21 +26,23 @@
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
 
+
+//arrays are defined in big endian and converted to little by the code
 #define MODE_SELECTION_REGISTER 0x02
-#define POWER_BINS_SERVICE {0x01, 0x00, 0x00, 0x00}
-#define ENVELOPE_SERVICE {0x02, 0x00, 0x00, 0x00}
-#define SPARSE_SERVICE {0x04, 0x00, 0x00, 0x00}
-#define DISTANCE_SERVICE {0x00, 0x02, 0x00, 0x00}
-#define PRESENCE_SERVICE {0x00, 0x04, 0x00, 0x00}
+#define POWER_BINS_SERVICE {0x00, 0x00, 0x00, 0x01}
+#define ENVELOPE_SERVICE {0x00, 0x00, 0x00, 0x02}
+#define SPARSE_SERVICE {0x00, 0x00, 0x00, 0x04}
+#define DISTANCE_SERVICE {0x00, 0x02, 0x00, 0x00} 
+#define PRESENCE_SERVICE {0x00, 0x04, 0x00, 0x00} 
 
 #define MAIN_CONTROL_REGISTER 0x03
 #define STOP_SERVICE {0x00, 0x00, 0x00, 0x00}
-#define START_SERVICE {0x03, 0x00, 0x00, 0x00}
-#define CLEAR_STATUS_BITS {0x04, 0x00, 0x00, 0x00}
+#define START_SERVICE {0x00, 0x00, 0x00, 0x03}
+#define CLEAR_STATUS_BITS {0x00, 0x00, 0x00, 0x04}
 
 #define STREAMING_CONTROL_REGISTER 0x05
 #define UART_OFF {0x00, 0x00, 0x00, 0x00}
-#define UART_ON {0x01, 0x00, 0x00, 0x00}
+#define UART_ON {0x00, 0x00, 0x00, 0x01}
 
 #define STATUS_REGISTER 0x06
 #define MODULE_CREATED_AND_ACTIVATED 0x03
@@ -58,8 +60,8 @@
 
 //setup() functions and sub-functions:
 void xm132Setup();
-void writeToXM132(unsigned char address, unsigned char value[4]);
-
+int writeToXM132(unsigned char address, unsigned char value[4]);
+int readFromXM132(unsigned char address);
 
 
 #endif

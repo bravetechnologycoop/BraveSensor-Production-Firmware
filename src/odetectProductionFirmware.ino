@@ -49,7 +49,7 @@ void setup() {
   #else  
   //if we're not debugging, or a photon, then ble can be on for all other modes
   BLE.on();
-  Log.trace("**********BLE is ON*********");
+  Log.info("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
@@ -69,8 +69,8 @@ void setup() {
   doorSensorSetup();
   #endif
   #if defined(XM132_PARTICLE)
-  Log.trace("I'm in setup, about to enter xm132setup()");
-  xm132Setup();
+  Log.info("I'm in setup, about to enter xm132setup()");
+
   #endif
 
   //see odetect_config.h for info on manual mode
@@ -94,14 +94,19 @@ void loop() {
   Particle.process();
   #endif    
 
-  static int j = 1;
-  if (j <= 3) Log.trace("you're looping");
-  j++;
-
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
   if(!WiFi.ready()){
     connectToWifi();
   }  
+
+
+  static int j = 1;
+  static int numberOfLoops = 1;
+  if (j <= numberOfLoops) {
+    Log.info("you're looping");
+    xm132Setup();
+  }
+  j++;
 
   //for every loop check the door data
   #if defined(DOOR_PARTICLE)
@@ -113,8 +118,10 @@ void loop() {
   delay(1000);
   #endif
   #if defined(XM132_PARTICLE)
-
+  
   #endif
+
+
 
 }
 

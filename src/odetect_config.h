@@ -28,7 +28,7 @@
 
 //*************global settings*****************
 
-#define DEBUG_LEVEL LOG_LEVEL_ALL
+#define DEBUG_LEVEL LOG_LEVEL_INFO
 
 #define XM132_PARTICLE
 //#define DOOR_PARTICLE
