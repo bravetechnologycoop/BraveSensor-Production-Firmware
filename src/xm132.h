@@ -47,6 +47,11 @@
 #define STATUS_REGISTER 0x06
 #define MODULE_CREATED_AND_ACTIVATED 0x03
 
+//presence registers
+#define DETECTED_REGISTER 0xB0  //presence detected or not
+#define SCORE_REGISTER 0xB1     //score of the detected movement
+#define DISTANCE_REGISTER 0xB2  //distance in mm to detected movement
+
 
 //***************************global variable declarations******************************
 
@@ -57,11 +62,14 @@
 //console functions
 
 //loop() functions and sub-functions:
+void checkXM132();
 
 //setup() functions and sub-functions:
 void xm132Setup();
+void waitForStatusReady(int desiredStatus, int timeout);
 int writeToXM132(unsigned char address, unsigned char value[4]);
 int readFromXM132(unsigned char address);
+int bytesToInt(unsigned char myBytes[4]);
 
 
 #endif

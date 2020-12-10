@@ -20,7 +20,7 @@
  *
  * 
  */
-
+//#include "Particle.h"
 #include "odetect_config.h"
 #include "xethru.h"
 #include "wifi.h"
@@ -65,7 +65,7 @@ void setup() {
   //in manual or semi-automatic mode, these must be declared before Particle.connect() is called
   Particle.function("changeSSID", setWifiSSID);  //wifi code
   Particle.function("changePwd", setWifiPwd);    //wifi code
-  Particle.function("getWifiog", wifiLog);       //wifi code
+  Particle.function("getWifiog", wifiLog);       //wifi code1
 
   wifiCredsSetup();
 
