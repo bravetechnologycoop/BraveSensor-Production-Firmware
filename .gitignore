@@ -11,6 +11,9 @@ core
 #ignore... I think it's my app's binary?
 code
 
+#ignore my logs
+*.log
+
 #ignore... I think it's platformIO config files
 workspaceconfig.code-workspace
 
