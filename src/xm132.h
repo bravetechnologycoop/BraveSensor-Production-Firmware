@@ -66,10 +66,10 @@ void checkXM132();
 
 //setup() functions and sub-functions:
 void xm132Setup();
-void waitForStatusReady(int desiredStatus, int timeout);
+unsigned int waitForStatusReady(unsigned int desiredStatus, unsigned int timeout);
 int writeToXM132(unsigned char address, unsigned char value[4]);
-int readFromXM132(unsigned char address);
-int bytesToInt(unsigned char myBytes[4]);
+unsigned int readFromXM132(unsigned char address);
+unsigned int bytesToInt(unsigned char myBytes[4]);
 
 
 #endif

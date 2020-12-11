@@ -108,6 +108,7 @@ void loop() {
   }
   j++;
 
+
   //for every loop check the door data
   #if defined(DOOR_PARTICLE)
   checkDoor();
@@ -118,7 +119,7 @@ void loop() {
   delay(1000);
   #endif
   #if defined(XM132_PARTICLE)
-  
+  checkXM132();
   #endif
 
 
