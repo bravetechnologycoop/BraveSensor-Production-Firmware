@@ -25,13 +25,14 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "parallelBus.h"
 #include "ins3331.h"
 
 //*************************System/Startup messages for Particle API***********
 
 void setup();
 void loop();
-#line 26 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
+#line 27 "/home/heidi/Programming/particleProgramming/odetectProductionFirmware/src/odetectProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -49,22 +50,12 @@ STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  //set up serial debugging if set in odetect_config.h file
-  #if defined(SERIAL_DEBUG)
-    //start comms with serial terminal for debugging...
-    SerialDebug.begin(115200);
-    // wait until a character sent from USB host
-    waitUntil(SerialDebug.available);
-    SerialDebug.println("Key press received, starting code...");
-  #endif 
-
   #if defined(PHOTON)
   //if we're using a photon that doesn't have BLE, calling BLE will 
   //cause an error.  need to have nothing here so BLE.on or BLE.off
   //are skipped entirely
   #else
-    //if we're not using a photon, then ble can be on for all other modes:
-    //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
+    //if we're not using a photon, then ble can be on for all other modes
     BLE.on();
   #endif
 
@@ -79,22 +70,16 @@ void setup() {
   #endif
   #if defined(INS3331_PARTICLE)
   ins3331Setup();
+  parallelBusSetup();
   #endif
   #if defined(DOOR_PARTICLE)
   Particle.function("doorSensorID",doorSensorIDFromConsole);
   doorSensorSetup();
   #endif
-
-<<<<<<< HEAD
-  #if defined(XETHRU_PARTICLE)
-  xethruSetup();
-  #endif
-  #if defined(DOOR_PARTICLE)
-  doorSensorSetup();
+  #if defined(PARALLEL_BUS)
+  parallelBusSetup();
   #endif
 
-=======
->>>>>>> addINScode
   wifiCredsSetup();
 
   //see odetect_config.h for info on manual mode
@@ -141,6 +126,11 @@ void loop() {
   #if defined(INS3331_PARTICLE)
   checkINS3331();
   #endif
+  #if defined(PARALLEL_BUS)
+  checkParallelBus();
+  #endif
+
+  
 
 }
 

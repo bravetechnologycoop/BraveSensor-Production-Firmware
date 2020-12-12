@@ -23,11 +23,6 @@
 
 //******************global variable declarations*******************
 
-uint8_t doorOpen = 0;
-uint8_t doorClosed = 0;
-uint8_t heartbeat = 0;
-uint8_t lowBattery = 0;
-
 
 //*************************function declarations*******************
 

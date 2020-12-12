@@ -67,6 +67,9 @@ void setup() {
   Particle.function("doorSensorID",doorSensorIDFromConsole);
   doorSensorSetup();
   #endif
+  #if defined(PARALLEL_BUS)
+  parallelBusSetup();
+  #endif
 
   wifiCredsSetup();
 
@@ -113,8 +116,12 @@ void loop() {
   #endif
   #if defined(INS3331_PARTICLE)
   checkINS3331();
+  #endif
+  #if defined(PARALLEL_BUS)
   checkParallelBus();
   #endif
+
+  
 
 }
 
