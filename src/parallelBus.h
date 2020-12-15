@@ -21,7 +21,6 @@
 #define LOWBATTERY_PIN A3
 
 
-//******************global variable declarations*******************
 
 
 //*************************function declarations*******************

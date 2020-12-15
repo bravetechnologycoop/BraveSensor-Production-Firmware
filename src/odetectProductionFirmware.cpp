@@ -43,6 +43,8 @@ SYSTEM_MODE(MANUAL);
 SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
+SerialLogHandler logHandler(LOG_LEVEL_INFO);
+
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif

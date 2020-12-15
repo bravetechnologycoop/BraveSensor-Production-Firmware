@@ -31,7 +31,7 @@ void parallelBusSetup(){
   
   //load char array to be published to cloud with information that will not change
   //doing this in setup() so sprintf is only called once, to reduce overhead
-  sprintf (doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"FF\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3);
+  sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"FF\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3);
 
 }
 

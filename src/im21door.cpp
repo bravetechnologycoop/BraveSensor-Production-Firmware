@@ -59,11 +59,19 @@ int doorSensorIDFromConsole(String command) { // command is a long string with a
 //called from Setup()
 void doorSensorSetup(){
 
+  #if defined(PARALLEL_BUS_TRANSMITTER)
   //configure digial pins of 4 bit bus to output
   pinMode(DOOROPEN_PIN, OUTPUT);
   pinMode(DOORCLOSED_PIN, OUTPUT);
   pinMode(HEARTBEAT_PIN, OUTPUT);
   pinMode(LOWBATTERY_PIN, OUTPUT);
+
+  //set the pins to their default low state (for an active high bus)
+  digitalWrite(DOOROPEN_PIN, LOW);
+  digitalWrite(DOORCLOSED_PIN, LOW);
+  digitalWrite(HEARTBEAT_PIN, LOW);
+  digitalWrite(LOWBATTERY_PIN, LOW);
+  #endif
 
    //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
@@ -209,7 +217,9 @@ int checkDoor(){
         String doorData = String::format("{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }",
                             doorAdvertisingData[1], doorAdvertisingData [2], doorAdvertisingData[3], doorAdvertisingData[5], doorAdvertisingData[6]);
         Particle.publish("Door Event", doorData, PRIVATE);
+        #if defined(PARALLEL_BUS_TRANSMITTER)
         int busReturnFlag = publishViaBus(doorAdvertisingData[5]);
+        #endif
         returnFlag = 0;
     }
 
