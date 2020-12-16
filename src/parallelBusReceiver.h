@@ -3,15 +3,19 @@
  * 
  * Description:  Program Particle Argon to receive door open
  *  and door closed advertising data from IM21 bluetooth low 
- *  energy door sensors.
+ *  energy door sensors, via a parallel bus connected to GPIO
+ *  pins on two respective particle Argons.
+ * 
+ *  Radar Argon will always be the bus receiver, and Door Argon
+ *  will always be the bus transmitter.
  * 
  * Author: Heidi Fedorak
  * Date:  August 2020
  * 
  */
 
-#ifndef PARALLELBUS_H
-#define PARALLELBUS_H
+#ifndef PARALLELBUSRECEIVER_H
+#define PARALLELBUSRECEIVER_H
 
 //*************************global macro defines**********************************
 

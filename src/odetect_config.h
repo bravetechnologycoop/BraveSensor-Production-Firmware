@@ -28,10 +28,10 @@
 
 //*************global settings*****************
 
-#define DOOR_PARTICLE
+//#define DOOR_PARTICLE
 //#define XETHRU_PARTICLE
 //#define INS3331_PARTICLE
-#define PARALLEL_BUS_TRANSMITTER
+//#define PARALLEL_BUS_TRANSMITTER
 #define PARALLEL_BUS_RECEIVER
 //#define PHOTON  //enables code for photon device
 //#define SERIAL_DEBUG  //when used, displays serial debugging messages

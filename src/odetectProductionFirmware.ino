@@ -19,7 +19,7 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
-#include "parallelBus.h"
+#include "parallelBusReceiver.h"
 #include "ins3331.h"
 
 //*************************System/Startup messages for Particle API***********
@@ -69,7 +69,7 @@ void setup() {
   Particle.function("doorSensorID",doorSensorIDFromConsole);
   doorSensorSetup();
   #endif
-  #if defined(PARALLEL_BUS)
+  #if defined(PARALLEL_BUS_RECEIVER)
   parallelBusSetup();
   #endif
 
@@ -119,7 +119,7 @@ void loop() {
   #if defined(INS3331_PARTICLE)
   checkINS3331();
   #endif
-  #if defined(PARALLEL_BUS)
+  #if defined(PARALLEL_BUS_RECEIVER)
   checkParallelBus();
   #endif
 

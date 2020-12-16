@@ -1,6 +1,6 @@
 #include "Particle.h"
 #include "odetect_config.h"
-#include "parallelBus.h"
+#include "parallelBusReceiver.h"
 
 
 /**********global variables********************/
@@ -29,10 +29,6 @@ void parallelBusSetup(){
   attachInterrupt(HEARTBEAT_PIN, heartbeatISR, RISING);
   attachInterrupt(LOWBATTERY_PIN, lowBatteryISR, RISING);
   
-  //load char array to be published to cloud with information that will not change
-  //doing this in setup() so sprintf is only called once, to reduce overhead
-  sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"FF\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3);
-
 }
 
 //fourBitBusSetup() sub-functions
@@ -64,36 +60,48 @@ void lowBatteryISR(void){
 
 void checkParallelBus(){
 
+  //load char array to be published to cloud with information that will not change
+  //doing this in setup() so sprintf is only called once, to reduce overhead
+  
+  //Log.info("in checkbus, doorJSON is:");
+  //Log.info("%s",doorJSONforCloudPublish);
+  unsigned char doorDataHolder;
+
   if(doorOpen == 1){
-    doorJSONforCloudPublish[30] = 0;
-    doorJSONforCloudPublish[31] = 2;
-    //Particle.publish("Door",)
+    doorDataHolder = 0x02;
+    //
+    sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"%02X\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3,doorDataHolder);
+    Log.info("In checkbus, door open if, doorJSON is:");
     Log.info("%s", doorJSONforCloudPublish);
+    Particle.publish("IM21 Event", doorJSONforCloudPublish, PRIVATE);
     doorOpen = 0;
   }
   else if(doorClosed == 1){
-    doorJSONforCloudPublish[30] = 0;
-    doorJSONforCloudPublish[31] = 0;
-    //Particle.publish("Door",)
+    doorDataHolder = 0x00;
+    sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"%02X\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3,doorDataHolder);
+    Log.info("In checkbus, door closed if, doorJSON is:");
     Log.info("%s", doorJSONforCloudPublish);
+    Particle.publish("IM21 Event", doorJSONforCloudPublish, PRIVATE);
     doorClosed = 0;
   } 
   else if(heartbeat==1){
-    doorJSONforCloudPublish[30] = 0;
-    doorJSONforCloudPublish[31] = 8;
-    //Particle.publish("Door",)
+    doorDataHolder = 0x08;
+    sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"%02X\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3,doorDataHolder);
+    Log.info("In checkbus, door heartbeat if, doorJSON is:");
     Log.info("%s", doorJSONforCloudPublish);
+    Particle.publish("IM21 Event", doorJSONforCloudPublish, PRIVATE);
     heartbeat = 0;
   } 
   else if(lowBattery==1){
-    doorJSONforCloudPublish[30] = 0;
-    doorJSONforCloudPublish[31] = 4;
-    //Particle.publish("Door",)
+    doorDataHolder = 0x04;
+    sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"%02X\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3,doorDataHolder);
+    Log.info("In checkbus, door lowbattery if, doorJSON is:");
     Log.info("%s", doorJSONforCloudPublish);
+    Particle.publish("IM21 Event", doorJSONforCloudPublish, PRIVATE);
     lowBattery = 0;
   }
   else{
-    Log.info("No signal found");
+    //Log.info("No signal found");
   }
 
 

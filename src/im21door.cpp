@@ -244,25 +244,31 @@ int publishViaBus(uint8_t doorData){
 
   int doorDelay = 25;
 
+  Log.info("Door Data = 0x%02X", doorData);
+
   if(doorData==DOOROPEN){
+    Log.info("Door data = open"); //these don't seem to be printed, probably because of delay() below?
     digitalWrite(DOOROPEN_PIN, HIGH);
     delay(doorDelay);
     digitalWrite(DOOROPEN_PIN, LOW);
     return 0;
   }
   else if(doorData==DOORCLOSED){
+    Log.info("Door data = closed");
     digitalWrite(DOORCLOSED_PIN, HIGH);
     delay(doorDelay);
     digitalWrite(DOORCLOSED_PIN, LOW);
     return 0;
   }
   else if((doorData==HEARTBEAT8) || (doorData==HEARTBEATA)){
+    Log.info("Door data = heartbeat");
     digitalWrite(HEARTBEAT_PIN, HIGH);
     delay(doorDelay);
     digitalWrite(HEARTBEAT_PIN, LOW);
     return 0;
   }
   else if(doorData==LOWBATTERY){
+    Log.info("Door data = low battery");
     digitalWrite(LOWBATTERY_PIN, HIGH);
     delay(doorDelay);
     digitalWrite(LOWBATTERY_PIN, LOW);
