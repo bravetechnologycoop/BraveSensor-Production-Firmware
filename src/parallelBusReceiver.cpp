@@ -69,7 +69,6 @@ void checkParallelBus(){
 
   if(doorOpen == 1){
     doorDataHolder = 0x02;
-    //
     sprintf(doorJSONforCloudPublish, "{\"device\":\"%02X:%02X:%02X\", \"data\":\"%02X\"}", DOORID_BYTE1, DOORID_BYTE2, DOORID_BYTE3,doorDataHolder);
     Log.info("In checkbus, door open if, doorJSON is:");
     Log.info("%s", doorJSONforCloudPublish);
