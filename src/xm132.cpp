@@ -105,7 +105,7 @@ unsigned int waitForStatusReady(unsigned int desiredStatus, unsigned int timeout
 
     //check register until you get a proper read response
     status = readFromXM132(STATUS_REGISTER);
-    //Log.info("Actual status read = 0x%08X", status);
+    Log.info("Actual status read = 0x%08X", status);
 
     //check the response, is it what we want?
     if((status & desiredStatus) == desiredStatus){
@@ -136,7 +136,7 @@ unsigned int readFromXM132(unsigned char address){
   //command on the acconeer twice?  add a timeout option later for more robust code 
   while(loopFlag == -1){
 
-    static unsigned char register_read_response[10]; //max size of serial buffer = 128 bytes
+    unsigned char register_read_response[10]; //max size of serial buffer = 128 bytes
     unsigned char register_read_request[6] = {0xCC, 0x01, 0x00, 0xF8};
     register_read_request[4] = address;
     register_read_request[5] = 0xCD;
@@ -144,10 +144,10 @@ unsigned int readFromXM132(unsigned char address){
     SerialRadar.write(register_read_request, 6);
     //Serial1.write(0xAA);
 
-/*    for(int l = 0; l < 6; l++){
+    for(int l = 0; l < 6; l++){
       Log.info("register_read_request[%d] = 0x%02X", l, register_read_request[l]);
     }
-*/
+
     while(SerialRadar.available()) {
       //read response contains 0xF6, register address, and 5 bytes of data as per Acconeer docs
       for(int i = 0; i < 10; i++){
@@ -164,15 +164,10 @@ unsigned int readFromXM132(unsigned char address){
       //got the correct data, so stop looping
       loopFlag = 1;
 
-      //leaving this down here so I can see what response whether it was good or caused an error
-      for(int k = 0; k < 10; k++){
-        Log.info("register_read_response[%d] = 0x%02X", k, register_read_response[k]);
-      }
-
       //data contained in bytes 5 through 8 of read response array
       //place them in their own register_data array, while reversing order 
       //of the bytes from little endian to big endian
-      static unsigned char register_data[4];
+      unsigned char register_data[4];
       for (int j = 0; j < 4; j++){
         register_data[j] = register_read_response[8-j];
         Log.info("register_data[%d] = 0x%02X", j, register_data[j]);
@@ -184,6 +179,11 @@ unsigned int readFromXM132(unsigned char address){
     } else {
       Log.info("Failed to read from register address = 0x%02X",address);
       loopFlag = -1;
+    }
+
+    //leaving this down here so I can see what response whether it was good or caused an error
+    for(int k = 0; k < 10; k++){
+      Log.info("register_read_response[%d] = 0x%02X", k, register_read_response[k]);
     }
 
   } //endwhile
@@ -210,7 +210,7 @@ int writeToXM132(unsigned char address, unsigned char register_command[4]){
   //loop until writing from the register is successful
   while(returnFlag == 1) {
 
-    static unsigned char register_write_response[10]; //max size of serial buffer = 128 bytes
+    unsigned char register_write_response[10]; //max size of serial buffer = 128 bytes
     unsigned char register_write_request[10] = {0xCC, 0x05, 0x00, 0xF9};
 
     register_write_request[4] = address;

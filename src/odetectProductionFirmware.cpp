@@ -128,7 +128,7 @@ void loop() {
   delay(1000);
   #endif
   #if defined(XM132_PARTICLE)
-  checkXM132();
+  //checkXM132();
   #endif
 
 
