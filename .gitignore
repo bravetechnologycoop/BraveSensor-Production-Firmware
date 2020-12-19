@@ -11,6 +11,12 @@ core
 #ignore... I think it's my app's binary?
 code
 
+#ignore my logs
+*.log
+
+#ignore platformIO workspace config
+workspaceconfig.code-workspace
+
 #don't ignore particle workbench's project properties
 #need it for when someone clones your repo and wants
 #to run the code on their Argon
