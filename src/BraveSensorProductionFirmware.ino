@@ -1,5 +1,5 @@
 /*
- * Project odetectProductionFirmware
+ * Project BraveSensorProductionFirmware
  * 
  * Description: Particle Argon/Photon firmware for Brave
  *              ODetect project.
@@ -15,7 +15,7 @@
  * 
  */
 
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
