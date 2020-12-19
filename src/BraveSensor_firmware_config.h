@@ -3,8 +3,8 @@
  *
  * Description:
  *
- *  This file contains all oDetect #define macros that
- *  must be set by a human during oDetect setup, for example device ID's,
+ *  This file contains all BraveSensor #define macros that
+ *  must be set by a human during BraveSensor setup, for example device ID's,
  *  Particle wifi credentials, etc etc.
  *
  *  This file also contains macros for code execution options. For example
