@@ -1,3 +1,9 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project BraveSensorProductionFirmware
  * 
@@ -23,6 +29,9 @@
 
 //*************************System/Startup messages for Particle API***********
 
+void setup();
+void loop();
+#line 26 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions

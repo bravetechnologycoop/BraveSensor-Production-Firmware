@@ -1,6 +1,6 @@
 #include "Particle.h"
 #include "CircularBuffer.h"
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "im21door.h"
 
 

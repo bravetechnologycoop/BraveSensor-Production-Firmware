@@ -11,7 +11,7 @@
  * 
  */
 #include "Particle.h"
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "wifi.h"
 
 //******************global variable initialization*******************

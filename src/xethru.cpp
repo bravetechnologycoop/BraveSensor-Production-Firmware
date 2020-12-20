@@ -1,5 +1,5 @@
 #include "Particle.h"
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "xethru.h"
 
 //******************global variable initialization*******************

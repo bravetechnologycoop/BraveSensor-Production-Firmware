@@ -6,7 +6,7 @@
  */
 
 #include "Particle.h"
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "ins3331.h"
 
 // loop() function and subfunctions
