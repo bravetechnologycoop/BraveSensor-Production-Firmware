@@ -11,10 +11,10 @@ core
 #ignore... I think it's my app's binary?
 code
 
-#ignore my logs
+#ignore log files
 *.log
 
-#ignore platformIO workspace config
+#ignore... I think it's platformIO config files
 workspaceconfig.code-workspace
 
 #don't ignore particle workbench's project properties

@@ -153,11 +153,10 @@ XeThruConfigSettings init_XeThruConfigSettings(){
   xethruConfig = readXethruFromFlash();
   #endif
 
-  #if defined(SERIAL_DEBUG)
-    SerialDebug.println("xethruConfig at end of init_xethru");
-    SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-            xethruConfig.led,xethruConfig.max_detect,xethruConfig.min_detect,xethruConfig.noisemap,xethruConfig.sensitivity);
-  #endif
+  Log.info("xethruConfig at end of init_xethru");
+  Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+          xethruConfig.led,xethruConfig.max_detect,xethruConfig.min_detect,xethruConfig.noisemap,xethruConfig.sensitivity);
+
 
   return xethruConfig;
 
@@ -249,13 +248,11 @@ int xethruConfigValesFromConsole(String command) { // command is a long string w
 
     writeXethruToFlash(&newConfig);
 
-    #if defined(SERIAL_DEBUG)
     //did it get written correctly?
     XeThruConfigSettings holder = readXethruFromFlash();
-    SerialDebug.println("xethruConfig after console function called:");
-    SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+    Log.info("xethruConfig after console function called:");
+    Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
             holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
-    #endif 
 
     xethru_reset();
     xethru_configuration(&newConfig);
@@ -292,12 +289,11 @@ XeThruConfigSettings readXethruFromFlash() {
 
   EEPROM.get(ADDR_XETHRUCONFIG,holder);
 
-   #if defined(SERIAL_DEBUG)
-   //did it get written correctly?
-    SerialDebug.println("xethruConfig in read function:");
-    SerialDebug.printlnf("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-            holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
-  #endif 
+  //did it get written correctly?
+  Log.info("xethruConfig in read function:");
+  Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
+          holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
+
 
   return holder;  
 
@@ -530,7 +526,7 @@ void errorPublish(String message) {
 // This method waits indefinitely for the XTS_SPRS_READY message from the radar
 void wait_for_ready_message()
 {
-  SerialDebug.println("Waiting for XTS_SPRS_READY...");
+  Log.info("Waiting for XTS_SPRS_READY...");
   while (true) {
     if (receive_data() < 1)
       continue;
@@ -541,11 +537,11 @@ void wait_for_ready_message()
     //uint32_t response_code = (uint32_t)xethru_recv_buf[2] | ((uint32_t)xethru_recv_buf[3] << 8) | ((uint32_t)xethru_recv_buf[4] << 16) | ((uint32_t)xethru_recv_buf[5] << 24);
     uint32_t response_code = *((uint32_t*)&xethru_recv_buf[2]);
     if (response_code == XTS_SPRS_READY) {
-      SerialDebug.println("Received XTS_SPRS_READY!");
+      Log.info("Received XTS_SPRS_READY!");
       return;
     }
     else if (response_code == XTS_SPRS_BOOTING)
-      SerialDebug.println("Radar is booting...");
+      Log.info("Radar is booting...");
   }
 }
 
@@ -555,15 +551,15 @@ void get_ack()
   int len = receive_data();
   
   if (len == 0) {
-    SerialDebug.println("No response from radar");
+    Log.info("No response from radar");
     errorPublish("No reponse from radar");
   }
   else if (len < 0) {
-    SerialDebug.println("Error in response from radar");
+    Log.info("Error in response from radar");
     errorPublish("Error in response from radar");
   }
   else if (xethru_recv_buf[1] != XTS_SPR_ACK) {  // Check response for ACK
-    SerialDebug.println("Did not receive ACK!");
+    Log.info("Did not receive ACK!");
     errorPublish("ACK not received");
   }
 }
@@ -609,12 +605,12 @@ void send_command(int len)
   SerialRadar.write(XT_STOP);
 
   // Print out sent data for debugging:
-  SerialDebug.print("Sent: ");  
+  Log.info("Sent: ");  
   for (int i = 0; i < len; i++) {
-    SerialDebug.print(xethru_send_buf[i], HEX);  
-    SerialDebug.print(" ");
+    Log.info("xethru_send_buf, HEX: %u, %x", xethru_send_buf[i], HEX);  
+    Log.info(" ");
   }
-  SerialDebug.println(XT_STOP, HEX);
+  Log.info("XT_STOP, HEX: %x, %x", XT_STOP, HEX);
 }
   
   
@@ -683,7 +679,7 @@ int receive_data() {
 
     if (recv_len >= RX_BUF_LENGTH) {
       //errorPublish("Buffer Overflow");
-      SerialDebug.println("BUFFER OVERFLOW!");
+      Log.info("BUFFER OVERFLOW!");
       return -1;
     }
     
@@ -699,12 +695,12 @@ int receive_data() {
 
   // Print received data
   #if 0
-  SerialDebug.print("Received: ");
+  Log.info("Received: ");
   for (int i = 0; i < recv_len; i++) {
-    SerialDebug.print(xethru_recv_buf[i], HEX);
-    SerialDebug.print(" ");
+    Log.info(xethru_recv_buf[i], HEX);
+    Log.info(" ");
   }
-  SerialDebug.println(" ");
+  Log.info(" ");
   #endif
   
   // If nothing was received, return 0.
@@ -739,10 +735,10 @@ int receive_data() {
   else 
   {
     //errorPublish("CRC mismatch");
-    SerialDebug.print("CRC mismatch: ");
-    SerialDebug.print(crc, HEX);
-    SerialDebug.print(" != ");
-    SerialDebug.println(xethru_recv_buf[recv_len-2], HEX);
+    Log.info("CRC mismatch: ");
+    Log.info("crc, HEX: %u, %x", crc, HEX);
+    Log.info(" != ");
+    Log.info("xethru_recv_buf, HEX: %u, %x", xethru_recv_buf[recv_len-2], HEX);
     return -1; // Return -1 upon crc failure
   } 
 }

@@ -17,9 +17,6 @@
 //max string length of any SSID or password (including null char)
 #define MAXLEN 64
 
-#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
-
-
 //******************global variable declarations*******************
 //variables used in setup() and loop() have to be global
 extern char mySSIDs[5][MAXLEN];

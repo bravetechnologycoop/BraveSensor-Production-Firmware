@@ -50,6 +50,8 @@
 //im21 door sensor
 #define ADDR_IM21DOORID 700		//sizeof = 3
 
+//ins3331
+
 //*************Wifi Settings*******************
 
 //writes original ssid/passwords to flash - see documentation for when and how to use this

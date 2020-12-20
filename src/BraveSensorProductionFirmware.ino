@@ -23,38 +23,34 @@
 
 //*************************System/Startup messages for Particle API***********
 
+
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
 SYSTEM_THREAD(ENABLED); 
 //when using manual mode the user code will run immediately when the device is powered on
 SYSTEM_MODE(MANUAL);
+#else
+SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif
 
+SerialLogHandler LogHandler(DEBUG_LEVEL);
+
 // setup() runs once, when the device is first turned on.
 void setup() {
-
-  //set up serial debugging if set in odetect_config.h file
-  #if defined(SERIAL_DEBUG)
-    //start comms with serial terminal for debugging...
-    SerialDebug.begin(115200);
-    // wait until a character sent from USB host
-    waitUntil(SerialDebug.available);
-    SerialDebug.println("Key press received, starting code...");
-  #endif 
 
   #if defined(PHOTON)
   //if we're using a photon that doesn't have BLE, calling BLE will 
   //cause an error.  need to have nothing here so BLE.on or BLE.off
   //are skipped entirely
-  #else
-    //if we're not using a photon, then ble can be on for all other modes:
-    //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
-    BLE.on();
+  #else  
+  //if we're not debugging, or a photon, then ble can be on for all other modes
+  BLE.on();
+  Log.info("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
@@ -97,11 +93,10 @@ void loop() {
   Particle.process();
   #endif    
 
-  #if defined(SERIAL_DEBUG)
   static int j = 1;
-  if (j <= 1) SerialDebug.println("you're looping");
+  if (j <= 1) Log.info("you're looping");
   j++;
-  #endif
+
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
   if(!WiFi.ready()){
