@@ -1,8 +1,14 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project BraveSensorProductionFirmware
  * 
  * Description: Particle Argon/Photon firmware for Brave
- *              BraveSensor project.
+ *              ODetect project.
  * 
  * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
  * 
@@ -19,11 +25,13 @@
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
-#include "parallelBusReceiver.h"
-#include "ins3331.h"
 
 //*************************System/Startup messages for Particle API***********
 
+
+void setup();
+void loop();
+#line 26 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 #if defined(MANUAL_MODE)
 //bootloader instructions to tell bootloader to run w/o wifi:
 //enable system thread to ensure application loop is not interrupted by system/network management functions
@@ -34,11 +42,11 @@ SYSTEM_MODE(MANUAL);
 SYSTEM_MODE(SEMI_AUTOMATIC);
 #endif
 
-SerialLogHandler logHandler(LOG_LEVEL_INFO);
-
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif
+
+SerialLogHandler LogHandler(DEBUG_LEVEL);
 
 // setup() runs once, when the device is first turned on.
 void setup() {
@@ -47,9 +55,10 @@ void setup() {
   //if we're using a photon that doesn't have BLE, calling BLE will 
   //cause an error.  need to have nothing here so BLE.on or BLE.off
   //are skipped entirely
-  #else
-    //if we're not using a photon, then ble can be on for all other modes
-    BLE.on();
+  #else  
+  //if we're not debugging, or a photon, then ble can be on for all other modes
+  BLE.on();
+  Log.info("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
@@ -61,16 +70,9 @@ void setup() {
   Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
   xethruSetup();
   #endif
-  #if defined(INS3331_PARTICLE)
-  ins3331Setup();
-  parallelBusSetup();
-  #endif
   #if defined(DOOR_PARTICLE)
   Particle.function("doorSensorID",doorSensorIDFromConsole);
   doorSensorSetup();
-  #endif
-  #if defined(PARALLEL_BUS_RECEIVER)
-  parallelBusSetup();
   #endif
 
   wifiCredsSetup();
@@ -96,11 +98,10 @@ void loop() {
   Particle.process();
   #endif    
 
-  #if defined(SERIAL_DEBUG)
   static int j = 1;
-  if (j <= 1) SerialDebug.println("you're looping");
+  if (j <= 1) Log.info("you're looping");
   j++;
-  #endif
+
 
   //WiFi.ready = false if wifi is lost. If false, try to reconnect
   if(!WiFi.ready()){
@@ -116,14 +117,6 @@ void loop() {
   checkXethru();
   delay(1000);
   #endif
-  #if defined(INS3331_PARTICLE)
-  checkINS3331();
-  #endif
-  #if defined(PARALLEL_BUS_RECEIVER)
-  checkParallelBus();
-  #endif
-
-  
 
 }
 
