@@ -50,12 +50,10 @@ void checkINS3331() {
   if((millis()-last_publish) > 1500){
     String data = publishINSdata(iValues, qValues);
     Particle.publish("Radar", data, PRIVATE);
-    #if defined(SERIAL_DEBUG)
-    SerialDebug.println("INS data actually published:");
-    SerialDebug.printlnf(iValues, qValues);
-    SerialDebug.printlnf("%02x:%02x:%04x", ins3331_recv_buf[7], ins3331_recv_buf[8], ((int(ins3331_recv_buf[7]) << 8) & 0xff00) + (int(ins3331_recv_buf[8])) );
-    SerialDebug.printlnf("inphase %d, quadrature %d", inphase, quadrature);    
-    #endif
+    Log.info("INS data actually published:");
+    Log.info(iValues, qValues);
+    Log.info("%02x:%02x:%04x", ins3331_recv_buf[7], ins3331_recv_buf[8], ((int(ins3331_recv_buf[7]) << 8) & 0xff00) + (int(ins3331_recv_buf[8])) );
+    Log.info("inphase %d, quadrature %d", inphase, quadrature);    
     last_publish = millis();
     iValues = ' ';
     qValues = ' ';
