@@ -23,8 +23,8 @@
  * Date:  August 2020
  *
  */
-#ifndef ODETECT_CONFIG_H
-#define ODETECT_CONFIG_H
+#ifndef BRAVESENSOR_CONFIG_H
+#define BRAVESENSOR_CONFIG_H
 
 //*************global settings*****************
 

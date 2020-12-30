@@ -44,13 +44,17 @@
 #define UART_OFF {0x00, 0x00, 0x00, 0x00}
 #define UART_ON {0x00, 0x00, 0x00, 0x01}
 
+
 #define STATUS_REGISTER 0x06
 #define MODULE_CREATED_AND_ACTIVATED 0x03
+#define DATA_READY 0x00000100
 
 //presence registers
 #define DETECTED_REGISTER 0xB0  //presence detected or not
 #define SCORE_REGISTER 0xB1     //score of the detected movement
 #define DISTANCE_REGISTER 0xB2  //distance in mm to detected movement
+#define START_REGISTER 0x81     //start of the sweep in mm
+#define LENGTH_REGISTER 0x82    //length of the sweep in mm
 
 
 //***************************global variable declarations******************************

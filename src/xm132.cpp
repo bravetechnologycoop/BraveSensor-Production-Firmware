@@ -1,5 +1,5 @@
 #include "Particle.h"
-#include "odetect_config.h"
+#include "BraveSensor_firmware_config.h"
 #include "xm132.h"
 
 //***************************XM132 functions**********************************
@@ -16,6 +16,19 @@ void checkXM132(){
   //publish data every 1.5 seconds
   if((millis()-lastPublish) > 1500){
 
+    //clear errors and status bits
+    Log.warn("Clear errors and status bits");
+    unsigned char clear_bits[4] = CLEAR_STATUS_BITS;
+    while(writeToXM132(MAIN_CONTROL_REGISTER,clear_bits));
+
+    Log.warn("Check status register for service creation");
+
+    if(waitForStatusReady(DATA_READY,3000)){
+      Log.warn("Data Ready");
+    } else{
+      Log.error("Data Not Ready");
+    }
+
     //read detection register
     detected = readFromXM132(DETECTED_REGISTER);
     if(detected == 0xFFFFFFFF) detected = 1;
@@ -27,8 +40,6 @@ void checkXM132(){
     Log.warn("Detection = %u", detected);
     Log.warn("Score = %u", score);
     Log.warn("Distance (mm) = %u", distance);
-
-
 
 /*    //create JSON
     char data[1024];
@@ -78,18 +89,42 @@ void xm132Setup(){
   unsigned char presence[4] = PRESENCE_SERVICE;
   while(writeToXM132(MODE_SELECTION_REGISTER,presence));
 
+  //set range_start register
+  Log.warn("Set range start register mode");
+  unsigned char startRegisterAddr = 0x20;
+  unsigned char range_start[4] = {0x00, 0x00, 0x00, 0x0A};
+  while(writeToXM132(startRegisterAddr,range_start));
+
+  //set range_length register
+  Log.warn("Set range start register mode");
+  unsigned char rangeRegisterAddr = 0x21;
+  unsigned char range_length[4] = {0x00, 0x00, 0x00, 0x50};
+  while(writeToXM132(rangeRegisterAddr,range_length));
+
   //start service
   Log.warn("Start service");
   unsigned char start_service[4] = START_SERVICE;
   while(writeToXM132(MAIN_CONTROL_REGISTER,start_service));
 
-  //unsigned char* status;
+  //wait for module to be activated and created
   Log.warn("Check status register for service creation");
   if(waitForStatusReady(MODULE_CREATED_AND_ACTIVATED,3000)){
     Log.warn("Module created and activated");
   } else{
     Log.error("Module failed to activate!");
   }
+
+  //read out start of sweep in mm
+  unsigned int start;
+  start = readFromXM132(START_REGISTER);
+  Log.warn("Start of sweep (mm) = %u", start);
+
+  //read out length of sweep in mm
+  unsigned int length;
+  length = readFromXM132(LENGTH_REGISTER);
+  Log.warn("Length of sweep (mm) = %u", length);  
+
+  Log.warn("XM132 setup complete");
 
 }
 
