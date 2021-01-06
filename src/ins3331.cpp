@@ -13,7 +13,7 @@
 void checkINS3331() {
 
   static unsigned char ins3331_recv_buf[20];  
-  static int frame_count = 0;
+  static int recv_buf_index = 0;
   static unsigned long int last_publish;
 
   static int inphase;
@@ -24,29 +24,42 @@ void checkINS3331() {
   // read from port 1, send to port 0:
   if (SerialRadar.available())
   {
+    //get a character
     uint8_t inByte = SerialRadar.read();
+    //check if we're at the start of a frame, if so set buffer index to 0
     if (inByte == 0xA2){
-      frame_count = 0;
+      recv_buf_index = 0;
     }
-    ins3331_recv_buf[frame_count]=inByte;
 
-    if(frame_count == 13){ 
-      //ins3331_recv_buf[7]+ins3331_recv_buf[8]
+    //put character in receive buffer
+    ins3331_recv_buf[recv_buf_index]=inByte;
+
+    //if buffer index = 13, frame has completed transmission so we can now parse
+    //the transmitted data
+    if(recv_buf_index == 13){ 
+
+      //extract phase value from 7th and 8th bytes of the slave frame
       inphase = ((int(ins3331_recv_buf[7]) << 8) & 0xff00) + (int(ins3331_recv_buf[8]));
       inphase=twos_comp(inphase, 16);
+      //load phase value into a String for publishing
       if(iValues.length()<200){
         iValues.concat(inphase);
         iValues.concat(',');
       }
+      //extract quadrature value from 9th and 10th bytes of the slave frame
       quadrature = ((int(ins3331_recv_buf[9]) << 8) & 0xff00) + (int(ins3331_recv_buf[10]));
       quadrature=twos_comp(quadrature, 16);
+      //load quadrature value into a String for publishing
       if(qValues.length()<200){
         qValues.concat(quadrature);
         qValues.concat(',');
       }
     }
-    frame_count++;
+
+    recv_buf_index++;
   }
+
+  //publish the strings of phase & quadrature values every 1.5 seconds
   if((millis()-last_publish) > 1500){
     String data = publishINSdata(iValues, qValues);
     Particle.publish("Radar", data, PRIVATE);
@@ -95,7 +108,7 @@ void radar_stop(){
   //Buffer for sending data to radar.
   //sending only done in radar_start() and radar_stop(), so 
   //this can be declared locally 
-  unsigned char ins3331_send_buf[20];   
+  unsigned char ins3331_send_buf[20];
 
   ins3331_send_buf[0] = 0x11; 
   ins3331_send_buf[1] = 0xA2; 
