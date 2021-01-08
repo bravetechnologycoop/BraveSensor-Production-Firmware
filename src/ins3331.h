@@ -9,7 +9,7 @@
  * Author: Heidi Fedorak, Sampath Satti
  * Date:  Nov 2020
  * 
- */
+*/
 
 #ifndef INS3331_H
 #define INS3331_H
@@ -22,7 +22,7 @@
 //  using Serial1, Serial2, or Serial3. Could probably be solved by changing baud rate)
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
-#define SerialDebug Serial    // Used for printing debug information, Serial connection with (micro) USB
+#define SerialUSB Serial    // Used for printing debug information, Serial connection with (micro) USB
 
 #define START_BYTE 0x11
 #define START_DELIM 0xA2
@@ -49,7 +49,8 @@ void radar_start();
 
 //loop functions
 void checkINS3331();
-String publishINSdata(String iValues, String qValues);
+void cloudPublishINSdata(String iValues, String qValues);
+void usbSerialPrintINSdata(String iValues, String qValues);
 int twos_comp(int val, int bits);
 
 

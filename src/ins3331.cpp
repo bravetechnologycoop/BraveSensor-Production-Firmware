@@ -61,19 +61,20 @@ void checkINS3331() {
 
   //publish the strings of phase & quadrature values every 1.5 seconds
   if((millis()-last_publish) > 1500){
-    String data = publishINSdata(iValues, qValues);
-    Particle.publish("Radar", data, PRIVATE);
-    Log.info("INS data actually published:");
-    Log.info(iValues, qValues);
-    Log.info("%02x:%02x:%04x", ins3331_recv_buf[7], ins3331_recv_buf[8], ((int(ins3331_recv_buf[7]) << 8) & 0xff00) + (int(ins3331_recv_buf[8])) );
-    Log.info("inphase %d, quadrature %d", inphase, quadrature);    
+    //publish to cloud
+    cloudPublishINSdata(iValues, qValues);
+
+    //print to USB serial
+    usbSerialPrintINSdata(iValues, qValues);
+
     last_publish = millis();
-    iValues = ' ';
-    qValues = ' ';
   }
+
 }
 
-String publishINSdata(String iValues, String qValues){
+void usbSerialPrintINSdata(String iValues, String qValues){
+
+  //create string for printing
   String data = "{ \"deviceid\": ";
   data.concat(INS_DEVICEID);
   data.concat("\"inPhase\": ");
@@ -83,7 +84,37 @@ String publishINSdata(String iValues, String qValues){
   data.concat(qValues);
   data.concat(", ");
   data.concat("}");
-  return data;
+
+  //print to usb serial
+  SerialUSB.println(data);
+
+  //log for debugging
+  Log.info("INS data actually published:");
+  Log.info(iValues, qValues);
+
+}
+
+
+void cloudPublishINSdata(String iValues, String qValues){
+
+  //create string for publishing
+  String data = "{ \"deviceid\": ";
+  data.concat(INS_DEVICEID);
+  data.concat("\"inPhase\": ");
+  data.concat(iValues);
+  data.concat(", ");
+  data.concat("\"quadrature\": ");
+  data.concat(qValues);
+  data.concat(", ");
+  data.concat("}");
+
+  //publish to cloud
+  Particle.publish("Radar", data, PRIVATE);
+
+  //log for debugging
+  Log.info("INS data actually published:");
+  Log.info(iValues, qValues);
+
 }
 
 int twos_comp(int val, int bits){
