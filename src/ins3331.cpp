@@ -62,17 +62,17 @@ void checkINS3331() {
   //publish the strings of phase & quadrature values every 1.5 seconds
   if((millis()-last_publish) > 1500){
     //publish to cloud
-    cloudPublishINSdata(iValues, qValues);
+    cloudPublishINSData(iValues, qValues);
 
     //print to USB serial
-    usbSerialPrintINSdata(iValues, qValues);
+    usbSerialPrintINSData(iValues, qValues);
 
     last_publish = millis();
   }
 
 }
 
-void usbSerialPrintINSdata(String iValues, String qValues){
+void usbSerialPrintINSData(String iValues, String qValues){
 
   //create string for printing
   String data = "{ \"deviceid\": ";

@@ -49,8 +49,8 @@ void radar_start();
 
 //loop functions
 void checkINS3331();
-void cloudPublishINSdata(String iValues, String qValues);
-void usbSerialPrintINSdata(String iValues, String qValues);
+void cloudPublishINSData(String iValues, String qValues);
+void usbSerialPrintINSData(String iValues, String qValues);
 int twos_comp(int val, int bits);
 
 
