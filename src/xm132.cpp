@@ -92,13 +92,13 @@ void xm132Setup(){
   //set range_start register
   Log.warn("Set range start register mode");
   unsigned char startRegisterAddr = 0x20;
-  unsigned char range_start[4] = {0x00, 0x00, 0x00, 0x0A};
+  unsigned char range_start[4] = {0x00, 0x00, 0x00, 0x64};
   while(writeToXM132(startRegisterAddr,range_start));
 
   //set range_length register
   Log.warn("Set range start register mode");
   unsigned char rangeRegisterAddr = 0x21;
-  unsigned char range_length[4] = {0x00, 0x00, 0x00, 0x50};
+  unsigned char range_length[4] = {0x00, 0x00, 0x03, 0xE8};
   while(writeToXM132(rangeRegisterAddr,range_length));
 
   //start service
