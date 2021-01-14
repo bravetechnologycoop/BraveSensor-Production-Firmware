@@ -13,7 +13,7 @@ void checkXM132(){
   unsigned int distance;
   static unsigned long lastPublish = 0;
 
-  //publish data every 1.5 seconds
+  //read and print/cloud publish data every 1.5 seconds
   if((millis()-lastPublish) > 1500){
 
     //clear errors and status bits
@@ -21,8 +21,7 @@ void checkXM132(){
     unsigned char clear_bits[4] = CLEAR_STATUS_BITS;
     while(writeToXM132(MAIN_CONTROL_REGISTER,clear_bits));
 
-    Log.warn("Check status register for service creation");
-
+    Log.warn("Check status register for data ready");
     if(waitForStatusReady(DATA_READY,3000)){
       Log.warn("Data Ready");
     } else{
@@ -39,22 +38,18 @@ void checkXM132(){
 
     Log.warn("Detection = %u", detected);
     Log.warn("Score = %u", score);
-    Log.warn("Distance (mm) = %u", distance);
+    Log.warn("Distance (cm) = %u", distance/10);
 
-/*    //create JSON
+    //create JSON
     char data[1024];
-    memset(data, 0, sizeof(data));
-    JSONBufferWriter writer(data, sizeof(data) - 1);
-    writer.beginObject();
-      writer.name("detected").value(detected);
-      writer.name("score").value(score);
-      writer.name("distance (mm)").value(distance);    
-      writer.endArray();
-    writer.endObject();
+    snprintf(data, sizeof(data), "{\"detection\":\"%u\", \"score\":\"%u\", \"distance\":\"%u\"}", 
+            detected, score, distance/10); 
 
     //publish to cloud
     Particle.publish("XM132", data, PRIVATE);
-*/
+    //print to USB Serial
+    SerialUSB.println(data);
+
     lastPublish = millis();
 
   } 
@@ -68,6 +63,7 @@ void xm132Setup(){
 
   //Start serial communication
   SerialRadar.begin(115200);
+  SerialUSB.begin(115200);
 
   Log.info("Entered XM132 Setup ");
 
@@ -92,14 +88,31 @@ void xm132Setup(){
   //set range_start register
   Log.warn("Set range start register mode");
   unsigned char startRegisterAddr = 0x20;
-  unsigned char range_start[4] = {0x00, 0x00, 0x00, 0x64};
+  // 0xB4 = 180 mm = 18 cm = lowest valid range according to GUI
+  unsigned char range_start[4] = {0x00, 0x00, 0x00, 0xB4};
   while(writeToXM132(startRegisterAddr,range_start));
 
   //set range_length register
   Log.warn("Set range start register mode");
   unsigned char rangeRegisterAddr = 0x21;
-  unsigned char range_length[4] = {0x00, 0x00, 0x03, 0xE8};
+  // 0xBB8 = 3000mm = 3m max valid range according to Anton @ Acconeer support
+  unsigned char range_length[4] = {0x00, 0x00, 0x0B, 0xB8};
   while(writeToXM132(rangeRegisterAddr,range_length));
+
+  //set threshold register
+  Log.warn("Set threshold");
+  unsigned char thresholdRegisterAddr = 0x40;
+  // 0xFA0 = 4000
+  // 0x7D0 = 2000
+  unsigned char threshold[4] = {0x00, 0x00, 0x07, 0xD0};
+  while(writeToXM132(thresholdRegisterAddr,threshold));
+
+  //set inter frame time const
+  Log.warn("Set inter frame time const");
+  unsigned char interTimeConstRegisterAddr = 0x42;
+  // 0x14 = 20
+  unsigned char interTimeConst[4] = {0x00, 0x00, 0x00, 0x14};
+  while(writeToXM132(interTimeConstRegisterAddr,interTimeConst));
 
   //start service
   Log.warn("Start service");
@@ -193,6 +206,9 @@ unsigned int readFromXM132(unsigned char address){
     //Empty anything else the 128 byte serial read buffer might have been sent
     while (SerialRadar.available())  SerialRadar.read();
 
+    //mysterious janky delay that is required or else we get garbage values printed to SerialUSB...
+    delay(10);
+
     //if response is correct, parse data, else print error and set loopFlag = -1
     if((register_read_response[3]==0xF6) && (register_read_response[4]==address)){
       Log.info("Successfully read from register address = 0x%02X:",address);
@@ -255,13 +271,12 @@ int writeToXM132(unsigned char address, unsigned char register_command[4]){
     register_write_request[8] = register_command[0];
     register_write_request[9] = 0xCD;
 
-    for(int j = 0; j < 10; j++){
-      Log.info("register_write_request[%d] = 0x%02X", j, register_write_request[j]);
-    }
-
-
     SerialRadar.write(register_write_request, 10);
     //Serial1.write(0xAA);
+
+    for(int j = 0; j < 10; j++){
+      Log.info("register_write_request[%d] = 0x%02X", j, register_write_request[j]);
+    } 
 
     //load the response
     while(SerialRadar.available()) {
@@ -271,8 +286,11 @@ int writeToXM132(unsigned char address, unsigned char register_command[4]){
     }
 
     //Empty anything else the 128 byte serial read buffer might have been sent
-    while (SerialRadar.available())
-      SerialRadar.read();
+    while (SerialRadar.available())  SerialRadar.read();
+
+    //mysterious janky delay that is required or else we get garbage values printed to SerialUSB...
+    //also somehow not required here, but is required after the identical code in the readFromXM132 function?
+    //delay(10);
 
     //check the response we want to keep for the correct bits: write response[3] should 
     //contain 0xF5 followed by address of register read, as per Acconeer docs and example:
