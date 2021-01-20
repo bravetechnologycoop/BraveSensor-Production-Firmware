@@ -95,7 +95,7 @@ void usbSerialPrintINSData(String iValues, String qValues){
 }
 
 
-void cloudPublishINSdata(String iValues, String qValues){
+void cloudPublishINSData(String iValues, String qValues){
 
   //create string for publishing
   String data = "{ \"deviceid\": ";
