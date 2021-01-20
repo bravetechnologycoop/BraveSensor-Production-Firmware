@@ -66,8 +66,10 @@ void checkINS3331() {
 
     //print to USB serial
     usbSerialPrintINSData(iValues, qValues);
-
+    iValues = ' ';
+    qValues = ' ';
     last_publish = millis();
+
   }
 
 }
