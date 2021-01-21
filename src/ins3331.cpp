@@ -54,6 +54,13 @@ void checkINS3331() {
         qValues.concat(quadrature);
         qValues.concat(',');
       }
+      //print inphase and quadrature straight to serial
+      //char buffer[512];
+      //snprintf(buffer, sizeof(buffer), "{\"deviceID\":%s, \"inPhase\":\"%d\", \"quadrature\":\"d\"}", 
+      //        INS_DEVICEID,inphase,quadrature);
+      SerialUSB.printlnf("{\"deviceID\":%s, \"inPhase\":\"%d\", \"quadrature\":\"%d\"}", 
+              INS_DEVICEID,inphase,quadrature);       
+
     }
 
     recv_buf_index++;
@@ -65,7 +72,7 @@ void checkINS3331() {
     cloudPublishINSData(iValues, qValues);
 
     //print to USB serial
-    usbSerialPrintINSData(iValues, qValues);
+    //usbSerialPrintINSData(iValues, qValues);
     iValues = ' ';
     qValues = ' ';
     last_publish = millis();
