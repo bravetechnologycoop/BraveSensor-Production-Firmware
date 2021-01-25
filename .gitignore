@@ -11,6 +11,9 @@ core
 #ignore... I think it's my app's binary?
 code
 
+#ignore new/alternative firmware setup file
+firmware_config.h
+
 #ignore log files
 *.log
 
