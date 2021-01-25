@@ -19,21 +19,31 @@
 
 //******************global variable declarations*******************
 //variables used in setup() and loop() have to be global
-extern char mySSIDs[5][MAXLEN];
-extern char myPasswords[5][MAXLEN];
+//extern char mySSIDs[5][MAXLEN];
+//extern char myPasswords[5][MAXLEN];
 
 
 //*************************function declarations*************************
 
-void connectToWifi();
-int setWifiSSID(String);
-int setWifiPwd(String);   
+//setup() functions 
+void setupWifi();
+
+
+//loop functions
+void reConnectToWifi();
+
+//console functions
+int setSSIDFromConsole(String);
+int setPwdFromConsole(String);
+int setwifiLogFromConsole(String);
+
+
 void writeWifiToFlash();        
 void readWifiFromFlash(); 
 void initializeOriginalWifiCreds();
-void wifiCredsSetup();
+
 void writeWifiLogToFlash(int wifiLogCount);
 int readWifiLogFromFlash();
-int wifiLog(String logCommand);
+
 
 #endif
