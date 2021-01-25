@@ -257,6 +257,13 @@ int setWifiPwd(String newPwd){
 
 void wifiCredsSetup(){
 
+  //if not new Particle, and we want to overwrite flash with original wifi
+  //credentials and re-initialize log, we set this define in odetect_config.h
+  #if defined(WRITE_ORIGINAL_WIFI)
+  writeWifiToFlash();
+  writeWifiLogToFlash(0);
+  readWifiFromFlash();
+  #else
   //read the first two bytes of memory. Particle docs say all
   //bytes of flash initialized to OxF. First two bytes are 0xFFFF
   //on new boards, note 0xFFFF does not correspond to any ASCII chars
@@ -274,13 +281,6 @@ void wifiCredsSetup(){
   } else {
     readWifiFromFlash();
   }
-
-  //if not new Particle, and we want to overwrite flash with original wifi
-  //credentials and re-initialize log, we set this define in odetect_config.h
-  #if defined(WRITE_ORIGINAL_WIFI)
-  writeWifiToFlash();
-  writeWifiLogToFlash(0);
-  readWifiFromFlash();
   #endif
 
   #if defined(MANUAL_MODE)
