@@ -16,27 +16,33 @@
 //*************************global macro defines**********************************
 
 //******************global variable declarations*******************
-typedef struct IM21DoorIDStruct {
+typedef struct IM21DoorID {
     uint8_t byte1;
     uint8_t byte2;
     uint8_t byte3;
-} IM21DoorIDStruct;
+} IM21DoorID;
+
+typedef struct doorData {
+    unsigned char doorStatus;
+    unsigned char controlByte;
+} doorData;
 
 //*************************function declarations*******************
 
 //console functions
-int doorSensorIDFromConsole(String command);
+int setIM21DoorIDFromConsole(String command);
 
 //setup() functions
-void doorSensorSetup();
-//called from doorSensorSetup() and doorSensorIDFromConsole():
-void initOriginals(IM21DoorIDStruct* structToInitialize);
-void writeDoorIDToFlash(IM21DoorIDStruct* structPtr);
-IM21DoorIDStruct readDoorIDFromFlash();
+void setupIM21();
 
 //loop() functions
-int checkDoor();
+void checkIM21();
+void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData);
 
+//common functions
+//called from setupIM21() and console function:
+void writeIM21DoorIDToFlash(IM21DoorID);
+IM21DoorID readIM21DoorIDFromFlash();
 
 
 #endif

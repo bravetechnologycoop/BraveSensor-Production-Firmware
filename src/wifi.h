@@ -16,11 +16,10 @@
 
 //max string length of any SSID or password (including null char)
 #define MAXLEN 64
+#define PASSWORD_FOR_SSIDS "password"
+#define PASSWORD_FOR_PASSWORDS "password"
 
 //******************global variable declarations*******************
-//variables used in setup() and loop() have to be global
-//extern char mySSIDs[5][MAXLEN];
-//extern char myPasswords[5][MAXLEN];
 
 
 //*************************function declarations*************************
@@ -28,22 +27,17 @@
 //setup() functions 
 void setupWifi();
 
-
 //loop functions
-void reConnectToWifi();
+void checkWifi();
+
 
 //console functions
 int setSSIDFromConsole(String);
 int setPwdFromConsole(String);
-int setwifiLogFromConsole(String);
+int getWifiLogFromConsole(String);
 
-
-void writeWifiToFlash();        
-void readWifiFromFlash(); 
-void initializeOriginalWifiCreds();
-
-void writeWifiLogToFlash(int wifiLogCount);
-int readWifiLogFromFlash();
-
+//common functions
+void connectToWifi();
+void incrementWifiDisconnectLog();
 
 #endif

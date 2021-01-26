@@ -1,3 +1,9 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project BraveSensorProductionFirmware
  * 
@@ -22,6 +28,9 @@
 
 //*************************System/Startup messages for Particle API***********
 
+void setup();
+void loop();
+#line 25 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
 #if defined(PHOTON)

@@ -14,86 +14,29 @@
 #include "flash_addresses.h"
 #include "wifi.h"
 
-//******************global variable initialization*******************
-
-//char mySSIDs[5][MAXLEN] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveDiagnostics"};
-//char myPasswords[5][MAXLEN] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
-
-//**********************************setup() Functions*********************************************
+//****************************************************************setup() Functions************************************************************************
 
 void setupWifi(){
 
-  //read the passwords stored in flash
-  char SSIDs[5][64];
-  char passwords[5][64];
-
-  EEPROM.get(ADDR_SSIDS,SSIDs);  
-  EEPROM.get(ADDR_PWDS,passwords);
-
-  //disconnect from cloud and then turn off wifi module
-  Particle.disconnect();
-  WiFi.off();
-  WiFi.clearCredentials();
-  WiFi.on();
-  //wait for module to turn on, and for any recently changed network
-  //to be able to accept new connections
-  delay(1000);
-
-  //attempt to connect to the different wifi credentials stored in memory 
-  for(int i = 0; i < 5; i++){
-
-
-    long int timeStarted = Time.now();
-
-    Log.info("Setting credential set: %d", i);
-    Log.info(SSIDs[i]);
-    Log.info(passwords[i]);
-
-    WiFi.setCredentials(SSIDs[i], passwords[i]);
-    WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
-
-    //wait for wifi to connect or for 15 seconds, whichever is sooner
-    waitFor(WiFi.ready, 15000);  
-
-    //wifi.ready() returns true when connected and false when not
-    if(WiFi.ready()) {
-
-      Log.info("Connected to wifi.");
-      long int connectionLength = Time.now() - timeStarted;
-      Log.info("connection process took %ld seconds.\n", connectionLength);
-
-      Log.info("Now wait for cloud connection to re-establish");
-      Particle.connect();
-
-      //if we're connected, stop trying credentials
-      break;
-    }
-    else {
-
-      //else not connected, so continue on to next set of credentials
-      Log.info("Failed to connect to credential set: %d", i);
-      continue;
-
-    } //end wifi ready if
-
-  } //end for
+  incrementWifiDisconnectLog();
+  connectToWifi();
 
 }
 
-//**********************************Console Functions*********************************************
+//****************************************************************Console Functions*************************************************************************
 
-int setwifiLogFromConsole(String logCommand){
+int getWifiLogFromConsole(String logCommand){
 
   int returnFlag = -1;
   const char* command = logCommand.c_str();
 
   if(*command == 'e'){
     //if e = echo, function returns the log int
-    returnFlag = readWifiLogFromFlash();
+    EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, returnFlag);
   } else if (*command == 'c') {
-    //if c = clear, reset the log int to 0
-    writeWifiLogToFlash(0);
-    returnFlag = readWifiLogFromFlash();
+    //if c = clear, reset the log int to 0 and reload returnFlag to confirm
+    EEPROM.put(ADDR_WIFI_DISCONNECT_LOG, 0);
+    EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, returnFlag);
   } else {
     //bad input, return -1
     returnFlag = -1;
@@ -114,52 +57,55 @@ int setwifiLogFromConsole(String logCommand){
 //example:  2myNewSSID puts myNewSSID in mySSIDs[2]
 int setSSIDFromConsole(String newSSID){
 
+  int wifiBufferIndex = -1;  
+
+  //read the SSIDs currently stored in flash
+  char SSIDs[5][64];
+  EEPROM.get(ADDR_SSIDS,SSIDs);  
+
+  //get pointer to user input string 
   const char* indexHolder = newSSID.c_str(); 
   
-  //compare input to password
+  //compare input to password for SSIDs
   const char* printSSIDs = PASSWORD_FOR_SSIDS;
   int test = strcmp(indexHolder,printSSIDs);
+
   //if input matches password, print SSIDs to cloud
   if(test == 0){
-    readWifiLogFromFlash();
+
+    //publish SSIDs, and state which SSID Argon is currently connected to
     char holder[640];
-	  snprintf(holder, sizeof(holder), "{\"mySSIDs[0]\":\"%s\", \"mySSIDs[1]\":\"%s\", \"mySSIDs[2]\":\"%s\", \"mySSIDs[3]\":\"%s\", \"mySSIDs[4]\":\"%s\", \"connected to:\":\"%s\"}", 
-            mySSIDs[0], mySSIDs[1], mySSIDs[2], mySSIDs[3], mySSIDs[4],WiFi.SSID());
+	  snprintf(holder, sizeof(holder), "{\"SSIDs[0]\":\"%s\", \"SSIDs[1]\":\"%s\", \"SSIDs[2]\":\"%s\", \"SSIDs[3]\":\"%s\", \"SSIDs[4]\":\"%s\", \"connected to:\":\"%s\"}", 
+            SSIDs[0], SSIDs[1], SSIDs[2], SSIDs[3], SSIDs[4],WiFi.SSID());
     Particle.publish("echo SSIDs", holder, PRIVATE);
+    wifiBufferIndex = 10;
+  } 
+  else {
+    // else input doesn't match password for echoing SSIDs, so we are changing an SSID
+    // need to check first char of string for digit that says which SSID we're over-writing
+    // can't use atoi() because atoi it fails it returns 0, so can't distinguish between
+    // wanting to change 0th SSID and having entered incorrect value
+    // int wifiBufferIndex = atoi(indexHolder);
+
+    //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+    //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+    wifiBufferIndex = (int)(*indexHolder) - 48;
+    
+    //if desired index is out of range, exit with error code -1
+    if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+    //get pointer to the rest of the string, skipping 1st character because that is the index
+    const char* stringHolder = (newSSID.c_str()+1);
+
+    //copy ssid to correct element of char array
+    strcpy(SSIDs[wifiBufferIndex], stringHolder);
+
+    //write updated char array to flash memory
+    EEPROM.put(ADDR_SSIDS,SSIDs);  
+
   }
 
-  //if input doesn't match password, check first char of string for index digit
-  //can't use atoi() because if it fails it returns 0
-  //so we don't know if we accidentally entered a string that 
-  //starts with a non-integer, or if we've entered a string that
-  //starts with 0 on purpose
-  //int wifiBufferIndex = atoi(indexHolder);
-
-  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
-  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
-  int wifiBufferIndex = (int)(*indexHolder) - 48;
-  
-  //if desired index is out of range, exit with error code -1
-  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
-
-
-  //get the rest of the string, skipping 1st character because that is the index
-  const char* stringHolder = (newSSID.c_str()+1);
-
-  //copy ssid to correct element of global char array
-  strcpy(mySSIDs[wifiBufferIndex], stringHolder);
-
-  //backup in flash memory
-  writeWifiToFlash();
-
-  //did it work?
-  for(int i = 0; i < 5; i++){
-    Log.info("New credential set: %d", i);
-    Log.info(mySSIDs[i]);
-    Log.info(myPasswords[i]);
-    WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
-  }
-
+  //return index if successfully overwritten, -1 if write fails, 10 if echoing password only
   return wifiBufferIndex;
 
 }
@@ -169,71 +115,97 @@ int setSSIDFromConsole(String newSSID){
 //example:  21password1 puts 1password1 in myPasswords[2]
 int setPwdFromConsole(String newPwd){
 
+  int wifiBufferIndex = -1;  
+
+  //read the passwords currently stored in flash
+  char passwords[5][64];
+  EEPROM.get(ADDR_PWDS,passwords);  
+
+  //get pointer to user input string 
   const char* indexHolder = newPwd.c_str(); 
-
-  //compare input to password
-  const char* printPwds = PASSWORD_FOR_SSIDS;
-  int test = strcmp(indexHolder,printPwds);
-  //if input matches password, print SSIDs to cloud
-  if(test == 0){
-    readWifiLogFromFlash();
-    char holder[640];
-	  snprintf(holder, sizeof(holder), "{\"myPasswords[0]\":\"%s\", \"myPasswords[1]\":\"%s\", \"myPasswords[2]\":\"%s\", \"myPasswords[3]\":\"%s\", \"myPasswords[4]\":\"%s\", \"connected to:\":\"%s\"}", 
-            myPasswords[0], myPasswords[1], myPasswords[2], myPasswords[3], myPasswords[4], WiFi.SSID());
-    Particle.publish("echo wifi passwords", holder, PRIVATE);
-  }  
-
-  //if input doesn't match password, check first char of string for index digit
-  //can't use atoi because if it fails it returns 0
-  //so we don't know if we accidentally entered a string that 
-  //starts with a non-integer, or if we've entered a string that
-  //starts with 0 on purpose
-  //int wifiBufferIndex = atoi(indexHolder);
-
-  //use the ascii table instead, '0' casts to 48, '1' to 49, etc
-  //is this a stupid hacky fix or a clever elegant solution? opinions vary...
-  int wifiBufferIndex = (int)(*indexHolder) - 48;
   
-  //if desired index is out of range, exit with error code -1
-  if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+  //compare input to password to echo passwords
+  const char* printPasswords = PASSWORD_FOR_PASSWORDS;
+  int test = strcmp(indexHolder,printPasswords);
 
-  //get the rest of the string, skipping 1st character because that is the index
-  const char* stringHolder = (newPwd.c_str()+1);
+  //if input matches password, print passwords to cloud
+  if(test == 0){
 
-  //copy password to correct element of global char array
-  strcpy(myPasswords[wifiBufferIndex], stringHolder);
+    //publish passwords, and state which SSID Argon is currently connected to (can't state the password, WiFi object doesn't allow access to that)
+    char holder[640];
+	  snprintf(holder, sizeof(holder), "{\"password[0]\":\"%s\", \"password[1]\":\"%s\", \"password[2]\":\"%s\", \"password[3]\":\"%s\", \"password[4]\":\"%s\", \"connected to SSID:\":\"%s\"}", 
+            passwords[0], passwords[1], passwords[2], passwords[3], passwords[4], WiFi.SSID());
+    Particle.publish("echo Passwords", holder, PRIVATE);
+    wifiBufferIndex = 10;
+  } 
+  else {
+    // else input doesn't match password for echoing SSIDs, so we are changing an SSID
+    // need to check first char of string for digit that says which SSID we're over-writing
+    // can't use atoi() because atoi it fails it returns 0, so can't distinguish between
+    // wanting to change 0th SSID and having entered incorrect value
+    // int wifiBufferIndex = atoi(indexHolder);
 
-  //backup in flash memory
-  writeWifiToFlash();
- 
-  //did it work?
-  for(int i = 0; i < 5; i++){
-    Log.info("New credential set: %d", i);
-    Log.info(mySSIDs[i]);
-    Log.info(myPasswords[i]);
-    WiFi.setCredentials(mySSIDs[i],myPasswords[i]);
+    //use the ascii table instead, '0' casts to 48, '1' to 49, etc
+    //is this a stupid hacky fix or a clever elegant solution? opinions vary...
+    wifiBufferIndex = (int)(*indexHolder) - 48;
+    
+    //if desired index is out of range, exit with error code -1
+    if(wifiBufferIndex < 0 || wifiBufferIndex > 3) return -1;
+
+    //get pointer to the rest of the string, skipping 1st character because that is the index
+    const char* stringHolder = (newPwd.c_str()+1);
+
+    //copy ssid to correct element of char array
+    strcpy(passwords[wifiBufferIndex], stringHolder);
+
+    //write updated char array to flash memory
+    EEPROM.put(ADDR_PWDS,passwords);  
+
   }
 
+  //return index if successfully overwritten, -1 if write fails, 10 if echoing password only
   return wifiBufferIndex;
 
 }
 
 
-//**********************************loop() Functions*********************************************
-
+//*************************************************************loop() Functions***************************************************************************
 
 //connects to one of 5 stored wifi networks
-void reConnectToWifi(){
+void checkWifi(){
 
-  long int disconnectCounter = Time.now();
+  //WiFi.ready = false if wifi is lost. If false, try to reconnect
+  if(!WiFi.ready()){
 
-  //increment the wifi disconnected counter
-  int wifiDisconnectCount = readWifiDisconnectLogFromFlash();
-  wifiDisconnectCount++;
-  writeWifiDisconnectLogToFlash(wifiDisconnectCount);
+    Log.warn("Wifi connection lost, attempting reconnect");
+    long int disconnectCounter = Time.now();
+    incrementWifiDisconnectLog();
+    connectToWifi();
+    Log.warn("length of disconnect in seconds: %ld", Time.now()-disconnectCounter);
 
-  Log.info("Wifi connection lost, attempting reconnect");
-  Log.info("wifiLogCount = %i", wifiDisconnectCount);
+    //char buffer[1024];
+    //snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%ld\"}", Time.now()-disconnectCounter);
+    //Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
+
+  }  
+
+}  //end checkWifi
+
+//****************************************************************common functions************************************************************************
+
+void connectToWifi(){
+
+  //read the credentials stored in flash
+  char SSIDs[5][64];
+  char passwords[5][64];
+  EEPROM.get(ADDR_SSIDS,SSIDs);  
+  EEPROM.get(ADDR_PWDS,passwords);
+
+  for(int i = 0; i < 5; i++){
+    Log.warn("Credential set, at start of connectToWifi: %d", i);
+    Log.warn(SSIDs[i]);
+    Log.warn(passwords[i]);
+  }
 
   //disconnect from cloud and then turn off wifi module
   Particle.disconnect();
@@ -242,82 +214,59 @@ void reConnectToWifi(){
   WiFi.on();
   //wait for module to turn on, and for any recently changed network
   //to be able to accept new connections
-  delay(1000);
+  Log.warn("waiting for wifi module to turn on");
+  delay(5000);
 
-  //set current credentials in temporary memory, specifically in an object of type
-  //WiFiCredentials. Look at source code to understand objects as there are 
-  //no docs on them.
+  //attempt to connect to the different wifi credentials stored in memory 
   for(int i = 0; i < 5; i++){
-    time_t timeStarted = Time.now();
-    Log.info("Setting credential set: %d", i);
-    Log.info(mySSIDs[i]);
-    Log.info(myPasswords[i]);
 
+    long int timeStarted = Time.now();
 
-    WiFi.setCredentials(mySSIDs[i], myPasswords[i]);
+    Log.warn("Setting credential set: %d", i);
+    Log.warn(SSIDs[i]);
+    Log.warn(passwords[i]);
+
+    WiFi.setCredentials(SSIDs[i], passwords[i]);
     WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
+
     //wait for wifi to connect or for 15 seconds, whichever is sooner
+    Log.warn("waiting for wifi to connect");
     waitFor(WiFi.ready, 15000);  
 
     //wifi.ready() returns true when connected and false when not
     if(WiFi.ready()) {
-      Log.info("Connected to wifi.");
+
+      Log.warn("Connected to wifi.");
       long int connectionLength = Time.now() - timeStarted;
-      Log.info("connection process took %ld seconds.\n", connectionLength);
-      Log.info("Now wait 10s for cloud connection to re-establish");
-      //if we're re-connected, also reconnect to cloud
+      Log.warn("connection process took %ld seconds.\n", connectionLength);
       Particle.connect();
-      //pause for a few moments to allow reconnection
-      delay(10000);
-      char buffer[1024];
-      snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%ld\"}", Time.now()-disconnectCounter);
-      Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
-      Log.info(buffer);
+      //takes about 5s to connect to cloud. If we care about publishing something immediately after this command
+      //such as a wifi disconnect warning, this needs to be uncommented.
+      //delay(5000);
       //if we're connected, stop trying credentials
       break;
-    } else {
-      Log.info("***Failed to connect to wifi***");
-      long int connectionLength = Time.now() - timeStarted;
-      Log.info("Connection timeout was %ld seconds.\n", connectionLength);
-      //else not connected, so continue on to next set of credentials
-      continue;
     }
+    else {
 
-  }
+      //else not connected, so continue on to next set of credentials
+      Log.warn("Failed to connect to credential set: %d", i);
+      continue;
 
-}  //end connectToWifi()
+    } //end wifi ready if
 
-void writeWifiDisconnectLogToFlash(int wifiLogCount) {
-
-  //EEPROM.put() will compare object data to data currently in EEPROM
-  //to avoid re-writing values that haven't changed
-  EEPROM.put(ADDR_WIFI_DISCONNECT_LOG, wifiLogCount);  
-
-}
-
-int readWifiDisconnectLogFromFlash() {
-
-  int holder;
-  EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, holder); 
-
-  return holder;
-}
-
-void writeWifiToFlash() {
-
-  //EEPROM.put() will compare object data to data currently in EEPROM
-  //to avoid re-writing values that haven't changed
-  EEPROM.put(ADDRSSIDS,mySSIDs);  
-  EEPROM.put(ADDRPWDS, myPasswords);
-
-}
-
-void readWifiFromFlash() {
-
-  EEPROM.get(ADDRSSIDS,mySSIDs);  
-  EEPROM.get(ADDRPWDS,myPasswords);
+  } //end for
 
 }
 
 
 
+void incrementWifiDisconnectLog(){
+
+  //increment the wifi disconnected counter
+  int wifiDisconnectCount;  
+  EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, wifiDisconnectCount); 
+  wifiDisconnectCount++;
+  EEPROM.put(ADDR_WIFI_DISCONNECT_LOG, wifiDisconnectCount);  
+  Log.warn("wifiDisconnectCount = %i", wifiDisconnectCount);
+
+}
