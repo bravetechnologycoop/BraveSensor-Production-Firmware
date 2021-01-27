@@ -17,9 +17,9 @@
 
 //******************global variable declarations*******************
 typedef struct IM21DoorID {
-    uint8_t byte1;
-    uint8_t byte2;
-    uint8_t byte3;
+    unsigned char byte1;
+    unsigned char byte2;
+    unsigned char byte3;
 } IM21DoorID;
 
 typedef struct doorData {
@@ -38,6 +38,7 @@ void setupIM21();
 //loop() functions
 void checkIM21();
 void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData);
+void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorData);
 
 //common functions
 //called from setupIM21() and console function:

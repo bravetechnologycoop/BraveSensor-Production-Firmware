@@ -63,7 +63,7 @@ void setup() {
   setupXeThru();
   #endif
   #if defined(IM21_PARTICLE)
-  Particle.function("IM21DoorID",setIM21DoorIDFromConsole);
+  Particle.function("changeIM21DoorID",setIM21DoorIDFromConsole);
   setupIM21();
   #endif
 
@@ -86,7 +86,7 @@ void loop() {
   checkWifi();
 
   //for every loop check the door data
-  #if defined(DOOR_PARTICLE)
+  #if defined(IM21_PARTICLE)
   checkIM21();
   #endif
   // For every loop we check to see if we have received any respiration data

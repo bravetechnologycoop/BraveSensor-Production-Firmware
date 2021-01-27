@@ -1,5 +1,4 @@
 #include "Particle.h"
-#include "CircularBuffer.h"
 #include "firmware_config.h"
 #include "flash_addresses.h"
 #include "im21door.h"
@@ -38,13 +37,13 @@ int setIM21DoorIDFromConsole(String command) { // command is a long string with 
     const char* byteholder3;
     int split1 = command.indexOf(',');
     byteholder1 = command.substring(0,split1).c_str();
-    globalDoorID.byte1 = (uint8_t)strtol(byteholder1,NULL,16);
+    globalDoorID.byte3 = (uint8_t)strtol(byteholder1,NULL,16);
     int split2 = command.indexOf(',', split1+1);
     byteholder2 = command.substring(split1+1,split2).c_str();
     globalDoorID.byte2 = (uint8_t)strtol(byteholder2,NULL,16);
     int split3 = command.indexOf(',', split2+1);
     byteholder3 = command.substring(split2+1,split3).c_str();
-    globalDoorID.byte3 = (uint8_t)strtol(byteholder3,NULL,16);
+    globalDoorID.byte1 = (uint8_t)strtol(byteholder3,NULL,16);
 
     //write new global door ID to flash
     writeIM21DoorIDToFlash(globalDoorID);
@@ -52,8 +51,8 @@ int setIM21DoorIDFromConsole(String command) { // command is a long string with 
     //did it get written correctly?
     IM21DoorID check = readIM21DoorIDFromFlash();
 
-    Log.info("Contents of flash after console function called:");
-    Log.info("byte1: %02X, byte2: %02X, byte3: %02X",check.byte1,check.byte2,check.byte3); 
+    Log.warn("Contents of flash after console function called:");
+    Log.warn("byte1: %02X, byte2: %02X, byte3: %02X",check.byte1,check.byte2,check.byte3); 
 
   } //end if-else
 
@@ -74,8 +73,8 @@ void setupIM21(){
 
   globalDoorID = readIM21DoorIDFromFlash();
 
-  Log.info("DoorID at end of setup() is:");
-  Log.info("byte1: %02X, byte2: %02X, byte3: %02X",
+  Log.warn("DoorID at end of setup() is:");
+  Log.warn("byte1: %02X, byte2: %02X, byte3: %02X",
           globalDoorID.byte1,globalDoorID.byte2,globalDoorID.byte3);
 
 
@@ -137,29 +136,36 @@ void checkIM21(){
 
       currentDoorData.doorStatus = doorAdvertisingData[5];
       currentDoorData.controlByte = doorAdvertisingData[6];
-      Log.warn("scan thread data, control: 0x%02X, 0x%02X",currentDoorData.doorStatus, currentDoorData.controlByte);
+
+      Log.info("raw door sensor output - control:  prev, current: 0x%02X, 0x%02X", previousDoorData.controlByte, currentDoorData.controlByte);
+      Log.info("raw door sensor output - data byte prev, current: 0x%02X, 0x%02X", previousDoorData.doorStatus, currentDoorData.doorStatus);
 
       //if this is the first door event received after firmware bootup, publish
       if(initialDoorDataFlag){
 
         initialDoorDataFlag = 0;
-        Log.info("initial door event, publish");
         logAndPublishDoorData(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;   
       }
       //if this curr = prev + 1, all is well, publish
       else if(currentDoorData.controlByte == (previousDoorData.controlByte+0x01)){
 
-        Log.info("curr = prev + 1, publish");
         logAndPublishDoorData(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
       }
       //if curr > prev + 1, missed an event, publish warning
       else if(currentDoorData.controlByte > (previousDoorData.controlByte+0x01)){
 
-        Log.warn("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+        Log.error("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+        logAndPublishDoorWarning(previousDoorData,currentDoorData);
+        previousDoorData = currentDoorData;  
+      }
+      //special case for when control byte rolls over from FF to 00, don't want to publish missed door event warning
+      else if ((currentDoorData.controlByte == 0x00) && (previousDoorData.controlByte == 0xFF)){
+
         logAndPublishDoorData(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
+
       }
       else {
         //no new data, do nothing
@@ -177,10 +183,20 @@ void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData){
 
   char doorPublishBuffer[128];
 
-  Log.info("control:     prev, current: 0x%02X, 0x%02X", previousDoorData.controlByte, currentDoorData.controlByte);
-  Log.info("door status: prev, current: 0x%02X, 0x%02X", previousDoorData.doorStatus, currentDoorData.doorStatus);
   sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }", 
-          globalDoorID.byte3, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
+          globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
   Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
+  Log.info("published");
+
+}
+
+void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorData){
+
+  char doorPublishBuffer[128];
+
+  sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\", \"warning\": \"Missed a door event!\" }", 
+          globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
+  Particle.publish("IM21 Warning", doorPublishBuffer, PRIVATE);
+  Log.info("published");
 
 }
