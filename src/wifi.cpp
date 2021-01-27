@@ -201,10 +201,10 @@ void connectToWifi(){
   EEPROM.get(ADDR_SSIDS,SSIDs);  
   EEPROM.get(ADDR_PWDS,passwords);
 
-  Log.warn("Credential sets in flash at Particle bootup:");
+  Log.warn("Credential sets in flash at start of connectToWifi():");
   for(int i = 0; i < 5; i++){
-    Log.warn("", SSIDs[i]);
-    Log.warn(passwords[i]);
+    Log.warn("SSID[%d]: %s", i, SSIDs[i]);
+    Log.warn("password[%d]: %s", i, passwords[i]);
   }
 
   //disconnect from cloud and then turn off wifi module
