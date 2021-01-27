@@ -22,43 +22,21 @@
  */
 
 #include "setupFirmware.h"
-
-//**********FLASH ADDRESSES***********************
-//wifi
-void setup();
-void loop();
-#line 22 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/setupFirmware.ino"
-#define ADDR_SSIDS 0   		  		    	//sizeof = 320
-#define ADDR_PWDS 320			        		//sizeof = 320
-#define ADDR_WIFI_CONNECT_LOG 640			//sizeof = 4
-
-//xethru
-#define ADDR_XETHRU_LED 644		      	//sizeof = 4
-#define ADDR_XETHRU_NOISEMAP 648      //sizeof = 4
-#define ADDR_XETHRU_SENSITIVITY 652   //sizeof = 4
-#define ADDR_XETHRU_MIN_DETECT 656    //sizeof = 4
-#define ADDR_XETHRU_MAX_DETECT 660    //sizeof = 4
-
-//im21 door sensor
-#define ADDR_IM21_DOORID 664		    	//sizeof = 3
-
-//general device settings
-#define ADDR_LOCATION_ID 667          //sizeof = 64
-#define ADDR_DEVICE_ID 731            //sizeof = 4
-#define ADDR_DEVICE_TYPE 735          //sizeof = 64
-
-//next available memory location is 735+64 = 799
+#include "flashAddresses.h"
 
 
 //*************************System/Startup messages for Particle API***********
 
+void setup();
+void loop();
+#line 24 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/setupFirmware.ino"
 SerialLogHandler LogHandler(DEBUG_LEVEL);
 
 // setup() runs once, when the device is first turned on.
 void setup() {
 
   //write wifi SSIDs and passwords to flash
-  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "thisisastringwith63characterslalalalalalalalalalalalalalalala63"};
+  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveHotspot"};
   char myPasswords[5][64] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
   EEPROM.put(ADDR_SSIDS,mySSIDs);  
   EEPROM.put(ADDR_PWDS,myPasswords);
@@ -115,6 +93,15 @@ void setup() {
   #endif
 
   Log.warn("Setup Complete");
+
+  delay(2500);
+
+  unsigned char ff = 0xFF;
+  unsigned char ffplusone;
+
+  ffplusone = ff + 1;
+
+  Log.warn("ff: 0x%02X, ffplusone: 0x%02X",ff, ffplusone);
 
 
 
