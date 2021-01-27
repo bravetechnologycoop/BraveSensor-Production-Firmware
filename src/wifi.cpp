@@ -174,22 +174,30 @@ int setPwdFromConsole(String newPwd){
 //connects to one of 5 stored wifi networks
 void checkWifi(){
 
-  //WiFi.ready = false if wifi is lost. If false, try to reconnect
-  if(!WiFi.ready()){
+  //want to time how long we are trapped in the while loop below...
+  long int disconnectCounter = Time.now();
+
+  //WiFi.ready = false if wifi is lost. while false, try to reconnect
+  while(!WiFi.ready()){
 
     Log.warn("Wifi connection lost, attempting reconnect");
-    long int disconnectCounter = Time.now();
-    incrementWifiDisconnectLog();
+
     connectToWifi();
-    Log.warn("length of disconnect in seconds: %ld", Time.now()-disconnectCounter);
 
-    //char buffer[1024];
-    //snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%ld\"}", Time.now()-disconnectCounter);
-    //Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
+    //if connected, increment wifi disconnect log and print/publish length of disconnect
+    if(WiFi.ready()){
+      incrementWifiDisconnectLog();
+      Log.warn("Successfully reconnected to wifi.");
+      Log.warn("length of disconnect in seconds: %ld", Time.now()-disconnectCounter);
+      //char buffer[1024];
+      //snprintf(buffer, sizeof(buffer), "{\"Length of disconnect in seconds\":\"%ld\"}", Time.now()-disconnectCounter);
+      //Particle.publish("Wifi Disconnect Warning",buffer,PRIVATE);
+      break;
+    }
 
-  }  
+  } //end while
 
-}  //end checkWifi
+}  //end checkWifi()
 
 //****************************************************************common functions************************************************************************
 

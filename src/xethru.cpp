@@ -32,17 +32,19 @@ void setupXeThru(){
 
   //load global settings (deviceID, locationID, deviceType) from flash:
   readDeviceIdentifiersFromFlash();
-	
-  XeThruConfigSettings xeThruConfig;
 
+  XeThruConfigSettings xeThruConfig;
   xeThruConfig = readXeThruConfigFromFlash();
 
   xethru_reset();
   xethru_configuration(&xeThruConfig);
 
-  Log.warn("xeThruConfig at end of setupXeThru:");
+  Log.warn("xeThruConfig read from flash during xethru setup:");
   Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
-            xeThruConfig.led, xeThruConfig.noisemap, xeThruConfig.sensitivity, xeThruConfig.min_detect, xeThruConfig.max_detect); 
+            xeThruConfig.led, xeThruConfig.noisemap, xeThruConfig.sensitivity, xeThruConfig.min_detect, xeThruConfig.max_detect);
+
+  Log.warn("Device Identifiers read from flash during xethru setup:");
+  Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
 
 }
 
