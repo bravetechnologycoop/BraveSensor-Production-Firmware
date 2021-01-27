@@ -15,7 +15,7 @@
  * 
  */
 
-#include "firmware_setup.h"
+#include "setupFirmware.h"
 
 //**********FLASH ADDRESSES***********************
 //wifi
@@ -58,6 +58,7 @@ void setup() {
   int wifiLogCount = 0;
   EEPROM.put(ADDR_WIFI_CONNECT_LOG,wifiLogCount);  
 
+  Log.warn("wrote wifi credentials to flash");
 
   //write general device settings to flash
   char locationID[64] = LOCATIONID;
@@ -68,7 +69,7 @@ void setup() {
   EEPROM.put(ADDR_DEVICE_TYPE, deviceType);
   EEPROM.put(ADDR_DEVICE_ID, deviceID);
 
-
+  Log.warn("wrote general device settings to flash");
 
   #if defined(XETHRU_PARTICLE)
   //load settings into variable of the appropriate type instead of trusting
@@ -86,6 +87,8 @@ void setup() {
   EEPROM.put(ADDR_XETHRU_SENSITIVITY, sensitivity);  
   EEPROM.put(ADDR_XETHRU_MIN_DETECT, min_detect);  
   EEPROM.put(ADDR_XETHRU_MAX_DETECT, max_detect);  
+
+  Log.warn("Wrote XeThru values to flash");
   #endif
 
   #if defined(IM21_PARTICLE)
@@ -97,6 +100,9 @@ void setup() {
   EEPROM.put(ADDR_IM21_DOORID, doorbyte1);
   EEPROM.put((ADDR_IM21_DOORID+1), doorbyte2);
   EEPROM.put((ADDR_IM21_DOORID+2), doorbyte3);
+
+  Log.warn("wrote IM21 door ID to flash");
+
   #endif
 
   Log.warn("Setup Complete");
