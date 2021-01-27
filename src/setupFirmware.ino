@@ -90,9 +90,9 @@ void setup() {
 
   #if defined(IM21_PARTICLE)
 
-  unsigned char doorbyte1 = DOORID_BYTE1;
-  unsigned char doorbyte2 = DOORID_BYTE2;
-  unsigned char doorbyte3 = DOORID_BYTE3;
+  unsigned char doorbyte1 = 0xAA;
+  unsigned char doorbyte2 = 0xAA;
+  unsigned char doorbyte3 = 0xAA;
 
   EEPROM.put(ADDR_IM21_DOORID, doorbyte1);
   EEPROM.put((ADDR_IM21_DOORID+1), doorbyte2);
