@@ -35,8 +35,8 @@
 //declare what type of device you are setting up. Uncomment the 
 //appropriate define, do not set it to anything
 
-//#define XETHRU_PARTICLE
-#define IM21_PARTICLE
+#define XETHRU_PARTICLE
+//#define IM21_PARTICLE
 //#define INS3331_PARTICLE
 //#define XM132_PARTICLE
 
@@ -50,8 +50,8 @@
 //device ID must be an int
 
 #define LOCATIONID "Heidi"           
-#define DEVICETYPE "DoorArgon"     
-#define DEVICEID 5  //int             
+#define DEVICETYPE "RadarArgon"     
+#define DEVICEID 0  //int             
 
 
 //*************Wifi Settings*******************
@@ -66,7 +66,7 @@
 //and last char is for null char at the end of the string.
 
 #define CLIENTSSID0 "Testbed"
-#define CLIENTSSID1 "ssid"
+#define CLIENTSSID1 "Testbed"
 #define CLIENTSSID2 "ssid"
 #define CLIENTSSID3 "ssid"
 

@@ -22,7 +22,7 @@
  */
 
 #include "setupFirmware.h"
-#include "flashAddresses.h"
+#include "flash_addresses.h"
 
 
 //*************************System/Startup messages for Particle API***********
@@ -93,17 +93,6 @@ void setup() {
   #endif
 
   Log.warn("Setup Complete");
-
-  delay(2500);
-
-  unsigned char ff = 0xFF;
-  unsigned char ffplusone;
-
-  ffplusone = ff + 1;
-
-  Log.warn("ff: 0x%02X, ffplusone: 0x%02X",ff, ffplusone);
-
-
 
 }  //end setup()
 

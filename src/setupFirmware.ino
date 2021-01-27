@@ -16,7 +16,7 @@
  */
 
 #include "setupFirmware.h"
-#include "flashAddresses.h"
+#include "flash_addresses.h"
 
 
 //*************************System/Startup messages for Particle API***********

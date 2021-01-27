@@ -4,7 +4,7 @@
 //**********FLASH ADDRESSES***********************
 //wifi
 #define ADDR_SSIDS 0   		  		    	//sizeof = 320
-#define ADDR_PWDS 320			        		//sizeof = 320
+#define ADDR_PWDS 320			        	//sizeof = 320
 #define ADDR_WIFI_CONNECT_LOG 640			//sizeof = 4
 
 //xethru
