@@ -49,9 +49,9 @@
 //do not leave anything undefined, empty char arrays will throw error
 //device ID must be an int
 
-#define LOCATIONID "Heidi"           
-#define DEVICETYPE "RadarArgon"     
-#define DEVICEID 0  //int             
+#define LOCATIONID "HeidiTesting"           
+#define DEVICETYPE "RadarArgon2"     
+#define DEVICEID 1  //int             
 
 
 //*************Wifi Settings*******************
@@ -65,14 +65,14 @@
 //Strings are limited to 62 characters each: 1st char reserved for array index (see changeSSID cloud function)
 //and last char is for null char at the end of the string.
 
-#define CLIENTSSID0 "Testbed"
-#define CLIENTSSID1 "Testbed"
+#define CLIENTSSID0 "Client"
+#define CLIENTSSID1 "Client"
 #define CLIENTSSID2 "ssid"
 #define CLIENTSSID3 "ssid"
 
 
-#define CLIENTPWD0 "fireweed"
-#define CLIENTPWD1 "fireweed2"
+#define CLIENTPWD0 "password123"
+#define CLIENTPWD1 "password1234"
 #define CLIENTPWD2 "password"
 #define CLIENTPWD3 "password"
 

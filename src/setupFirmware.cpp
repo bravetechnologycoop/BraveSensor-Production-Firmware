@@ -30,10 +30,15 @@
 void setup();
 void loop();
 #line 24 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/setupFirmware.ino"
+SYSTEM_MODE(SEMI_AUTOMATIC);
+
 SerialLogHandler LogHandler(DEBUG_LEVEL);
 
 // setup() runs once, when the device is first turned on.
 void setup() {
+
+  //wait 2.5 seconds for log handler to initialize
+  delay(2500);
 
   //write wifi SSIDs and passwords to flash
   char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveHotspot"};
@@ -99,6 +104,8 @@ void setup() {
 // loop() runs over and over again, as quickly as it can execute.
 // it is the arduino substitute for while(1) in main()
 void loop() {
+
+  //Log.warn("Setup complete, ready to flash production firmware...");
 
 }
 
