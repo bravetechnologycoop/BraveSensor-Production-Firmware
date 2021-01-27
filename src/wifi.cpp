@@ -201,9 +201,9 @@ void connectToWifi(){
   EEPROM.get(ADDR_SSIDS,SSIDs);  
   EEPROM.get(ADDR_PWDS,passwords);
 
+  Log.warn("Credential sets in flash at Particle bootup:");
   for(int i = 0; i < 5; i++){
-    Log.warn("Credential set, at start of connectToWifi: %d", i);
-    Log.warn(SSIDs[i]);
+    Log.warn("", SSIDs[i]);
     Log.warn(passwords[i]);
   }
 
