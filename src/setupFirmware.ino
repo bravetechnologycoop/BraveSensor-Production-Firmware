@@ -84,7 +84,7 @@ void setup() {
   EEPROM.put((ADDR_IM21_DOORID+1), doorbyte2);
   EEPROM.put((ADDR_IM21_DOORID+2), doorbyte3);
 
-  Log.warn("wrote IM21 door ID to flash");
+  Log.warn("Initialized IM21 door ID to AA:AA:AA in flash");
 
   #endif
 
