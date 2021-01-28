@@ -25,6 +25,7 @@
 
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
+#define MAXLEN 64  //max length of locationID and deviceType stored in flash
 
 // Pin definitions
 #define RESET_PIN D4 //Datasheet: E8, 26, MICRO_RST_N
@@ -97,11 +98,6 @@
 
 //***************************global variable declarations******************************
 
-//send_buf and recv_buf could be local to setup() and loop() respectively, I think, but
-//easier to leave them as global (for now)
-extern unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
-extern unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
-
 // struct to contain XeThru configuration variables
 // initialized in setup() by calling init_XeThruConfigSettings()
 // initial values set by programmer in odetect_config.h defines
@@ -127,27 +123,23 @@ typedef struct RespirationMessage {
 //***************************function declarations***************
 
 //console functions
-int xethruConfigValesFromConsole(String command);
+int setxeThruConfigValsFromConsole(String command);
+void writeXeThruConfigToFlash(XeThruConfigSettings);
 
 //loop() functions and sub-functions:
-void checkXethru();
-int get_respiration_data(RespirationMessage* resp_msg);
+void checkXeThru();
+int get_respiration_data(RespirationMessage* resp_msg); //this calls receive_data()
 void publishXethruData(RespirationMessage* message);
 
 //setup() functions and sub-functions:
-void xethruSetup();
-XeThruConfigSettings init_XeThruConfigSettings();
-void xethru_reset();
+void setupXeThru();
+void readDeviceIdentifiersFromFlash();
+XeThruConfigSettings readXeThruConfigFromFlash();  //this also called from console function
+void xethru_reset();  //this one also called from console function
 void xethru_configuration(XeThruConfigSettings* config_settings);
 
-//called from init_XeThruConfigSettings():
-void initOriginals(XeThruConfigSettings* xethruConfig);
-//called from console function and init_XeThruConfigSettings():
-void writeXethruToFlash(XeThruConfigSettings* xethruConfig);
-XeThruConfigSettings readXethruFromFlash();
-
 //called from xethru_configuration():
-void wait_for_ready_message();
+void wait_for_ready_message();  //this calls receive_data()
 void stop_module();
 void set_debug_level();
 void load_profile(uint32_t profile);
@@ -161,7 +153,7 @@ void run_profile();
 
 //called from most of the xethru_configuration() sub-functions:
 void send_command(int len);
-void get_ack();
+void get_ack();  //this calls receive_data()
 
 //called from get_ack() and receive_data():
 void errorPublish(String message);
