@@ -15,6 +15,9 @@
 
 //*************************global macro defines**********************************
 
+//max length of deviceType and locationID strings
+#define MAXLEN 64
+
 //******************global variable declarations*******************
 typedef struct IM21DoorID {
     unsigned char byte1;
@@ -31,9 +34,11 @@ typedef struct doorData {
 
 //console functions
 int setIM21DoorIDFromConsole(String command);
+void writeIM21DoorIDToFlash(IM21DoorID);
 
 //setup() functions
 void setupIM21();
+void printDeviceIdentifiersFromFlash();
 
 //loop() functions
 void checkIM21();
@@ -42,7 +47,6 @@ void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorDat
 
 //common functions
 //called from setupIM21() and console function:
-void writeIM21DoorIDToFlash(IM21DoorID);
 IM21DoorID readIM21DoorIDFromFlash();
 
 

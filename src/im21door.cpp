@@ -51,32 +51,12 @@ int setIM21DoorIDFromConsole(String command) { // command is a long string with 
     //did it get written correctly?
     IM21DoorID check = readIM21DoorIDFromFlash();
 
-    Log.warn("Contents of flash after console function called:");
+    Log.warn("Door ID in flash after console function called:");
     Log.warn("byte1: %02X, byte2: %02X, byte3: %02X",check.byte1,check.byte2,check.byte3); 
 
   } //end if-else
 
   return 1;
-
-}
-
-
-
-
-//********************setup() functions*************************/
-//called from Setup()
-void setupIM21(){
-
-  //load global door ID from flash. Loading it once here instead of re-reading it from flash
-  //every time loop() is called.  This forces the door ID to be global, but also saves on 
-  //reading from flash
-
-  globalDoorID = readIM21DoorIDFromFlash();
-
-  Log.warn("DoorID at end of setup() is:");
-  Log.warn("byte1: %02X, byte2: %02X, byte3: %02X",
-          globalDoorID.byte1,globalDoorID.byte2,globalDoorID.byte3);
-
 
 }
 
@@ -90,6 +70,44 @@ void writeIM21DoorIDToFlash(IM21DoorID doorID) {
   EEPROM.put((ADDR_IM21_DOORID+2),doorID.byte3);  
 
 }
+
+
+
+//********************setup() functions*************************/
+//called from Setup()
+void setupIM21(){
+
+  //load global door ID from flash. Loading it once here instead of re-reading it from flash
+  //every time loop() is called.  This forces the door ID to be global, but also saves on 
+  //reading from flash
+
+  printDeviceIdentifiersFromFlash();  
+
+  globalDoorID = readIM21DoorIDFromFlash();
+
+  Log.warn("DoorID read from flash during setup() is:");
+  Log.warn("byte1: %02X, byte2: %02X, byte3: %02X",
+          globalDoorID.byte1,globalDoorID.byte2,globalDoorID.byte3);
+
+}
+
+
+void printDeviceIdentifiersFromFlash(){
+
+  char locationID[MAXLEN];
+  int deviceID;
+  char deviceType[MAXLEN];
+
+  EEPROM.get(ADDR_LOCATION_ID, locationID);
+  EEPROM.get(ADDR_DEVICE_TYPE, deviceType);
+  EEPROM.get(ADDR_DEVICE_ID, deviceID);
+
+  Log.warn("Device Identifiers read from flash during IM21 setup:");
+  Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
+
+}
+
+
 
 IM21DoorID readIM21DoorIDFromFlash() {
 

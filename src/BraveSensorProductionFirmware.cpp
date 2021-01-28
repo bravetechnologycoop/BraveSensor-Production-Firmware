@@ -42,6 +42,9 @@ SerialLogHandler LogHandler(DEBUG_LEVEL);
 // setup() runs once, when the device is first turned on.
 void setup() {
 
+  //wait three seconds for the log handler to initialize so setup() debug msgs can be printed
+  delay(3000);
+
   #if defined(PHOTON)
   //if we're using a photon that doesn't have BLE, calling BLE will 
   //cause an error.  need to have nothing here so BLE.on or BLE.off
