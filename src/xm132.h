@@ -25,6 +25,7 @@
 
 
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
+#define SerialUSB Serial
 
 
 //arrays are defined in big endian and converted to little by the code
