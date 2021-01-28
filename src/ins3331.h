@@ -24,6 +24,8 @@
 #define SerialRadar Serial1    // Used for communication with the radar, Serial connection using TX,RX pins
 #define SerialUSB Serial    // Used for printing debug information, Serial connection with (micro) USB
 
+#define INS_DEVICEID "HeidiTest"
+
 #define START_BYTE 0x11
 #define START_DELIM 0xA2
 #define MASTER_ADDRESS 0x01
@@ -43,7 +45,7 @@
 //console functions
 
 //setup functions
-void ins3331Setup();
+void setupINS3331();
 void radar_stop();
 void radar_start();
 

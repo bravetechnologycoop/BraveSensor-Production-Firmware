@@ -8,7 +8,7 @@
  * Project BraveSensorProductionFirmware
  * 
  * Description: Particle Argon/Photon firmware for Brave
- *              Sensor project.
+ *              ODetect project.
  * 
  * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
  * 
@@ -21,7 +21,7 @@
  * 
  */
 
-#include "BraveSensor_firmware_config.h"
+#include "firmware_config.h"
 #include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
@@ -32,64 +32,49 @@
 void setup();
 void loop();
 #line 26 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
-#if defined(MANUAL_MODE)
-//bootloader instructions to tell bootloader to run w/o wifi:
-//enable system thread to ensure application loop is not interrupted by system/network management functions
-SYSTEM_THREAD(ENABLED); 
-//when using manual mode the user code will run immediately when the device is powered on
-SYSTEM_MODE(MANUAL);
-#endif
+SYSTEM_MODE(SEMI_AUTOMATIC);
 
 #if defined(PHOTON)
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
 #endif
 
+SerialLogHandler LogHandler(DEBUG_LEVEL);
+
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  //set up serial debugging if set in odetect_config.h file
-  #if defined(SERIAL_DEBUG)
-    //start comms with serial terminal for debugging...
-    SerialDebug.begin(115200);
-    // wait until a character sent from USB host
-    waitUntil(SerialDebug.available);
-    SerialDebug.println("Key press received, starting code...");
-  #endif 
+  //wait three seconds for the log handler to initialize so setup() debug msgs can be printed
+  delay(3000);
 
   #if defined(PHOTON)
   //if we're using a photon that doesn't have BLE, calling BLE will 
   //cause an error.  need to have nothing here so BLE.on or BLE.off
   //are skipped entirely
-  #else
-    //if we're not using a photon, then ble can be on for all other modes:
-    //serial_debug, xethru_particle, manual_mode are all unaffected by ble being on
-    BLE.on();
+  #else  
+  //if we're not debugging, or a photon, then ble can be on for all other modes
+  //BLE must be turned on manually in semi-automatic mode
+  BLE.on();
+  Log.info("**********BLE is ON*********");
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
-  Particle.function("changeSSID", setWifiSSID);  //wifi code
-  Particle.function("changePwd", setWifiPwd);    //wifi code
-  Particle.function("getWifiog", wifiLog);       //wifi code
+  Particle.function("changeSSID", setSSIDFromConsole);      //wifi code
+  Particle.function("changePwd", setPwdFromConsole);        //wifi code
+  Particle.function("getWifiLog", getWifiLogFromConsole);   //wifi code
 
   #if defined(XETHRU_PARTICLE)
-  Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
-  xethruSetup();
+  Particle.function("changeXeThruConfigVals", setxeThruConfigValsFromConsole); //XeThru code
+  setupXeThru();
+  #endif
+  #if defined(IM21_PARTICLE)
+  Particle.function("changeIM21DoorID",setIM21DoorIDFromConsole);
+  setupIM21();
   #endif
   #if defined(INS3331_PARTICLE)
-  ins3331Setup();
-  #endif
-  #if defined(DOOR_PARTICLE)
-  Particle.function("doorSensorID",doorSensorIDFromConsole);
-  doorSensorSetup();
+  setupINS3331();
   #endif
 
-  wifiCredsSetup();
-
-  //see odetect_config.h for info on manual mode
-  #if defined(MANUAL_MODE)
-  Particle.connect();
-  Particle.process();
-  #endif         
+  setupWifi();
 
   //publish vitals every X seconds
   Particle.publishVitals(60);
@@ -101,29 +86,19 @@ void setup() {
 // it is the arduino substitute for while(1) in main()
 void loop() {
 
-  //see odetect_config.h for info on manual mode
-  #if defined(MANUAL_MODE)
-  Particle.process();
-  #endif    
-
-  #if defined(SERIAL_DEBUG)
   static int j = 1;
-  if (j <= 1) SerialDebug.println("you're looping");
+  if (j <= 1) Log.info("you're looping");
   j++;
-  #endif
 
-  //WiFi.ready = false if wifi is lost. If false, try to reconnect
-  if(!WiFi.ready()){
-    connectToWifi();
-  }  
+  checkWifi();
 
   //for every loop check the door data
-  #if defined(DOOR_PARTICLE)
-  checkDoor();
+  #if defined(IM21_PARTICLE)
+  checkIM21();
   #endif
   // For every loop we check to see if we have received any respiration data
   #if defined(XETHRU_PARTICLE)
-  checkXethru();
+  checkXeThru();
   delay(1000);
   #endif
   #if defined(INS3331_PARTICLE)
@@ -131,8 +106,3 @@ void loop() {
   #endif
 
 }
-
-
-
-
-

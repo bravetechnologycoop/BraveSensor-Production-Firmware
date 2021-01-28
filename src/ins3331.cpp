@@ -6,7 +6,8 @@
  */
 
 #include "Particle.h"
-#include "BraveSensor_firmware_config.h"
+#include "firmware_config.h"
+#include "flash_addresses.h"
 #include "ins3331.h"
 
 // loop() function and subfunctions
@@ -134,7 +135,7 @@ int twos_comp(int val, int bits){
 }
 
 //setup function & subfunctions
-void ins3331Setup(){
+void setupINS3331(){
 
   SerialRadar.begin(38400, SERIAL_8N1); 
   radar_stop();

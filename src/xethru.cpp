@@ -1,5 +1,6 @@
 #include "Particle.h"
-#include "BraveSensor_firmware_config.h"
+#include "firmware_config.h"
+#include "flash_addresses.h"
 #include "xethru.h"
 
 //******************global variable initialization*******************
@@ -9,12 +10,125 @@
 unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
 unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
-//***************************XeThru functions**********************************
+//global device settings -> fastest/easiest way around having to read these from flash once per second in loop()
+//is to make them global and read them once in setup().  Janky but we won't have the XeThru for much longer so tolerable?
+char locationID[MAXLEN];
+int deviceID;
+char deviceType[MAXLEN];
 
-/*****************called from loop() or loop() sub-functions*******************/
+
+/***********************************************************called from setup() sub-functions************************************************************/
+
+//called from setup(), contains xethru-specific setup
+void setupXeThru(){
+
+  pinMode(D6, INPUT_PULLUP); 
+  //LEDSystemTheme theme; // Enable custom theme
+  //theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
+  //theme.apply(); // Apply theme settings 
+
+  // Set up serial communication
+  SerialRadar.begin(115200);
+
+  //load global settings (deviceID, locationID, deviceType) from flash:
+  readDeviceIdentifiersFromFlash();
+
+  XeThruConfigSettings xeThruConfig;
+  xeThruConfig = readXeThruConfigFromFlash();
+
+  xethru_reset();
+  xethru_configuration(&xeThruConfig);
+
+  Log.warn("xeThruConfig read from flash during xethru setup:");
+  Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
+            xeThruConfig.led, xeThruConfig.noisemap, xeThruConfig.sensitivity, xeThruConfig.min_detect, xeThruConfig.max_detect);
+
+  Log.warn("Device Identifiers read from flash during xethru setup:");
+  Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
+
+}
+
+//called from xethruSetup()
+XeThruConfigSettings readXeThruConfigFromFlash(){
+
+  XeThruConfigSettings xeThruConfig;
+
+  EEPROM.get(ADDR_XETHRU_LED,xeThruConfig.led);
+  EEPROM.get(ADDR_XETHRU_NOISEMAP, xeThruConfig.noisemap);
+  EEPROM.get(ADDR_XETHRU_SENSITIVITY, xeThruConfig.sensitivity);
+  EEPROM.get(ADDR_XETHRU_MAX_DETECT, xeThruConfig.max_detect);
+  EEPROM.get(ADDR_XETHRU_MIN_DETECT, xeThruConfig.min_detect);
+
+  return xeThruConfig;
+
+}
+
+//called from xethruSetup()
+void readDeviceIdentifiersFromFlash(){
+
+  EEPROM.get(ADDR_LOCATION_ID, locationID);
+  EEPROM.get(ADDR_DEVICE_TYPE, deviceType);
+  EEPROM.get(ADDR_DEVICE_ID, deviceID);
+
+}
+
+//called from xethruSetup() 
+void xethru_reset() {
+  //
+  // If the RX-pin of the radar is low during reset or power-up, it goes into bootloader mode.
+  // We don't want that, that's why we first set the RADAR_RX_PIN to high, then reset the module.
+  pinMode(RADAR_RX_PIN, OUTPUT);
+  digitalWrite(RADAR_RX_PIN, HIGH);
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, LOW);
+  delay(100);
+  digitalWrite(RESET_PIN, HIGH);
+
+}
+
+//called from xethruSetup()
+void xethru_configuration(XeThruConfigSettings* configSettings) {
+
+  // After the module resets, the XTS_SPRS_BOOTING message is sent. Then, after the 
+  // module booting sequence is completed and the module is ready to accept further
+  // commands, the XTS_SPRS_READY command is issued. Let's wait for this.
+  wait_for_ready_message();
+
+  // Stop the module, in case it is running
+  stop_module();
+
+  // Set debug level
+  set_debug_level();
+  // Load respiration profile  
+  load_profile(XTS_ID_APP_RESPIRATION_2);
+
+   // Configure the noisemap
+  configure_noisemap(configSettings->noisemap);
+  
+  // Set LED control
+  set_led_control(configSettings->led); // 0: OFF; 1: SIMPLE; 2: FULL
+
+  // Set detection zone
+  set_detection_zone(configSettings->min_detect, configSettings->max_detect); // First variable = Lower limit, Second variable = Upper limit
+
+  // Set sensitivity
+  set_sensitivity(configSettings->sensitivity);
+
+  // Enable only the Sleep message, disable all others
+  enable_output_message(XTS_ID_SLEEP_STATUS);
+  disable_output_message(XTS_ID_RESP_STATUS);
+  disable_output_message(XTS_ID_RESPIRATION_MOVINGLIST);
+  disable_output_message(XTS_ID_RESPIRATION_DETECTIONLIST);
+
+  // Run profile - after this the radar will start sending the sleep message we enabled above
+  run_profile();
+}
+
+
+/********************************************************called from loop() or loop() sub-functions********************************************************/
 
 //called from loop(), this is the main operation of the Xethru device
-void checkXethru(){  
+void checkXeThru(){  
 
   static RespirationMessage msg;
 
@@ -32,7 +146,6 @@ void checkXethru(){
 
 }
 
-//called from checkXethru() which is in turn called from loop()
 //reads a single respiration message from the xethru
 //returns 1 if successful, 0 if not successful
 int get_respiration_data(RespirationMessage* resp_msg) {
@@ -87,149 +200,36 @@ int get_respiration_data(RespirationMessage* resp_msg) {
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishXethruData(RespirationMessage* message) {
 
-  char locationid[] = LOCATIONID;
-  char deviceid[] = DEVICEID;
-  char devicetype[] = DEVICETYPE;
-
   char buf[1024];
   // The data values can't be inserted on the publish message so it must be printed into a buffer first.
   // The backslash is used as an escape character for the quotation marks.
-  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%s\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
-        devicetype, locationid, deviceid, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
+  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
+        deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
 
   Particle.publish("XeThru", buf, PRIVATE);  
 }
 
 
-/*****************called from setup() or setup() sub-functions*******************/
-
-//called from setup(), contains xethru-specific setup
-void xethruSetup(){
-
-  pinMode(D6, INPUT_PULLUP); 
-  //LEDSystemTheme theme; // Enable custom theme
-  //theme.setColor(LED_SIGNAL_CLOUD_CONNECTED, 0x00000000); // Set LED_SIGNAL_NETWORK_ON to no color
-  //theme.apply(); // Apply theme settings 
-	
-  XeThruConfigSettings xethruConfig;
-
-  xethruConfig = init_XeThruConfigSettings();
-
-  xethru_reset();
-  xethru_configuration(&xethruConfig);
-
-}
-
-//called from xethruSetup()
-XeThruConfigSettings init_XeThruConfigSettings(){
-
-   //read the first two bytes of memory. Particle docs say all
-  //bytes of flash initialized to OxF. First two bytes are 0xFFFF
-  //on new boards, note 0xFFFF does not correspond to any ASCII chars
-  #if defined(WRITE_ORIGINAL_XETHRU)
-  EEPROM.put(ADDR_XETHRUCONFIG,0xFFFF);
-  #endif
-
-  XeThruConfigSettings xethruConfig;
-
-  uint16_t checkForContent;
-  EEPROM.get(ADDR_XETHRUCONFIG,checkForContent);
-
-  //if memory has not been written to yet, write the original settings
-  //If memory has been written to then console function to update 
-  //settings has been called before, so read what was written there
-  if(checkForContent == 0xFFFF) {
-    XeThruConfigSettings holder;
-    initOriginals(&holder);
-    writeXethruToFlash(&holder);
-  } else {
-    xethruConfig = readXethruFromFlash();
-  }
-
-  #if defined(WRITE_ORIGINAL_XETHRU)
-  XeThruConfigSettings holder;
-  initOriginals(&holder);
-  writeXethruToFlash(&holder);
-  xethruConfig = readXethruFromFlash();
-  #endif
-
-  Log.info("xethruConfig at end of init_xethru");
-  Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-          xethruConfig.led,xethruConfig.max_detect,xethruConfig.min_detect,xethruConfig.noisemap,xethruConfig.sensitivity);
-
-
-  return xethruConfig;
-
-}
-
-//called from xethruSetup() 
-void xethru_reset() {
-  //
-  // If the RX-pin of the radar is low during reset or power-up, it goes into bootloader mode.
-  // We don't want that, that's why we first set the RADAR_RX_PIN to high, then reset the module.
-  pinMode(RADAR_RX_PIN, OUTPUT);
-  digitalWrite(RADAR_RX_PIN, HIGH);
-  pinMode(RESET_PIN, OUTPUT);
-  digitalWrite(RESET_PIN, LOW);
-  delay(100);
-  digitalWrite(RESET_PIN, HIGH);
-
-}
-
-//called from xethruSetup()
-void xethru_configuration(XeThruConfigSettings* configSettings) {
-
-  // Set up serial communication
-  SerialRadar.begin(115200);
-
-  // After the module resets, the XTS_SPRS_BOOTING message is sent. Then, after the 
-  // module booting sequence is completed and the module is ready to accept further
-  // commands, the XTS_SPRS_READY command is issued. Let's wait for this.
-  wait_for_ready_message();
-
-  // Stop the module, in case it is running
-  stop_module();
-
-  // Set debug level
-  set_debug_level();
-  // Load respiration profile  
-  load_profile(XTS_ID_APP_RESPIRATION_2);
-
-   // Configure the noisemap
-  configure_noisemap(configSettings->noisemap);
-  
-  // Set LED control
-  set_led_control(configSettings->led); // 0: OFF; 1: SIMPLE; 2: FULL
-
-  // Set detection zone
-  set_detection_zone(configSettings->min_detect, configSettings->max_detect); // First variable = Lower limit, Second variable = Upper limit
-
-  // Set sensitivity
-  set_sensitivity(configSettings->sensitivity);
-
-  // Enable only the Sleep message, disable all others
-  enable_output_message(XTS_ID_SLEEP_STATUS);
-  disable_output_message(XTS_ID_RESP_STATUS);
-  disable_output_message(XTS_ID_RESPIRATION_MOVINGLIST);
-  disable_output_message(XTS_ID_RESPIRATION_DETECTIONLIST);
-
-  // Run profile - after this the radar will start sending the sleep message we enabled above
-  run_profile();
-}
-
-/*****************particle console functions********************************/
+/********************************************************particle console functions*********************************************************************/
 
 //particle console function to get new xethru config values
-int xethruConfigValesFromConsole(String command) { // command is a long string with all the config values
+int setxeThruConfigValsFromConsole(String command) { // command is a long string with all the config values
 
+  //get pointer to user-entered string
   const char* checkForEcho = command.c_str();
+
+  //if user has entered e for echo, print current settings
   if(*checkForEcho == 'e'){
-    XeThruConfigSettings holder = readXethruFromFlash();
+
+    XeThruConfigSettings holder = readXeThruConfigFromFlash();
+
     char buffer[512];
-    snprintf(buffer, sizeof(buffer), "{\"led\":\"%d\", \"max_detect\":\"%f\", \"min_detect\":\"%f\", \"noisemap\":\"%d\", \"sensitivity\":\"%d\"}", 
-            holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
-    Particle.publish("Current Xethru config settings",buffer,PRIVATE);
-  } else //else we have a command to parse
+    snprintf(buffer, sizeof(buffer), "{\"led\":\"%d\", \"noisemap\":\"%d\",  \"sensitivity\":\"%d\",  \"min_detect\":\"%f\", \"max_detect\":\"%f\" }", 
+            holder.led,  holder.noisemap, holder.sensitivity, holder.min_detect, holder.max_detect); 
+
+    Particle.publish("Current XeThru config settings",buffer,PRIVATE);
+
+  } else //if we're not echoing, we have a command to parse
   {
     // command is in the form "led,noisemap,sensitivity,min_detect,max_detect"
     // where variable names are replaced with appropriate numbers
@@ -246,59 +246,37 @@ int xethruConfigValesFromConsole(String command) { // command is a long string w
     int split5 = command.indexOf(',', split4+1);
     newConfig.max_detect = command.substring(split4+1,split5).toFloat();
 
-    writeXethruToFlash(&newConfig);
+    writeXeThruConfigToFlash(newConfig);
 
     //did it get written correctly?
-    XeThruConfigSettings holder = readXethruFromFlash();
-    Log.info("xethruConfig after console function called:");
-    Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-            holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
+    XeThruConfigSettings holder = readXeThruConfigFromFlash();
+    Log.warn("xethruConfig after console function called:");
+    Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
+              holder.led, holder.noisemap, holder.sensitivity, holder.min_detect, holder.max_detect); 
 
+    //reset XeThru and restart with new config settings
     xethru_reset();
     xethru_configuration(&newConfig);
+
   } //end if-else
 
   return 1;
 
 }
 
-/**********sub-functions for all of the above***************/
 
-void initOriginals(XeThruConfigSettings* xethruConfigPtr){
+void writeXeThruConfigToFlash(XeThruConfigSettings xeThruConfig) {
 
-  xethruConfigPtr->led = XETHRU_LED_SETTING;
-  xethruConfigPtr->noisemap = XETHRU_NOISEMAP_SETTING;
-  xethruConfigPtr->sensitivity = XETHRU_SENSITIVITY_SETTING;
-  xethruConfigPtr->min_detect = XETHRU_MIN_DETECT_SETTING;
-  xethruConfigPtr->max_detect = XETHRU_MAX_DETECT_SETTING;
-
-}
-
-void writeXethruToFlash(XeThruConfigSettings* xethruConfigPtr) {
-
-  //EEPROM.put() will compare object data to data currently in EEPROM
-  //to avoid re-writing values that haven't changed
-  //passing put() dereferenced pointer to config struct
-  EEPROM.put(ADDR_XETHRUCONFIG,*xethruConfigPtr);  
+  EEPROM.put(ADDR_XETHRU_LED, xeThruConfig.led);
+  EEPROM.put(ADDR_XETHRU_NOISEMAP, xeThruConfig.noisemap);
+  EEPROM.put(ADDR_XETHRU_SENSITIVITY, xeThruConfig.sensitivity);
+  EEPROM.put(ADDR_XETHRU_MAX_DETECT, xeThruConfig.max_detect);
+  EEPROM.put(ADDR_XETHRU_MIN_DETECT, xeThruConfig.min_detect);
 
 }
 
-XeThruConfigSettings readXethruFromFlash() {
 
-  XeThruConfigSettings holder;
-
-  EEPROM.get(ADDR_XETHRUCONFIG,holder);
-
-  //did it get written correctly?
-  Log.info("xethruConfig in read function:");
-  Log.info("led: %d, max: %f, min: %f, noisemap: %d, sensitivity: %d",
-          holder.led,holder.max_detect,holder.min_detect,holder.noisemap,holder.sensitivity); 
-
-
-  return holder;  
-
-}
-
+/********************************************************sub-functions for all of the above****************************************************************/
 
 
 // Stop module from running
@@ -552,15 +530,15 @@ void get_ack()
   
   if (len == 0) {
     Log.info("No response from radar");
-    errorPublish("No reponse from radar");
+    //errorPublish("No reponse from radar");
   }
   else if (len < 0) {
     Log.info("Error in response from radar");
-    errorPublish("Error in response from radar");
+    //errorPublish("Error in response from radar");
   }
   else if (xethru_recv_buf[1] != XTS_SPR_ACK) {  // Check response for ACK
     Log.info("Did not receive ACK!");
-    errorPublish("ACK not received");
+    //errorPublish("ACK not received");
   }
 }
 
@@ -705,7 +683,7 @@ int receive_data() {
   
   // If nothing was received, return 0.
   if (recv_len==0) {
-    errorPublish("No message received");
+    //errorPublish("No message received");
     return 0; //Many sleep messages at once cause no message sometimes.
   }
   // If stop character was not received, return with error.
