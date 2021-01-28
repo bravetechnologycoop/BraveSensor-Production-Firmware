@@ -32,7 +32,7 @@ void setup() {
   delay(3000);
 
   //write wifi SSIDs and passwords to flash
-  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveHotspot"};
+  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveDiagnostics"};
   char myPasswords[5][64] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
   EEPROM.put(ADDR_SSIDS,mySSIDs);  
   EEPROM.put(ADDR_PWDS,myPasswords);
