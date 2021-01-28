@@ -1,3 +1,6 @@
+#ignore the file that contains sensitive client passwords
+setupFirmware.h
+
 # ignore vscode settings
 .vscode/
 

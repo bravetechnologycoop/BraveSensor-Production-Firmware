@@ -7,20 +7,15 @@
  *  must be set by a human during BraveSensor setup, for example device ID's,
  *  Particle wifi credentials, etc etc.
  *
- *  This file also contains macros for code execution options. For example
- *  using debug messages displayed to a serial port or not, running Particle
- *  device in manual mode or not, etc etc.
- *
  * Directions:
+ *  
+ *  See documentation for what these settings mean.  Important to note, this 
+ *  file should not be tracked by git since it contains sensitive client passwords.
+ *  This file should be backed up elsewhere, privately.
  *
- *  This file must be included in every .cpp file, and in the .ino file.
- *  Normally global header files would be included via gcc's AC_CONFIG_HEADERS
- *  or AH_HEADER macro. I, however, FLAT OUT REFUSE to screw with the Particle
- *  makefiles! I don't want to be stuck with broken code and a broken toolchain
- *  for the next six months!!  grrrrrrr.....
  *
  * Author: Heidi Fedorak
- * Date:  August 2020
+ * Date:  Jan 2021
  *
  */
 #ifndef SETUP_FIRMWARE_H
@@ -35,8 +30,8 @@
 //declare what type of device you are setting up. Uncomment the 
 //appropriate define, do not set it to anything
 
-//#define XETHRU_PARTICLE
-#define IM21_PARTICLE
+#define XETHRU_PARTICLE
+//#define IM21_PARTICLE
 //#define INS3331_PARTICLE
 //#define XM132_PARTICLE
 
@@ -50,7 +45,7 @@
 //device ID must be an int
 
 #define LOCATIONID "HeidiTesting"           
-#define DEVICETYPE "DoorArgon"     
+#define DEVICETYPE "XeThruArgon"     
 #define DEVICEID 1  //int             
 
 

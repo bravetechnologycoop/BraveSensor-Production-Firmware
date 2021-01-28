@@ -28,8 +28,8 @@ SerialLogHandler LogHandler(DEBUG_LEVEL);
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  //wait 2.5 seconds for log handler to initialize
-  delay(2500);
+  //wait 3 seconds for log handler to initialize
+  delay(3000);
 
   //write wifi SSIDs and passwords to flash
   char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveHotspot"};
@@ -38,10 +38,10 @@ void setup() {
   EEPROM.put(ADDR_PWDS,myPasswords);
 
   //store the number of times the Argon has connected to wifi 
-  int wifiLogCount = 0;
+  int wifiLogCount = -2;
   EEPROM.put(ADDR_WIFI_CONNECT_LOG,wifiLogCount);  
 
-  Log.warn("wrote wifi credentials to flash");
+  Log.warn("wrote wifi credentials and disconnect log to flash");
 
   //write general device settings to flash
   char locationID[64] = LOCATIONID;
