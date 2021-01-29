@@ -1,6 +1,9 @@
 #ignore the file that contains sensitive client passwords
 setupFirmware.h
 
+#ignore cpp file - keeping it messes up my git merge handling of the .ino file
+setupFirmware.cpp
+
 # ignore vscode settings
 .vscode/
 
