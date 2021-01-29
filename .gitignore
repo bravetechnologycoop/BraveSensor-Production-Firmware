@@ -1,3 +1,6 @@
+#ignore setupFirmware.h file because it contains confidential info
+setupFirmware.h
+
 # ignore vscode settings
 .vscode/
 
