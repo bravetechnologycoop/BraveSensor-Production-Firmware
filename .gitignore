@@ -1,6 +1,9 @@
 # ignore vscode settings
 .vscode/
 
+#ignore generated .cpp file, it screws up my merges
+BraveSensorProductionFirmware.cpp
+
 #ignore particle binaries
 target/
 
@@ -16,11 +19,6 @@ code
 
 #ignore... I think it's platformIO config files
 workspaceconfig.code-workspace
-
-#ignore my debug log files
-debug.log
-ParticleFailureLog.txt
-*.log
 
 #don't ignore particle workbench's project properties
 #need it for when someone clones your repo and wants
