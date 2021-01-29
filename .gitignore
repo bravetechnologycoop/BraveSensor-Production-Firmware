@@ -1,6 +1,9 @@
 # ignore vscode settings
 .vscode/
 
+#ignore generated .cpp file, screws up my merges
+BraveSensorProductionFirmware.cpp
+
 #ignore particle binaries
 target/
 

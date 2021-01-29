@@ -48,7 +48,7 @@ int getWifiLogFromConsole(String logCommand){
 
 
 //change wifi SSID from the cloud
-
+//
 //A cloud function is set up to take one argument of the String datatype. 
 //This argument length is limited to a max of 622 characters (since 0.8.0). 
 //The String is UTF-8 encoded.
