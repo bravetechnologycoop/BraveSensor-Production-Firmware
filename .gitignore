@@ -1,6 +1,9 @@
 # ignore vscode settings
 .vscode/
 
+#ignore generated .cpp file, it screws up my merges
+BraveSensorProductionFirmware.cpp
+
 #ignore particle binaries
 target/
 
@@ -11,12 +14,6 @@ core
 #ignore... I think it's my app's binary?
 code
 
-<<<<<<< HEAD
-#ignore new/alternative firmware setup file
-firmware_config.h
-
-=======
->>>>>>> Release
 #ignore log files
 *.log
 
