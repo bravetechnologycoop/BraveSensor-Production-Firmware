@@ -208,6 +208,7 @@ void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData){
 
 }
 
+
 void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorData){
 
   char doorPublishBuffer[128];
