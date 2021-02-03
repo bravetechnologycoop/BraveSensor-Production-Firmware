@@ -1,3 +1,6 @@
+#ignore backup copy of master setup files
+MasterSetupFiles/
+
 #ignore setupFirmware.h file because it contains confidential info
 setupFirmware.h
 
