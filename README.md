@@ -1,4 +1,4 @@
-# odetectProductionFirmware
+# SensorProductionFirmware - out of date...
 
 This Repository follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
