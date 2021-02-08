@@ -1,3 +1,5 @@
+MasterSetupFiles/
+
 #ignore the file that contains sensitive client passwords
 setupFirmware.h
 

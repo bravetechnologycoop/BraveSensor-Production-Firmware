@@ -88,6 +88,11 @@ void setup() {
 
   #endif
 
+
+  WiFi.connect();
+  Particle.connect();
+  Particle.publishVitals(60);
+
   Log.warn("Setup Complete");
 
 }  //end setup()
