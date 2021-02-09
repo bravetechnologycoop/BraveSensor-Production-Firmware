@@ -22,6 +22,9 @@
 #define ADDR_DEVICE_ID 731            //sizeof = 4
 #define ADDR_DEVICE_TYPE 735          //sizeof = 64
 
-//next available memory location is 735+64 = 799
+#define ADDR_PASSWORD_FOR_SSIDS 799        //sizeof = 21
+#define ADDR_PASSWORD_FOR_PASSWORDS 820    //sizeof = 21
+
+//next available memory location is 820+21 = 841
 
 #endif

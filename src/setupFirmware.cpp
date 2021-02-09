@@ -37,20 +37,24 @@ SerialLogHandler LogHandler(DEBUG_LEVEL);
 // setup() runs once, when the device is first turned on.
 void setup() {
 
-  //wait 2.5 seconds for log handler to initialize
-  delay(2500);
+  //wait 3 seconds for log handler to initialize
+  delay(3000);
 
   //write wifi SSIDs and passwords to flash
-  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, "BraveHotspot"};
-  char myPasswords[5][64] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, "cowardlyarchaiccorp"};
+  char mySSIDs[5][64] = {CLIENTSSID0, CLIENTSSID1, CLIENTSSID2, CLIENTSSID3, BACKUPSSID};
+  char myPasswords[5][64] = {CLIENTPWD0, CLIENTPWD1, CLIENTPWD2, CLIENTPWD3, BACKUPPWD};
   EEPROM.put(ADDR_SSIDS,mySSIDs);  
   EEPROM.put(ADDR_PWDS,myPasswords);
 
+  //write password required to publish ssids or passwords to the cloud
+  EEPROM.put(ADDR_PASSWORD_FOR_SSIDS, PASSWORD_FOR_SSIDS);
+  EEPROM.put(ADDR_PASSWORD_FOR_PASSWORDS, PASSWORD_FOR_SSIDS);
+
   //store the number of times the Argon has connected to wifi 
-  int wifiLogCount = 0;
+  int wifiLogCount = -2;
   EEPROM.put(ADDR_WIFI_CONNECT_LOG,wifiLogCount);  
 
-  Log.warn("wrote wifi credentials to flash");
+  Log.warn("wrote wifi credentials and disconnect log to flash");
 
   //write general device settings to flash
   char locationID[64] = LOCATIONID;
@@ -93,9 +97,13 @@ void setup() {
   EEPROM.put((ADDR_IM21_DOORID+1), doorbyte2);
   EEPROM.put((ADDR_IM21_DOORID+2), doorbyte3);
 
-  Log.warn("wrote IM21 door ID to flash");
+  Log.warn("Initialized IM21 door ID to AA:AA:AA in flash");
 
   #endif
+
+  WiFi.connect();
+  Particle.connect();
+  Particle.publishVitals(60);
 
   Log.warn("Setup Complete");
 
