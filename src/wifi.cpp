@@ -67,12 +67,11 @@ int setSSIDFromConsole(String newSSID){
   const char* indexHolder = newSSID.c_str(); 
   
   //compare input to password for SSIDs
-  String printSSIDs;
+  char printSSIDs[MAXLEN];
   EEPROM.get(ADDR_PASSWORD_FOR_SSIDS, printSSIDs);
-  Log.warn("ssid password read from flash:");
-  Log.warn(printSSIDs);
-  const char* passwordHolder = printSSIDs.c_str();
-  int test = strcmp(indexHolder,passwordHolder);
+  Log.warn("ssid password read from flash:  %s", printSSIDs);
+  //const char* passwordHolder = printSSIDs.c_str();
+  int test = strcmp(indexHolder,printSSIDs);
 
   //if input matches password, print SSIDs to cloud
   if(test == 0){
@@ -129,10 +128,10 @@ int setPwdFromConsole(String newPwd){
   const char* indexHolder = newPwd.c_str(); 
   
   //compare input to password to echo passwords
-  String printPasswords;
+  char printPasswords[MAXLEN];
   EEPROM.get(ADDR_PASSWORD_FOR_PASSWORDS, printPasswords);
-  const char* passwordHolder = printPasswords.c_str();
-  int test = strcmp(indexHolder,passwordHolder);
+  //const char* passwordHolder = printPasswords.c_str();
+  int test = strcmp(indexHolder,printPasswords);
 
   //if input matches password, print passwords to cloud
   if(test == 0){
