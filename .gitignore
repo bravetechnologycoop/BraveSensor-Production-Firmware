@@ -8,7 +8,7 @@ setupFirmware.h
 .vscode/
 
 #ignore generated .cpp file, screws up my merges
-BraveSensorProductionFirmware.cpp
+#BraveSensorProductionFirmware.cpp
 
 #ignore particle binaries
 target/
