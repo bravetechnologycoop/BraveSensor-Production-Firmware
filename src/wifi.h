@@ -16,8 +16,6 @@
 
 //max string length of any SSID or password (including null char)
 #define MAXLEN 64
-#define PASSWORD_FOR_SSIDS "password"
-#define PASSWORD_FOR_PASSWORDS "password"
 
 //******************global variable declarations*******************
 

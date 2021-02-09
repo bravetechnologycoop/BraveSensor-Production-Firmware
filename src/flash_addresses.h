@@ -1,10 +1,3 @@
-/*
- *  Flash addresses - this file must always be the same as the 
- *  flash addresses file in the production firmware main branch
- *  or there will be read/write errors
- * 
- */
-
 #ifndef FLASH_ADDRESSES_H
 #define FLASH_ADDRESSES_H
 
@@ -12,10 +5,10 @@
 //wifi
 #define ADDR_SSIDS 0   		  		    	//sizeof = 320
 #define ADDR_PWDS 320			        	//sizeof = 320
-#define ADDR_WIFI_DISCONNECT_LOG 640		//sizeof = 4
+#define ADDR_WIFI_CONNECT_LOG 640			//sizeof = 4
 
 //xethru
-#define ADDR_XETHRU_LED 644		      //sizeof = 4
+#define ADDR_XETHRU_LED 644		      	//sizeof = 4
 #define ADDR_XETHRU_NOISEMAP 648      //sizeof = 4
 #define ADDR_XETHRU_SENSITIVITY 652   //sizeof = 4
 #define ADDR_XETHRU_MIN_DETECT 656    //sizeof = 4
@@ -29,6 +22,9 @@
 #define ADDR_DEVICE_ID 731            //sizeof = 4
 #define ADDR_DEVICE_TYPE 735          //sizeof = 64
 
-//next available memory location is 735+64 = 799
+#define ADDR_PASSWORD_FOR_SSIDS 799        //sizeof = 21
+#define ADDR_PASSWORD_FOR_PASSWORDS 820    //sizeof = 21
+
+//next available memory location is 820+21 = 841
 
 #endif

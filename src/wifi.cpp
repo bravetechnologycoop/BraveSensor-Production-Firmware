@@ -32,11 +32,11 @@ int getWifiLogFromConsole(String logCommand){
 
   if(*command == 'e'){
     //if e = echo, function returns the log int
-    EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, returnFlag);
+    EEPROM.get(ADDR_WIFI_CONNECT_LOG, returnFlag);
   } else if (*command == 'c') {
     //if c = clear, reset the log int to 0 and reload returnFlag to confirm
-    EEPROM.put(ADDR_WIFI_DISCONNECT_LOG, 0);
-    EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, returnFlag);
+    EEPROM.put(ADDR_WIFI_CONNECT_LOG, 0);
+    EEPROM.get(ADDR_WIFI_CONNECT_LOG, returnFlag);
   } else {
     //bad input, return -1
     returnFlag = -1;
@@ -60,15 +60,19 @@ int setSSIDFromConsole(String newSSID){
   int wifiBufferIndex = -1;  
 
   //read the SSIDs currently stored in flash
-  char SSIDs[5][64];
+  char SSIDs[5][MAXLEN];
   EEPROM.get(ADDR_SSIDS,SSIDs);  
 
   //get pointer to user input string 
   const char* indexHolder = newSSID.c_str(); 
   
   //compare input to password for SSIDs
-  const char* printSSIDs = PASSWORD_FOR_SSIDS;
-  int test = strcmp(indexHolder,printSSIDs);
+  String printSSIDs;
+  EEPROM.get(ADDR_PASSWORD_FOR_SSIDS, printSSIDs);
+  Log.warn("ssid password read from flash:");
+  Log.warn(printSSIDs);
+  const char* passwordHolder = printSSIDs.c_str();
+  int test = strcmp(indexHolder,passwordHolder);
 
   //if input matches password, print SSIDs to cloud
   if(test == 0){
@@ -118,15 +122,17 @@ int setPwdFromConsole(String newPwd){
   int wifiBufferIndex = -1;  
 
   //read the passwords currently stored in flash
-  char passwords[5][64];
+  char passwords[5][MAXLEN];
   EEPROM.get(ADDR_PWDS,passwords);  
 
   //get pointer to user input string 
   const char* indexHolder = newPwd.c_str(); 
   
   //compare input to password to echo passwords
-  const char* printPasswords = PASSWORD_FOR_PASSWORDS;
-  int test = strcmp(indexHolder,printPasswords);
+  String printPasswords;
+  EEPROM.get(ADDR_PASSWORD_FOR_PASSWORDS, printPasswords);
+  const char* passwordHolder = printPasswords.c_str();
+  int test = strcmp(indexHolder,passwordHolder);
 
   //if input matches password, print passwords to cloud
   if(test == 0){
@@ -204,8 +210,8 @@ void checkWifi(){
 void connectToWifi(){
 
   //read the credentials stored in flash
-  char SSIDs[5][64];
-  char passwords[5][64];
+  char SSIDs[5][MAXLEN];
+  char passwords[5][MAXLEN];
   EEPROM.get(ADDR_SSIDS,SSIDs);  
   EEPROM.get(ADDR_PWDS,passwords);
 
@@ -272,9 +278,9 @@ void incrementWifiDisconnectLog(){
 
   //increment the wifi disconnected counter
   int wifiDisconnectCount;  
-  EEPROM.get(ADDR_WIFI_DISCONNECT_LOG, wifiDisconnectCount); 
+  EEPROM.get(ADDR_WIFI_CONNECT_LOG, wifiDisconnectCount); 
   wifiDisconnectCount++;
-  EEPROM.put(ADDR_WIFI_DISCONNECT_LOG, wifiDisconnectCount);  
+  EEPROM.put(ADDR_WIFI_CONNECT_LOG, wifiDisconnectCount);  
   Log.warn("wifiDisconnectCount = %i", wifiDisconnectCount);
 
 }
