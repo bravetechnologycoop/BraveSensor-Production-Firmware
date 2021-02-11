@@ -39,7 +39,7 @@ void setup() {
 
   //write password required to publish ssids or passwords to the cloud
   EEPROM.put(ADDR_PASSWORD_FOR_SSIDS, PASSWORD_FOR_SSIDS);
-  EEPROM.put(ADDR_PASSWORD_FOR_PASSWORDS, PASSWORD_FOR_SSIDS);
+  EEPROM.put(ADDR_PASSWORD_FOR_PASSWORDS, PASSWORD_FOR_PASSWORDS);
 
   //store the number of times the Argon has connected to wifi 
   int wifiLogCount = -2;
