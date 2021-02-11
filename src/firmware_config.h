@@ -11,7 +11,7 @@
 
 #define DEBUG_LEVEL LOG_LEVEL_WARN
 
-//#define XETHRU_PARTICLE
-#define IM21_PARTICLE
+#define XETHRU_PARTICLE
+//#define IM21_PARTICLE
 
 #endif
