@@ -1,3 +1,9 @@
+#ignore setup files, they contain sensitive client information
+SetupFiles/
+
+#ignore setupFirmware.h, it contains sensitive client information
+setupFirmware.h
+
 # ignore vscode settings
 .vscode/
 
