@@ -84,15 +84,15 @@ void checkINS3331() {
 
 void usbSerialPrintINSData(String iValues, String qValues){
 
-  //create string for printing
-  String data = "{ \"deviceid\": ";
+  //create string for publishing
+  String data = "{ \"deviceid\": \"";
   data.concat(INS_DEVICEID);
-  data.concat("\"inPhase\": ");
+  data.concat("\", \"inPhase\": \"");
   data.concat(iValues);
-  data.concat(", ");
-  data.concat("\"quadrature\": ");
+  data.concat("\", ");
+  data.concat("\"quadrature\": \"");
   data.concat(qValues);
-  data.concat(", ");
+  data.concat("\"");
   data.concat("}");
 
   //print to usb serial
@@ -106,25 +106,21 @@ void usbSerialPrintINSData(String iValues, String qValues){
 
 
 void cloudPublishINSData(String iValues, String qValues){
-
   //create string for publishing
-  String data = "{ \"deviceid\": ";
+  String data = "{ \"deviceid\": \"";
   data.concat(INS_DEVICEID);
-  data.concat("\"inPhase\": ");
+  data.concat("\", \"inPhase\": \"");
   data.concat(iValues);
-  data.concat(", ");
-  data.concat("\"quadrature\": ");
+  data.concat("\", ");
+  data.concat("\"quadrature\": \"");
   data.concat(qValues);
-  data.concat(", ");
+  data.concat("\"");
   data.concat("}");
-
   //publish to cloud
   Particle.publish("Radar", data, PRIVATE);
-
   //log for debugging
   Log.info("INS data actually published:");
   Log.info(iValues, qValues);
-
 }
 
 int twos_comp(int val, int bits){
