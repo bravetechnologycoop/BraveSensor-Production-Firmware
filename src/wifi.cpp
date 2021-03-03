@@ -269,7 +269,6 @@ void connectToWifi(){
 }
 
 
-
 void incrementWifiDisconnectLog(){
 
   //increment the wifi disconnected counter

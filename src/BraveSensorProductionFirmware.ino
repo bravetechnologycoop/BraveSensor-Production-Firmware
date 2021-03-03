@@ -15,11 +15,10 @@
  * 
  */
 
-
 #include "firmware_config.h"
-#include "xethru.h"
 #include "wifi.h"
 #include "im21door.h"
+#include "ins3331.h"
 
 //*************************System/Startup messages for Particle API***********
 
@@ -49,17 +48,16 @@ void setup() {
   #endif
 
   //particle console function declarations, belongs in setup() as per docs
-  Particle.function("changeSSID", setSSIDFromConsole);  //wifi code
-  Particle.function("changePwd", setPwdFromConsole);    //wifi code
-  Particle.function("getWifiLog", getWifiLogFromConsole);       //wifi code
+  Particle.function("changeSSID", setSSIDFromConsole);      //wifi code
+  Particle.function("changePwd", setPwdFromConsole);        //wifi code
+  Particle.function("getWifiLog", getWifiLogFromConsole);   //wifi code
 
-  #if defined(XETHRU_PARTICLE)
-  Particle.function("changeXeThruConfigVals", setxeThruConfigValsFromConsole); //XeThru code
-  setupXeThru();
-  #endif
   #if defined(IM21_PARTICLE)
   Particle.function("changeIM21DoorID",setIM21DoorIDFromConsole);
   setupIM21();
+  #endif
+  #if defined(INS3331_PARTICLE)
+  setupINS3331();
   #endif
 
   setupWifi();
@@ -84,15 +82,8 @@ void loop() {
   #if defined(IM21_PARTICLE)
   checkIM21();
   #endif
-  // For every loop we check to see if we have received any respiration data
-  #if defined(XETHRU_PARTICLE)
-  checkXeThru();
-  delay(1000);
+  #if defined(INS3331_PARTICLE)
+  checkINS3331();
   #endif
 
 }
-
-
-
-
-

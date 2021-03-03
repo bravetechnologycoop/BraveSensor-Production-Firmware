@@ -1,7 +1,5 @@
-#ignore backup copy of master setup files
+#ignore setup files - contains sensitive client information
 SetupFiles/
-
-#ignore setupFirmware.h file because it contains confidential info
 setupFirmware.h
 
 # ignore vscode settings
