@@ -1,6 +1,9 @@
-SetupFiles/
+#ignore the generated .cpp file from production code...
+BraveSensorProductionFirmware.cpp
 
-#ignore the file that contains sensitive client passwords
+
+#ignore the files that contain sensitive client passwords
+SetupFiles/
 setupFirmware.h
 
 #ignore cpp file - keeping it messes up my git merge handling of the .ino file
