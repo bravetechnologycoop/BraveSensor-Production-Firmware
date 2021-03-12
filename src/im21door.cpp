@@ -155,9 +155,6 @@ void checkIM21(){
       currentDoorData.doorStatus = doorAdvertisingData[5];
       currentDoorData.controlByte = doorAdvertisingData[6];
 
-      Log.info("raw door sensor output - control:  prev, current: 0x%02X, 0x%02X", previousDoorData.controlByte, currentDoorData.controlByte);
-      Log.info("raw door sensor output - data byte prev, current: 0x%02X, 0x%02X", previousDoorData.doorStatus, currentDoorData.doorStatus);
-
       //if this is the first door event received after firmware bootup, publish
       if(initialDoorDataFlag){
 
@@ -171,10 +168,11 @@ void checkIM21(){
         logAndPublishDoorData(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
       }
-      //if curr > prev + 1, missed an event, publish warning
+      //if curr > prev + 1, missed an event, publish and also publish warning
       else if(currentDoorData.controlByte > (previousDoorData.controlByte+0x01)){
 
         Log.error("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+        logAndPublishDoorData(previousDoorData,currentDoorData);
         logAndPublishDoorWarning(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
       }
@@ -204,7 +202,7 @@ void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData){
   sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }", 
           globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
   Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
-  Log.info("published");
+  Log.info("published, 0x%02X", currentDoorData.controlByte);
 
 }
 
@@ -216,6 +214,6 @@ void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorDat
   sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\", \"warning\": \"Missed a door event!\" }", 
           globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
   Particle.publish("IM21 Warning", doorPublishBuffer, PRIVATE);
-  Log.info("published");
+  Log.info("published, 0x%02X", currentDoorData.controlByte);
 
 }

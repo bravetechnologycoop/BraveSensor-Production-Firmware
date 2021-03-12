@@ -1,4 +1,4 @@
-#ignore setup files - contains sensitive client information
+#ignore backup copy of setup files
 SetupFiles/
 setupFirmware.h
 
