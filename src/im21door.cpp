@@ -171,10 +171,11 @@ void checkIM21(){
         logAndPublishDoorData(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
       }
-      //if curr > prev + 1, missed an event, publish warning
+      //if curr > prev + 1, missed an event, publish and also publish warning
       else if(currentDoorData.controlByte > (previousDoorData.controlByte+0x01)){
 
         Log.error("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+        logAndPublishDoorData(previousDoorData,currentDoorData);
         logAndPublishDoorWarning(previousDoorData,currentDoorData);
         previousDoorData = currentDoorData;  
       }
