@@ -12,11 +12,7 @@
 #define DEBUG_LEVEL LOG_LEVEL_WARN
 
 //#define XETHRU_PARTICLE
-<<<<<<< HEAD
-//#define IM21_PARTICLE
-#define INS3331_PARTICLE
-=======
 #define IM21_PARTICLE
->>>>>>> IM21-Warning-Hotfix
+//#define INS3331_PARTICLE
 
 #endif
