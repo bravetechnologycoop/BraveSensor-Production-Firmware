@@ -1,0 +1,98 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+/*
+ * Project BraveSensorProductionFirmware
+ * 
+ * Description: Particle Argon/Photon firmware for Brave
+ *              ODetect project.
+ * 
+ * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
+ * 
+ * Sampath Sattie, Wayne Ng, Sajan Rajdev - wrote original XeThru code
+ * 
+ * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
+ *                 and added remote wifi creds update and IM21 
+ *                 BLE door sensor features.
+ *
+ * 
+ */
+
+#include "firmware_config.h"
+#include "wifi.h"
+#include "im21door.h"
+#include "ins3331.h"
+
+//*************************System/Startup messages for Particle API***********
+
+void setup();
+void loop();
+#line 25 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+SYSTEM_MODE(SEMI_AUTOMATIC);
+
+#if defined(PHOTON)
+STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
+#endif
+
+SerialLogHandler LogHandler(DEBUG_LEVEL);
+
+// setup() runs once, when the device is first turned on.
+void setup() {
+
+  //wait three seconds for the log handler to initialize so setup() debug msgs can be printed
+  delay(3000);
+
+  #if defined(PHOTON)
+  //if we're using a photon that doesn't have BLE, calling BLE will 
+  //cause an error.  need to have nothing here so BLE.on or BLE.off
+  //are skipped entirely
+  #else  
+  //if we're not debugging, or a photon, then ble can be on for all other modes
+  //BLE must be turned on manually in semi-automatic mode
+  BLE.on();
+  Log.info("**********BLE is ON*********");
+  #endif
+
+  //particle console function declarations, belongs in setup() as per docs
+  Particle.function("changeSSID", setSSIDFromConsole);      //wifi code
+  Particle.function("changePwd", setPwdFromConsole);        //wifi code
+  Particle.function("getWifiLog", getWifiLogFromConsole);   //wifi code
+
+  #if defined(IM21_PARTICLE)
+  Particle.function("changeIM21DoorID",setIM21DoorIDFromConsole);
+  setupIM21();
+  #endif
+  #if defined(INS3331_PARTICLE)
+  setupINS3331();
+  #endif
+
+  setupWifi();
+
+  //publish vitals every X seconds
+  Particle.publishVitals(60);
+
+}  //end setup()
+
+
+// loop() runs over and over again, as quickly as it can execute.
+// it is the arduino substitute for while(1) in main()
+void loop() {
+
+  static int j = 1;
+  if (j <= 1) Log.info("you're looping");
+  j++;
+
+  checkWifi();
+
+  //for every loop check the door data
+  #if defined(IM21_PARTICLE)
+  checkIM21();
+  #endif
+  #if defined(INS3331_PARTICLE)
+  checkINS3331();
+  #endif
+
+}
