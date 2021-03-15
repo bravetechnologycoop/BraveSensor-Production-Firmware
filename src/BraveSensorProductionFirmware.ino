@@ -23,6 +23,8 @@
 
 //*************************System/Startup messages for Particle API***********
 
+PRODUCT_ID(PRODUCT_ID_BETATEST); //you get this number off the particle console
+PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, so v1.2.01 == 3
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
 #if defined(PHOTON)
