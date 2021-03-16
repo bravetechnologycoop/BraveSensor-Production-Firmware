@@ -1,3 +1,7 @@
+#ingore setup files with sensitive information
+setupFirmware.h
+SetupFiles/
+
 # ignore vscode settings
 .vscode/
 
