@@ -1,5 +1,4 @@
 #include "Particle.h"
-#include "BraveSensor_firmware_config.h"
 #include "xm132.h"
 
 //***************************XM132 functions**********************************

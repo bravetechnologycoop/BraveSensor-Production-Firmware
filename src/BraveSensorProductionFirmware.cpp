@@ -3,7 +3,7 @@
 /******************************************************/
 
 #include "Particle.h"
-#line 1 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project odetectProductionFirmware
  * 
@@ -21,73 +21,17 @@
  * 
  */
 //#include "Particle.h"
-#include "BraveSensor_firmware_config.h"
-#include "xethru.h"
-#include "wifi.h"
-#include "im21door.h"
 #include "xm132.h"
 
 //*************************System/Startup messages for Particle API***********
 
 void setup();
 void loop();
-#line 26 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
-SerialLogHandler logHandler(DEBUG_LEVEL);
-
-#if defined(MANUAL_MODE)
-//bootloader instructions to tell bootloader to run w/o wifi:
-//enable system thread to ensure application loop is not interrupted by system/network management functions
-SYSTEM_THREAD(ENABLED); 
-//when using manual mode the user code will run immediately when the device is powered on
-SYSTEM_MODE(MANUAL);
-#else
-SYSTEM_MODE(SEMI_AUTOMATIC);
-SYSTEM_THREAD(ENABLED);
-#endif
-
-#if defined(PHOTON)
-STARTUP(WiFi.selectAntenna(ANT_EXTERNAL)); // selects the u.FL antenna
-#endif
+#line 22 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+SerialLogHandler logHandler(LOG_LEVEL_ERROR);
 
 // setup() runs once, when the device is first turned on.
 void setup() {
-
-  #if defined(PHOTON)
-  //if we're using a photon that doesn't have BLE, calling BLE will 
-  //cause an error.  need to have nothing here so BLE.on or BLE.off
-  //are skipped entirely
-  #else  
-  //if we're not debugging, or a photon, then ble can be on for all other modes
-  BLE.on();
-  Log.info("**********BLE is ON*********");
-  #endif
-
-  //particle console function declarations, belongs in setup() as per docs
-  //in manual or semi-automatic mode, these must be declared before Particle.connect() is called
-  Particle.function("changeSSID", setWifiSSID);  //wifi code
-  Particle.function("changePwd", setWifiPwd);    //wifi code
-  Particle.function("getWifiog", wifiLog);       //wifi code1
-
-  wifiCredsSetup();
-
-  #if defined(XETHRU_PARTICLE)
-  Particle.function("xethruConfigVals", xethruConfigValesFromConsole); //XeThru code
-  xethruSetup();
-  #endif
-  #if defined(DOOR_PARTICLE)
-  Particle.function("doorSensorID",doorSensorIDFromConsole);
-  doorSensorSetup();
-  #endif
-  #if defined(XM132_PARTICLE)
-  Log.warn("I'm in setup, about to enter xm132setup()");
-  xm132Setup();
-  #endif
-
-  //see odetect_config.h for info on manual mode
-  #if defined(MANUAL_MODE)
-  Particle.connect();
-  Particle.process();
-  #endif         
 
   //publish vitals every X seconds
   Particle.publishVitals(60);
@@ -99,39 +43,16 @@ void setup() {
 // it is the arduino substitute for while(1) in main()
 void loop() {
 
-  //see odetect_config.h for info on manual mode
-  #if defined(MANUAL_MODE)
-  Particle.process();
-  #endif    
+  static bool initialized = false;
 
-  //WiFi.ready = false if wifi is lost. If false, try to reconnect
-  if(!WiFi.ready()){
-    connectToWifi();
-  }  
-
-
-  static int j = 1;
-  static int numberOfLoops = 1;
-  if (j <= numberOfLoops) {
-    Log.info("you're looping");
-    //xm132Setup();
+  if(!initialized && Particle.connected()){
+    xm132Setup();
+    initialized = true; 
   }
-  j++;
 
-
-  //for every loop check the door data
-  #if defined(DOOR_PARTICLE)
-  checkDoor();
-  #endif
-  // For every loop we check to see if we have received any respiration data
-  #if defined(XETHRU_PARTICLE)
-  checkXethru();
-  delay(1000);
-  #endif
-  #if defined(XM132_PARTICLE)
-  checkXM132();
-  #endif
-
+  if (initialized) {
+    checkXM132();
+  }
 
 
 }
