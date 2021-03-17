@@ -1,3 +1,9 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#include "Particle.h"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project BraveSensorProductionFirmware
  * 
@@ -19,6 +25,9 @@
 
 //*************************System/Startup messages for Particle API***********
 
+void setup();
+void loop();
+#line 22 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 SerialLogHandler logHandler(LOG_LEVEL_ERROR);
 
 // setup() runs once, when the device is first turned on.
