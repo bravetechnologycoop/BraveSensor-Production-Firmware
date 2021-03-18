@@ -109,7 +109,7 @@ void cloudPublishINSData(String iValues, String qValues){
   data.concat("\"");
   data.concat("}");
   //publish to cloud
-  Particle.publish("Radar", data, PRIVATE);
+  Particle.publish("INS3331 Data", data, PRIVATE);
   //log for debugging
   Log.info("INS data actually published:");
   Log.info(iValues, qValues);
