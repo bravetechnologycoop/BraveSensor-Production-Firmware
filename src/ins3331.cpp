@@ -77,9 +77,7 @@ void checkINS3331() {
 void usbSerialPrintINSData(String iValues, String qValues){
 
   //create string for publishing
-  String data = "{ \"deviceid\": \"";
-  data.concat(INS_DEVICEID);
-  data.concat("\", \"inPhase\": \"");
+  String data = "{ \"inPhase\": \"";
   data.concat(iValues);
   data.concat("\", ");
   data.concat("\"quadrature\": \"");
@@ -99,15 +97,14 @@ void usbSerialPrintINSData(String iValues, String qValues){
 
 void cloudPublishINSData(String iValues, String qValues){
   //create string for publishing
-  String data = "{ \"deviceid\": \"";
-  data.concat(INS_DEVICEID);
-  data.concat("\", \"inPhase\": \"");
+  String data = "{ \"inPhase\": \"";
   data.concat(iValues);
   data.concat("\", ");
   data.concat("\"quadrature\": \"");
   data.concat(qValues);
   data.concat("\"");
   data.concat("}");
+  
   //publish to cloud
   Particle.publish("INS3331 Data", data, PRIVATE);
   //log for debugging

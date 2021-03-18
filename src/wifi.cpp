@@ -128,6 +128,7 @@ int setPwdFromConsole(String newPwd){
   //compare input to password to echo passwords
   char printPasswords[MAXLEN];
   EEPROM.get(ADDR_PASSWORD_FOR_PASSWORDS, printPasswords);
+  Log.warn("password for passwords read: %s", printPasswords);
   int test = strcmp(indexHolder,printPasswords);
 
   //if input matches password, print passwords to cloud
