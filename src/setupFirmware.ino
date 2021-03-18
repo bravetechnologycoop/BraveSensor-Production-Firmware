@@ -54,6 +54,14 @@ void loop() {
     EEPROM.put(ADDR_PASSWORD_FOR_SSIDS, PASSWORD_FOR_SSIDS);
     EEPROM.put(ADDR_PASSWORD_FOR_PASSWORDS, PASSWORD_FOR_PASSWORDS);
 
+    char pwdforssids[64];
+    EEPROM.get(ADDR_PASSWORD_FOR_SSIDS,pwdforssids);
+    Log.warn("password for ssids: %s", pwdforssids);
+
+    char pwdforpwds[64];
+    EEPROM.get(ADDR_PASSWORD_FOR_PASSWORDS,pwdforpwds);
+    Log.warn("password for passwords: %s", pwdforpwds);
+
     //store the number of times the Argon has connected to wifi 
     int wifiLogCount = -2;
     EEPROM.put(ADDR_WIFI_CONNECT_LOG,wifiLogCount);  
