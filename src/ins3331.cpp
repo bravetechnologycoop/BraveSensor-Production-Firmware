@@ -60,7 +60,7 @@ void checkINS3331() {
   }
 
   //publish the strings of phase & quadrature values every 1.5 seconds
-  if((millis()-last_publish) > 1500){
+  if((millis()-last_publish) > 2000){
     //publish to cloud
     cloudPublishINSData(iValues, qValues);
 
