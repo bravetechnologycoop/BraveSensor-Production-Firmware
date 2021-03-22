@@ -3,7 +3,7 @@
 /******************************************************/
 
 #include "Particle.h"
-#line 1 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
+#line 1 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Project BraveSensorProductionFirmware
  * 
@@ -31,7 +31,9 @@
 
 void setup();
 void loop();
-#line 26 "/home/heidi/Programming/particleProgramming/BraveSensorProductionFirmware/src/BraveSensorProductionFirmware.ino"
+#line 26 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+PRODUCT_ID(PRODUCT_ID_BETATEST); //you get this number off the particle console
+PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, so v1.2.01 == 3
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
 #if defined(PHOTON)
@@ -96,7 +98,7 @@ void loop() {
   // For every loop we check to see if we have received any respiration data
   #if defined(XETHRU_PARTICLE)
   checkXeThru();
-  delay(1000);
+  delay(2000);
   #endif
 
 }
