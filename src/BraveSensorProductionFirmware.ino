@@ -89,7 +89,7 @@ void loop() {
   // For every loop we check to see if we have received any respiration data
   #if defined(XETHRU_PARTICLE)
   checkXeThru();
-  delay(2000);
+  delay(1000);
   #endif
 
 }

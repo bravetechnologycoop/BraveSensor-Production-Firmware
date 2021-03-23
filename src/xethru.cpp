@@ -200,13 +200,22 @@ int get_respiration_data(RespirationMessage* resp_msg) {
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
 void publishXethruData(RespirationMessage* message) {
 
+  static unsigned long int last_publish;
   char buf[1024];
   // The data values can't be inserted on the publish message so it must be printed into a buffer first.
   // The backslash is used as an escape character for the quotation marks.
   snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
         deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
 
-  Particle.publish("XeThru", buf, PRIVATE);  
+  //Particle.publish("XeThru", buf, PRIVATE); 
+
+  //publish the string every 2s
+  if((millis()-last_publish) > 2000){
+    //publish to cloud
+    Particle.publish("XeThru", buf, PRIVATE);  
+    last_publish = millis();
+  }
+
 }
 
 
