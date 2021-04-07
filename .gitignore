@@ -1,34 +1,14 @@
-#ingore setup files with sensitive information
-setupFirmware.h
+#ignore files that may contain sensitive client information
 SetupFiles/
 
-# ignore vscode settings
+#ignore vscode settings
 .vscode/
 
-#ignore particle binaries
+#ignore Argon binary files
 target/
 
-#ignore binary called core
-#I think this is the core OS binary?
-core
-
-#ignore... I think it's my app's binary?
-code
-
-#ignore log files
+#ignore my logs
 *.log
 
-#ignore... I think it's platformIO config files
+#ignore PlatformIO config files
 workspaceconfig.code-workspace
-
-#ignore my debug log files
-debug.log
-ParticleFailureLog.txt
-*.log
-
-#don't ignore particle workbench's project properties
-#need it for when someone clones your repo and wants
-#to run the code on their Argon
-#project.properties
-
-#ditto don't ignore lib/ folders, need these to run the code

@@ -1,54 +1,51 @@
-/*
- * Project BraveSensorProductionFirmware
- * 
- * Description: Particle Argon/Photon firmware for Brave
- *              ODetect project.
- * 
- * Author(s): Sampath Satti, Wayne Ng, Sajan Rajdev, Heidi Fedorak
- * 
- * Sampath Sattie, Wayne Ng, Sajan Rajdev - wrote original XeThru code
- * 
- * Heidi Fedorak - re-wrote XeThru code to be more scalable, and
- *                 and added remote wifi creds update and IM21 
- *                 BLE door sensor features.
- *
- * 
- */
-//#include "Particle.h"
-#include "xm132.h"
 
-//*************************System/Startup messages for Particle API***********
+#include "Particle.h"
+#include "im21door.h"
+#include "ins3331.h"
+#include "stateMachine.h"
+#include "consoleFunctions.h"
 
-SerialLogHandler logHandler(LOG_LEVEL_ERROR);
+SYSTEM_THREAD(ENABLED);
 
-// setup() runs once, when the device is first turned on.
+SerialLogHandler logHandler(LOG_LEVEL_INFO);
+
 void setup() {
 
-  //publish vitals every X seconds
-  Particle.publishVitals(60);
+  // use external antenna on Boron
+  BLE.selectAntenna(BleAntennaType::EXTERNAL);
+  setupIM21();
+  setupINS3331();
+  setupConsoleFunctions();
+  setupStateMachine();
 
-}  //end setup()
 
+  Particle.publishVitals(120);  //two minutes
+  
+}
 
-// loop() runs over and over again, as quickly as it can execute.
-// it is the arduino substitute for while(1) in main()
 void loop() {
 
+  //officially sanctioned Mariano (at Particle support) code
+  //aka don't send commands to peripherals via UART in setup() because
+  //particleOS may not have finished initializing its UART modules
   static bool initialized = false;
 
-  if(!initialized && Particle.connected()){
-    xm132Setup();
+  //do once
+  if(!initialized && Particle.connected()){ 
+    // use external antenna on Boron
+    //BLE.selectAntenna(BleAntennaType::EXTERNAL);  
+    initializeStateMachineConsts();
+    initializeDoorID();
+    startINSSerial();
     initialized = true; 
   }
 
+  //do every time loop() is called
   if (initialized) {
-    checkXM132();
+    stateHandler();
+    getHeartbeat();
   }
 
 
 }
-
-
-
-
 
