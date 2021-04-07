@@ -10,11 +10,21 @@
 //#define PHOTON
 
 #define DEBUG_LEVEL LOG_LEVEL_WARN
+//beta test versions:
+//no local version numbers yet, since not released to production.
+//2 Argon INS version will probably be v1.3 in the repo, officially
+//or whatever makes sense to align with the backend versioning system
+
+//Particle console versions for the 2 Argon INS are:
+//v--, INS = 1001, IM21 = 1002
+
+//production versions:
 //v1.0 = 1, no 2 because no IM21 Argon
 //v1.2 XeThru = 3, IM21 = 4
 //v1.2.01: XeThru = 5, IM21 = 6
 //v1.2.02: Xethru = 7, IM21 = 8
-#define BRAVE_FIRMWARE_VERSION 7  
+//covenant house custom firmware is XeThru = 7, IM21 = 101
+#define BRAVE_FIRMWARE_VERSION 7
 
 #define PRODUCT_ID_BETATEST 12858
 #define PRODUCT_ID_PRODUCTION 12876
