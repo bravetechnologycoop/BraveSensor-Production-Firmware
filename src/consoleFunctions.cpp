@@ -72,6 +72,8 @@ int initial_timer_set(String input){
   //else parse new threshold
   else {
     int timeout = input.toInt();
+    //increase timeout value to from seconds to ms
+    timeout = timeout*1000;
 
     if(timeout == 0){
         //string.toInt() returns 0 if input not an int
@@ -104,6 +106,8 @@ int duration_timer_set(String input){
   //else parse new threshold
   else {
     int timeout = input.toInt();
+    //increase timeout value to from seconds to ms
+    timeout = timeout*1000;
 
     if(timeout == 0){
         //string.toInt() returns 0 if input not an int
@@ -136,6 +140,8 @@ int stillness_timer_set(String input){
   //else parse new threshold
   else {
     int timeout = input.toInt();
+    //increase timeout value to from seconds to ms
+    timeout = timeout*1000;
 
     if(timeout == 0){
         //string.toInt() returns 0 if input not an int
