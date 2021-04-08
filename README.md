@@ -1,16 +1,21 @@
 # SensorProductionFirmware - out of date...
 
-This Repository follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+This Repository approximately follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)  It does not use a Develop branch, however; this repo only contains the main (master) branch, Release branch, and feature branches.
 
-The master branch of this repo was initialized containing "v1.0" of the ODetect Particle Photon firmware, as written by Sampath Satti, Wayne Ng and Sajan Rajdev.  This is the firmware contained in the XethruParticleDoor app running on the particle web IDE as of this repo's creation.
+Tags denote the different releases pushed to the master branch.  
 
-New development branch begun by Heidi Fedorak.  Feature branches for this development phase will include remote update of wifi credentials and upgrade of door sensors from Samsung to IM21, with more possibly added later.
+As of Apr 7/21, the different product firmware versions in this repo are:
 
-## Table of contents
+2 Argon + XeThru - in the main (master) branch.
+2 Argon + INS - in the Release branch.
+1 Boron + INS - in the Local-State-Machine branch.
+
+
+## Table of Contents
 
 1. [Table of Contents](#table-of-contents)
-2. [Firmware Setup](#firmware-setup)
-    - [Global Settings](#global-settings)
+2. [Two Argon and XeThru Firmware](#two-argon-and-xethru-firmware)
+      - [Firmware Settings and Config](#firmware-settings-and-config)
         - [DOOR_PARTICLE](#door_particle)
         - [XETHRU_PARTICLE](#xethru_particle)
         - [DEBUG_LEVEL](#debug_level)
@@ -41,15 +46,19 @@ New development branch begun by Heidi Fedorak.  Feature branches for this develo
     - [Door Warning](#door-warning)
     - [Current Door Sensor ID](#current-door-sensor-id)
     - [spark/device/diagnostics/update](#spark)
-5. [Webhook Templates](#webhook-templates)
+5. [2 Argon and INS Firmware](#2argon-ins)
+6. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
     - [IM21 Template](#im21-template)
+7. [Firmware State Machine](#firmware-state-machine)
 
-## Firmware Setup
+## Two Argon and XeThru Firmware
 
-When preparing a Particle to be shipped, several macro definitions must be customised for each firmware install.  All of these macros are found in the odetect_config.h file.  See the instructions below for what to set and when.  
+As of Apr 7/21, this firmware is in the main (master) branch, and is in production on the devices at client sites.
 
-**If your Particle is not new out of box, pay particular attention to the WRITE_ORIGINAL_xx section as additional steps will be required.**
+### Firmware Settings and Config
+
+Setup firmware must be flashed to these devices before the production firmware can be flashed to them.  Setup firmware is found in the Setup-Firmware branch.  Step-by-step instructions on how to flash this and the production firmware are shared with devs internally.
 
 ### Global Settings
 
@@ -594,3 +603,19 @@ Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
     "rejectUnauthorized": true
 }
 ```
+
+## Firmware State Machine
+
+Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  The state machine firmware will have no config.h file or need to flash setup firmware first.  
+
+### Firmware State Machine Setup
+
+The firmware only needs to be flashed to a device once.  It will initialize state machine constants (timer lengths, INS threshold) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can be updated via console function once the device is connected to LTE.
+
+### Important Constants and Settings
+
+### Console Functions
+
+### Published Messages
+
+ 
