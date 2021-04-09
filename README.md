@@ -82,6 +82,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
 5. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
     - [IM21 Template](#im21-template)
+    - [INS3331 Template](#ins3331-template)
 
 
 ## Two Argon and XeThru Firmware
@@ -600,69 +601,6 @@ The only published messages that are unique to this product are below.  All the 
 1. **inPhase** - A string containing a series of 10 I (inPhase) values, separated by commas
 2. **quadrature** - A string containing a series of 10 I (inPhase) values, separated by commas
 
-## Webhook Templates
-
-To send sensor data and alerts to the node application on the brave sensor backend, we require a webhook to take the data from the particle publish message and send a HTTP/S post request to the backend server. This section contains the various templates that are used for sending various data payloads to the backed corresponding to various sensors 
-
-### Xethru Template
-
-The XeThru Template uses a custom webhook since the request format of the webhook is a `web form` and not a JSON object. This is technical debt from the initial implementation of sensor which hasn't been changed since the XeThru module support is inactive. 
-
-#### Xethru publish message
-``` c++
-  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
-        deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
-
-  Particle.publish("XeThru", buf, PRIVATE); 
-```
-
-#### Xethru webhook 
-```json
-{
-    "event": "XeThru",
-    "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/{{PARTICLE_EVENT_NAME}}",
-    "url": "https://sensors.brave.coop/api/xethru",
-    "requestType": "POST",
-    "noDefaults": true,
-    "rejectUnauthorized": true,
-    "form": {
-        "distance": "{{{distance}}}",
-        "rpm": "{{{rpm}}}",
-        "devicetype": "{{{devicetype}}}",
-        "locationid": "{{{location}}}",
-        "deviceid": "{{{deviceid}}}",
-        "state": "{{{state}}}",
-        "mov_f": "{{{fast}}}",
-        "mov_s": "{{{slow}}}"
-    }
-}
-```
-
-### IM21 Template
-
-The request format of the IM21 webhook template is JSON. As a result, the webhook template is not unique, and the only link to the particle publish message is simply the name of the event. At the backend, the sensor data can be extracted from the body of the request.
-
-#### IM21 publish message
-
-```c++
-sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }", 
-        globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
-Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
-```
-
-#### IM21 webhook
-
-```json
-{
-    "event": "IM21 Data",
-    "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/{{PARTICLE_EVENT_NAME}}",
-    "url": "https://sensors.brave.coop/api/door",
-    "requestType": "POST",
-    "noDefaults": false,
-    "rejectUnauthorized": true
-}
-```
-
 ## Single Boron Firmware State Machine
 
 Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  The state machine firmware will have no config.h file or need to flash setup firmware first.  
@@ -1049,3 +987,100 @@ Current Door Sensor ID
   }
 }
 ```
+
+## Webhook Templates
+
+To send sensor data and alerts to the node application on the brave sensor backend, we require a webhook to take the data from the particle publish message and send a HTTP/S post request to the backend server. This section contains the various templates that are used for sending various data payloads to the backed corresponding to various sensors 
+
+### Xethru Template
+
+The XeThru Template uses a custom webhook since the request format of the webhook is a `web form` and not a JSON object. This is technical debt from the initial implementation of sensor which hasn't been changed since the XeThru module support is inactive. 
+
+#### Xethru publish message
+``` c++
+  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
+        deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
+
+  Particle.publish("XeThru", buf, PRIVATE); 
+```
+
+#### Xethru webhook 
+```json
+{
+    "event": "XeThru",
+    "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/{{PARTICLE_EVENT_NAME}}",
+    "url": "https://sensors.brave.coop/api/xethru",
+    "requestType": "POST",
+    "noDefaults": true,
+    "rejectUnauthorized": true,
+    "form": {
+        "distance": "{{{distance}}}",
+        "rpm": "{{{rpm}}}",
+        "devicetype": "{{{devicetype}}}",
+        "locationid": "{{{location}}}",
+        "deviceid": "{{{deviceid}}}",
+        "state": "{{{state}}}",
+        "mov_f": "{{{fast}}}",
+        "mov_s": "{{{slow}}}"
+    }
+}
+```
+
+### IM21 Template
+
+The request format of the IM21 webhook template is JSON. As a result, the webhook template is not unique, and the only link to the particle publish message is simply the name of the event. At the backend, the sensor data can be extracted from the body of the request.
+
+#### IM21 publish message
+
+```c++
+sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }", 
+        globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
+Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
+```
+
+#### IM21 webhook
+
+```json
+{
+    "event": "IM21 Data",
+    "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/{{PARTICLE_EVENT_NAME}}",
+    "url": "https://sensors.brave.coop/api/door",
+    "requestType": "POST",
+    "noDefaults": false,
+    "rejectUnauthorized": true
+}
+```
+
+### INS3331 Template
+
+The request format of the INS3331 webhook template is JSON. As a result, the webhook template is not unique, and the only link to the particle publish message is simply the name of the event. At the backend, the sensor data can be extracted from the body of the request.
+
+#### INS3331 publish message
+
+```c++
+String data = "{ \"inPhase\": \"";
+data.concat(iValues);
+data.concat("\", ");
+data.concat("\"quadrature\": \"");
+data.concat(qValues);
+data.concat("\"");
+data.concat("}");
+Particle.publish("INS3331 Data", data, PRIVATE);
+```
+
+#### INS3331 webhook
+
+```json
+{
+    "event": "INS3331 Data",
+    "responseTopic": "{{PARTICLE_DEVICE_ID}}/hook-response/{{PARTICLE_EVENT_NAME}}",
+    "url": "https://dev.sensors.brave.coop/api/innosent",
+    "requestType": "POST",
+    "noDefaults": false,
+    "rejectUnauthorized": true
+}
+```
+
+
+
+
