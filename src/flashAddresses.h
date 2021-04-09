@@ -1,6 +1,13 @@
 /*
-*
-*
+/*
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
+ * 
+ *  Addresses for where in EEPROM certain variables are written.
+ *  All except the flags are values that initialize to defaults 
+ *  when firmware is first flashed, and can later be changed using
+ *  console functions.
+ *
 */
 
 #ifndef FLASHADDRESSES_H

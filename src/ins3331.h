@@ -1,14 +1,6 @@
 /*
- * Project  addINScode
- * 
- * Description:  Integrating InnoSenT INS3331 firmware written by
- *      Sampath Satti with Argon firmware written primarily by Heidi
- *      Fedorak.  This will allow the master code package to connect 
- *      to XeThru or INS3331 depending on defines established in config.h
- * 
- * Author: Heidi Fedorak, Sampath Satti
- * Date:  Nov 2020
- * 
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
 */
 
 #ifndef INS3331_H

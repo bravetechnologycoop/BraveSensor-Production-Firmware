@@ -1,3 +1,7 @@
+/*
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
+*/
 
 #include "Particle.h"
 #include "im21door.h"
@@ -5,9 +9,14 @@
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 
-SYSTEM_THREAD(ENABLED);
+#define DEBUG_LEVEL LOG_LEVEL_INFO
+#define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
+#define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
 
-SerialLogHandler logHandler(LOG_LEVEL_INFO);
+PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
+PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, see versioning notes above
+SYSTEM_THREAD(ENABLED);
+SerialLogHandler logHandler(DEBUG_LEVEL);
 
 void setup() {
 

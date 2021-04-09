@@ -1,5 +1,19 @@
 /*
- * IM21 door header
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
+ * 
+ * 
+ * IM21 door sensor status byte can be one of:
+ * 
+ * 0x00 - closed
+ * 0x04 - closed + low battery
+ * 0x08 - closed + heartbeat
+ * 0x0C - closed + heartbeat + low battery
+
+ * 0x02 - open
+ * 0x06 - open + low battery
+ * 0x0A - open + heartbeat
+ * 0x0E - open + heartbeat + low battery 
  * 
  */
 
@@ -13,9 +27,9 @@
 
 //initial (default) values for door ID, can be changed via console function
 //or by writing something other than 0x8888 to the above flag in flash
-#define DOORID_BYTE1 0xEF
-#define DOORID_BYTE2 0x5F
-#define DOORID_BYTE3 0x27
+#define DOORID_BYTE1 0xAA
+#define DOORID_BYTE2 0xAA
+#define DOORID_BYTE3 0xAA
 
 #define CLOSED 0x00
 #define OPEN 0x02

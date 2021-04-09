@@ -1,5 +1,7 @@
 /*
- */
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
+*/
 
 #include "Particle.h"
 #include "ins3331.h"

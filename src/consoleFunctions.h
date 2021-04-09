@@ -1,8 +1,7 @@
 /*
- * Author: Heidi Fedorak
- * Date:  Mar 2021
- * 
- */
+ * Brave firmware state machine for single Boron
+ * written by Heidi Fedorak, Apr 2021
+*/
 
 #ifndef CONSOLEFUNCTIONS_H
 #define CONSOLEFUNCTIONS_H
