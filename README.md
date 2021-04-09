@@ -41,6 +41,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
           - [XeThru Error](#xethru-error)
           - [Current Xethru Config Settings](#current-xethru-config-settings)
           - [Current SSIDs](#current-ssids)
+          - [Current wifi passwords](#current-wifi-passwords)
           - [WiFi Disconnect Warning](#wifidisconnectwarning)
           - [IM21 Data](#im21-data)
           - [IM21 Warning](#im21-warning)
@@ -58,6 +59,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
 5. [Single Boron Firmware State Machine](#single-boron-firmware-state-machine)
       - [Firmware State Machine Setup](#firmware-state-machine-setup)
       - [Important Constants and Settings](#important-constants-and-settings)
+        [State Machine Constants and Thresholds](#state-machine-constants-and-thresholds)
       - [State Machine Console Functions](#state-machine-console-functions)
       - [State Machine Published Messages](#state-machine-published-messages)
 
@@ -571,7 +573,12 @@ The only published messages that are unique to this product are below.  All the 
 
 #### INS3331 Data
 
+**Event description:**  Publishes INS3331 radar data.  
 
+**Event data:**
+
+1. **inPhase** - A string containing a series of 10 I (inPhase) values, separated by commas
+2. **quadrature** - A string containing a series of 10 I (inPhase) values, separated by commas
 
 ## Webhook Templates
 
@@ -636,15 +643,51 @@ Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
 }
 ```
 
-## Firmware State Machine
+## Single Boron Firmware State Machine
 
 Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  The state machine firmware will have no config.h file or need to flash setup firmware first.  
 
+The state machine design including all states and their entry/exit conditions is documented [here](https://docs.google.com/drawings/d/14JmUKDO-Gs7YLV5bhE67ZYnGeZbBg-5sq0fQYwkhkI0/edit?usp=sharing).
+
 ### Firmware State Machine Setup
 
-The firmware only needs to be flashed to a device once.  It will initialize state machine constants (timer lengths, INS threshold) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can be updated via console function once the device is connected to LTE.
+The production firmware only needs to be flashed to a device once.  It will initialize state machine constants (timer lengths, INS threshold) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can later be updated via console function, once the device is connected to LTE.
 
 ### Important Constants and Settings
+
+Settings useful to know about will be described in this section.  Note that changing these is done at the code level and not in a configuration file, so doing so will require a hotfix that is assigned a version number.  Changes will affect all devices in the fleet.
+
+#### INS_THRESHOLD
+
+This is defined via a macro in the stateMachine.h header file.  
+
+It is compared to the filtered inPhase values detected by the INS radar.  Anything above the threshold is considered movement, and anything below the threshold is considered stillness or an empty room. 
+
+The default level is set to 60.  This is based on the radar testing documented [here](https://docs.google.com/document/d/12TLw6XE9CSaNpguytS2NCSCP0aZWUs-OncmaDdoTKfo/edit?usp=sharing).
+
+#### STATE1_MAX_TIME
+
+This is defined via a macro in the stateMachine.h header file.
+
+It is the length of time the state 1 timer counts up to.  It is how long motion needs to be present (so INS threshold > 60) for a bathroom session to start.
+
+The length of time defaults to 15s.  It is defined in milliseconds, so the actual macro definition will be 15000 in code.
+
+#### STATE2_MAX_DURATION
+
+This is defined via a macro in the stateMachine.h header file.
+
+It is the length of time the state 2 timer counts up to.  It is how long a bathroom session can see motion before a duration alert is triggered.
+
+The length of time defaults to 10 minutes.  It is defined in milliseconds, so the actual macro definition will be 15000 in code.
+
+#define STATE1_MAX_TIME 10000 //ms
+#define STATE2_MAX_DURATION 12000 //ms
+#define STATE3_MAX_STILLNESS_TIME 13000 //ms
+
+//length of time between debug publishes
+#define DEBUG_PUBLISH_INTERVAL 1500  //ms
+#define SM_HEARTBEAT_INTERVAL 600000  //ms = 10 min
 
 ### State Machine Console Functions
 
