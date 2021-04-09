@@ -21,7 +21,6 @@ As of Apr 7/21, the different product firmware versions in this repo are:
         - [DEBUG_LEVEL](#debug_level)
         - [IM21_PARTICLE](#im21_particle)
         - [XETHRU_PARTICLE](#xethru_particle)
-        - [INS3331_PARTICLE](#ins3331_particle)
         - [PHOTON](#photon)
         - [BRAVE_FIRMWARE_VERSION](#brave_firmware_version)
         - [PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION](#product_id_betatest-and-product_id_production)
@@ -48,17 +47,20 @@ As of Apr 7/21, the different product firmware versions in this repo are:
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
 3. [Two Argons and INS Firmware](#two-argons-and-ins-firmware)
-      - [Firmware Settings and Config](#firmware-settings-and-config)
+      - [Firmware Settings](#firmware-settings)
         - [INS3331_PARTICLE](#ins3331_particle)
       - [Console Function Instructions](#console-function-instructions)
       - [Published Events](#published-events)
+          - [INS3331 Data](#ins3331-data)
 4. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
     - [IM21 Template](#im21-template)
 5. [Single Boron Firmware State Machine](#single-boron-firmware-state-machine)
-      - [Firmware Settings and Config](#firmware-settings-and-config)
-      - [Console Function Instructions](#console-function-instructions)
-      - [Published Events](#published-events)
+      - [Firmware State Machine Setup](#firmware-state-machine-setup)
+      - [Important Constants and Settings](#important-constants-and-settings)
+      - [State Machine Console Functions](#state-machine-console-functions)
+      - [State Machine Published Messages](#state-machine-published-messages)
+
 
 ## Two Argon and XeThru Firmware
 
@@ -91,10 +93,6 @@ Do not define XETHRU_PARTICLE at the same time unless you want both the door sen
 A “Xethru Particle” connects to the Xethru radar sensor and relays radar data to the cloud.  Defining XETHRU_PARTICLE will enable the xethru sensor firmware for compilation/flashing to a Particle.
 
 Do not define IM21_PARTICLE at the same time unless you want both the door sensor and the Xethru breath sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
-
-#### INS3331_PARTICLE
-
-This is not used in the 2 Argon + XeThru firmware so it should never be defined.
 
 #### PHOTON
 
@@ -549,7 +547,7 @@ The IM21 door sensor increments a control byte by 0x01 every time advertising da
 
 As of Apr 7/21, this firmware is in the main (master) branch, and is in production on the devices at client sites.
 
-### Firmware Settings and Config
+### Firmware Settings
 
 Setup firmware must be flashed to these devices before the production firmware can be flashed to them.  Setup firmware is found in the Setup-Firmware branch.  Step-by-step instructions on how to flash this and the production firmware are shared with developers internally.
 
@@ -562,6 +560,17 @@ The only setting that is unique to this product is below.  All the others are id
 An “INS3331 Particle” connects to the INS3331 radar sensor and relays breath data to the cloud.  Defining INS3331_PARTICLE will enable the INS3331 sensor firmware for compilation/flashing to a Particle.
 
 Do not define IM21_PARTICLE at the same time unless you want both the door sensor and the INS radar sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
+
+### Console Function Instructions
+
+There are no console functions unique to this product.  All console functions found in this product are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in [section 2](#console-function-instructions) above.
+
+### Published Messages
+
+The only published messages that are unique to this product are below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in [section 2](#published-messages) above.
+
+#### INS3331 Data
+
 
 
 ## Webhook Templates
@@ -637,8 +646,6 @@ The firmware only needs to be flashed to a device once.  It will initialize stat
 
 ### Important Constants and Settings
 
-### Console Functions
+### State Machine Console Functions
 
-### Published Messages
-
- 
+### State Machine Published Messages
