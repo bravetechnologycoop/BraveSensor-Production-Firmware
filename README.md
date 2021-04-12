@@ -16,7 +16,8 @@ As of Apr 7/21, the different product firmware versions in this repo are:
 ## Table of Contents
 
 1. [Table of Contents](#table-of-contents)
-2. [Two Argon and XeThru Firmware](#two-argon-and-xethru-firmware)
+2. [Firmware Versioning](#firmware-versioning)
+3. [Two Argon and XeThru Firmware](#two-argon-and-xethru-firmware)
       - [Firmware Settings and Config](#firmware-settings-and-config)
         - [DEBUG_LEVEL](#debug_level)
         - [IM21_PARTICLE](#im21_particle)
@@ -47,15 +48,18 @@ As of Apr 7/21, the different product firmware versions in this repo are:
           - [IM21 Warning](#im21-warning)
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
-3. [Two Argons and INS Firmware](#two-argons-and-ins-firmware)
+4. [Two Argons and INS Firmware](#two-argons-and-ins-firmware)
       - [Firmware Settings](#firmware-settings)
         - [INS3331_PARTICLE](#ins3331_particle)
       - [Console Function Instructions](#console-function-instructions)
       - [Published Events](#published-events)
           - [INS3331 Data](#ins3331-data)
-4. [Single Boron Firmware State Machine](#single-boron-firmware-state-machine)
+5. [Single Boron Firmware State Machine](#single-boron-firmware-state-machine)
       - [Firmware State Machine Setup](#firmware-state-machine-setup)
       - [Important Constants and Settings](#important-constants-and-settings)
+          - [DEBUG_LEVEL](#debug_level)
+          - [BRAVE_FIRMWARE_VERSION: state machine](#brave_firmware_version:-state-machine)
+          - [PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION: state machine](#product_id_betatest-and-product_id_production:-state-machine)
           - [INS_THRESHOLD](#ins_threshold)
           - [STATE1_MAX_TIME](#state1_max_time)
           - [STATE2_MAX_DURATION](#state2_max_duration)
@@ -79,11 +83,26 @@ As of Apr 7/21, the different product firmware versions in this repo are:
           - [Debugging: State Transition](#debugging:-state-transition)
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
-5. [Webhook Templates](#webhook-templates)
+6. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
     - [IM21 Template](#im21-template)
     - [INS3331 Template](#ins3331-template)
 
+
+## Firmware Versioning
+
+Unfortunately current versioning is quite complicated, especially because version numbers on the Particle console are limited to single ints and thus cannot match the versioning we've established in the firmware repo tags.  Versioning should become much simpler when the 2 Argon + Radar products are depreciated.  
+
+In the master (main) branch, in the firmware_config.h file, the comments contain the most up to date firmware versioning history.  As of Apr 7/21, this is as follows:
+
+* v1.0 = Wayne and Sanjan's code is v1 on the Particle console, although this is depreciated now.
+* v1.2 = 2 Argon + XeThru code:  the XeThru Argon's version of the firmware is v3 on the particle console, and the door sensor Argon's firmware is v4
+* v1.2.01 and v1.2.02 are hotfixes, and their console versions increment accordingly:
+  * v1.2.01: XeThru = 5, IM21 = 6
+  * v1.2.02: Xethru = 7, IM21 = 8
+* The custom firmware on the Covenant House Door Argons is version #101 on the console.
+* Beta release versions for the 2 Argon + INS follow the same numbering scheme of odd for radar Argon and even for Door Argon, except the numbers start at 1001.  There are no tags in the firmware repo since this version has not been released to production yet.
+* State machine beta release will start at #2000 on the Particle Console. There are no corresponding repo tags/versions since this code has not been released to production yet
 
 ## Two Argon and XeThru Firmware
 
@@ -99,6 +118,8 @@ See the list below for information on the settings found in these two files:
 
 #### DEBUG_LEVEL
 
+Define this in both the setup and production firmware config files.
+
 The debug level controls which statements the Particle OS's log handler will print.  The levels in decending order from most to least detailed are: trace, info, warn, error.  Further information can be found [here](https://docs.particle.io/reference/device-os/firmware/argon/#logging)
 
 This firmware defaults to warn level.  If more detailed debugging info is needed, eg for clients that have difficulting remaining connected to wifi, it can be set to info.  
@@ -107,11 +128,15 @@ If you are connect to the Particle device via USB, these logs can be read by ope
 
 #### IM21_PARTICLE
 
+Uncomment this define in both the setup and production firmware config files if you are flashing code to an IM21 Particle device (an Argon as of the date of this writing).
+
 An “IM21 Particle” connects to the IM21 door sensor via bluetooth low energy, and relays door open/door closed events to the cloud.  Defining IM21_PARTICLE will enable the IM21 door sensor code for compilation/flashing to a Particle.
 
 Do not define XETHRU_PARTICLE at the same time unless you want both the door sensor and the Xethru breath sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
 
 #### XETHRU_PARTICLE
+
+Uncomment this define in both the setup and production firmware config files if you are flashing code to a XeThru Particle device (an Argon as of the date of this writing).
 
 A “Xethru Particle” connects to the Xethru radar sensor and relays radar data to the cloud.  Defining XETHRU_PARTICLE will enable the xethru sensor firmware for compilation/flashing to a Particle.
 
@@ -119,23 +144,17 @@ Do not define IM21_PARTICLE at the same time unless you want both the door senso
 
 #### PHOTON
 
-Define this if your device is a photon, so photon-specific code can be compiled/flashed. The default device is currently an Argon.  (Presently all this macro does is turn on the Photon’s external wifi antenna, all other code is identical to the Argon.)
+Define this in the production firmware config file if your device is a photon, so photon-specific code can be compiled/flashed. The default device is currently an Argon.  (Presently all this macro does is turn on the Photon’s external wifi antenna, all other code is identical to the Argon.)
 
 #### BRAVE_FIRMWARE_VERSION
 
-Unfortunately current versioning is quite complicated, especially because version numbers on the Particle console are limited to single ints and thus cannot match the versioning we've established in the firmware repo tags.  Versioning should become much simpler when the 2 Argon + Radar products are depreciated.  
+Define this in the production firmware's config file.
 
-In the master (main) branch, in the firmware_config.h file, the comments contain the most up to date firmware versioning history.  As of Apr 7/21, this is as follows:
-
-* v1.0 = Wayne and Sanjan's code is v1 on the Particle console, although this is depreciated now.
-* v1.2 = 2 Argon + XeThru code:  the XeThru Argon's version of the firmware is v3 on the particle console, and the door sensor Argon's firmware is v4
-* v1.2.01 and v1.2.02 are hotfixes, and their console versions increment accordingly:
-  * v1.2.01: XeThru = 5, IM21 = 6
-  * v1.2.02: Xethru = 7, IM21 = 8
-* The custom firmware on the Covenant House Door Argons is version #101 on the console.
-* Beta release versions for the 2 Argon + INS follow the same numbering scheme of odd for radar Argon and even for Door Argon, except the numbers start at 1001.  There are no tags in the firmware repo since this version has not been released to production yet.
+This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
 
 #### PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION
+
+Define one of these in the production firmware's config file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
 
 These are the product keys that the Particle OS requires.  They define which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups.  The firmware that is flashed to devices in the beta test group must contain the Particle console's key for that group, ditto for the production group and any other groups created in the future.
 
@@ -568,7 +587,7 @@ The IM21 door sensor increments a control byte by 0x01 every time advertising da
 
 ## Two Argons and INS Firmware
 
-As of Apr 7/21, this firmware is in the main (master) branch, and is in production on the devices at client sites.
+As of Apr 7/21, this firmware is in the Release branch, and is running on the beta testing devices.
 
 ### Firmware Settings
 
@@ -576,9 +595,11 @@ Setup firmware must be flashed to these devices before the production firmware c
 
 The production firmware also has configuration values, found in the firmware_config.h file.  
 
-The only setting that is unique to this product is below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in [section 2](#firmware-settings-and-config) above.
+The only setting that is unique to this product is below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#firmware-settings-and-config) above.
 
 #### INS3331_PARTICLE
+
+
 
 An “INS3331 Particle” connects to the INS3331 radar sensor and relays breath data to the cloud.  Defining INS3331_PARTICLE will enable the INS3331 sensor firmware for compilation/flashing to a Particle.
 
@@ -586,11 +607,11 @@ Do not define IM21_PARTICLE at the same time unless you want both the door senso
 
 ### Console Function Instructions
 
-There are no console functions unique to this product.  All console functions found in this product are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in [section 2](#console-function-instructions) above.
+There are no console functions unique to this product.  All console functions found in this product are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#console-function-instructions) above.
 
 ### Published Messages
 
-The only published messages that are unique to this product are below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in [section 2](#published-messages) above.
+The only published messages that are unique to this product are below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#published-messages) above.
 
 #### INS3331 Data
 
@@ -603,7 +624,7 @@ The only published messages that are unique to this product are below.  All the 
 
 ## Single Boron Firmware State Machine
 
-Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  The state machine firmware will have no config.h file or need to flash setup firmware first.  
+Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  
 
 The state machine design including all states and their entry/exit conditions is documented [here](https://docs.google.com/drawings/d/14JmUKDO-Gs7YLV5bhE67ZYnGeZbBg-5sq0fQYwkhkI0/edit?usp=sharing).
 
@@ -613,9 +634,40 @@ State transitions are handled by a pointer to a function.  The pointer is called
 
 ### Firmware State Machine Setup
 
-The production firmware only needs to be flashed to a device once.  It will initialize state machine constants (timer lengths, INS threshold, etc) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can later be updated via console function, once the device is connected to LTE.
+The only things that need to be changed when provisioning devices is the [firmware version](#brave_firmware_version:-state-machine) and [product key](#product_id_betatest-and-product_id_production:-state-machine), click to go to the relevant information.
+
+The production firmware only needs to be flashed to a device once.  There is no setup firmware.  Production firmware will initialize state machine constants (timer lengths, INS threshold, etc) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can later be updated via console function, once the device is connected to LTE.
 
 Default settings useful to know about will be described in this section.  Note that changing these is done at the code level and not in a configuration file, so doing so will require a hotfix that is assigned a version number.  Changes will affect all devices in the fleet.
+
+#### DEBUG_LEVEL
+
+This is defined via a macro at the top of the .ino file.
+
+The debug level controls which statements the Particle OS's log handler will print.  The levels in decending order from most to least detailed are: trace, info, warn, error.  Further information can be found [here](https://docs.particle.io/reference/device-os/firmware/argon/#logging)
+
+This firmware defaults to warn level.  If more detailed debugging info is needed, eg for clients that have difficulting remaining connected to wifi, it can be set to info.  
+
+If you are connect to the Particle device via USB, these logs can be read by opening a Particle [command line interface](https://docs.particle.io/reference/developer-tools/cli/) and using the command "particle serial monitor --follow".
+
+#### BRAVE_FIRMWARE_VERSION: state machine
+
+Define this in the main .ino file.
+
+This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
+
+#### PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION: state machine
+
+Define one of these in the main .ino file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
+
+These are the product keys that the Particle OS requires.  They define which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups.  The firmware that is flashed to devices in the beta test group must contain the Particle console's key for that group, ditto for the production group and any other groups created in the future.
+
+Product keys are found by looking at the list of different products on the Particle console:
+
+![alt text](productkeys.png "Product Keys")
+
+For more information on fleetwide updates, see the Particle docs [here](https://docs.particle.io/tutorials/device-cloud/ota-updates/#fleet-wide-ota).
+
 
 #### INS_THRESHOLD
 
