@@ -19,6 +19,7 @@ unsigned int timeout = 10000;
 int run();
 void buttonPress();
 void timerSurpassed();
+bool buttonPressed = false;
 
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
@@ -34,13 +35,15 @@ void setup() {
 }
 
 void loop() {
-
+    if(buttonPressed){
+        buttonPress();
+    }
 }
 
 // called by the cloud when an alert is generated, starts alert session
 int run() {
     // interrupt is attached only when the alert session starts
-    attachInterrupt(BUTTON, buttonPress, RISING);
+    attachInterrupt(BUTTON, interruptHandler, RISING);
     Timer timer(timeout, timerSurpassed, true);
     timer.start();
     digitalWrite(BUZZER, HIGH);
@@ -54,12 +57,14 @@ void buttonPress() {
     Log.info("Button pressed!");
     Particle.publish("button-pressed", PRIVATE);
     digitalWrite(BUZZER, LOW);
-    while(1);
 }
 
 void timerSurpassed() {
     Log.info("Timer surpassed!");
     Particle.publish("timer-surpassed", PRIVATE);
     digitalWrite(BUZZER, LOW);
-    while(1);
+}
+
+void interruptHandler(){
+    buttonPressed = true;
 }
