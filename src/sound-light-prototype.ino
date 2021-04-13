@@ -10,16 +10,16 @@
 #include "Particle.h"
 
 #define BUZZER D6
-#define BUTTON D8
-#define TIMEOUT 10000 // in ms
-// #define TONE 1760 // in Hz
-
-unsigned int timeout = 10000;
+#define BUTTON D7
+#define TIMEOUT 5000 // in ms
 
 int run();
 void buttonPress();
 void timerSurpassed();
+
 bool buttonPressed = false;
+bool timerPassed = false;
+Timer timer(TIMEOUT, timerHandler, true);
 
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
@@ -35,16 +35,22 @@ void setup() {
 }
 
 void loop() {
-    if(buttonPressed){
+    if(buttonPressed) {
         buttonPress();
+    } else if (timerPassed) {
+        timerSurpassed();
     }
 }
 
-// called by the cloud when an alert is generated, starts alert session
-int run() {
+// cloud function, called by the cloud when an alert is generated, starts alert session
+int run(String command) {
+    // check if cloud function used right command
+    // if (command != "run") {
+    //     return -1;
+    // }
+
     // interrupt is attached only when the alert session starts
     attachInterrupt(BUTTON, interruptHandler, RISING);
-    Timer timer(timeout, timerSurpassed, true);
     timer.start();
     digitalWrite(BUZZER, HIGH);
     Log.info("Running!");
@@ -57,14 +63,27 @@ void buttonPress() {
     Log.info("Button pressed!");
     Particle.publish("button-pressed", PRIVATE);
     digitalWrite(BUZZER, LOW);
+
+    // then reset the system
+    while(1); // placeholder
 }
 
+// ends alert session, sends publish message to cloud to escalate
 void timerSurpassed() {
     Log.info("Timer surpassed!");
     Particle.publish("timer-surpassed", PRIVATE);
     digitalWrite(BUZZER, LOW);
+
+    // then reset the system
+    while(1); // placeholder
 }
 
-void interruptHandler(){
+// callback function to change variable that allows buttonPress to be called
+void interruptHandler() {
     buttonPressed = true;
+}
+
+// callback function to change variable that allows timerSurpassed to be called
+void timerHandler() {
+    timerPassed = true;
 }
