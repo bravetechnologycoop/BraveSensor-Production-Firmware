@@ -10,6 +10,10 @@
 //#define PHOTON
 
 #define DEBUG_LEVEL LOG_LEVEL_WARN
+
+#define XETHRU_PARTICLE
+//#define IM21_PARTICLE
+
 //beta test versions:
 //no local version numbers yet, since not released to production.
 //2 Argon INS version will probably be v1.3 in the repo, officially
@@ -26,11 +30,7 @@
 //covenant house custom firmware is XeThru = 7, IM21 = 101
 #define BRAVE_FIRMWARE_VERSION 7
 
-#define PRODUCT_ID_BETATEST 12858
-#define PRODUCT_ID_PRODUCTION 12876
+#define BRAVE_PRODUCT_ID 12858  //12858 = betatest, 12876 = production
 
-
-#define XETHRU_PARTICLE
-//#define IM21_PARTICLE
 
 #endif
