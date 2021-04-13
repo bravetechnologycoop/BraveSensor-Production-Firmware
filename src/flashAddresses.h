@@ -1,5 +1,5 @@
 /*
-/*
+ *
  * Brave firmware state machine for single Boron
  * written by Heidi Fedorak, Apr 2021
  * 
