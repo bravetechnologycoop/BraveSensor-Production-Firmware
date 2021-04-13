@@ -13,7 +13,7 @@
 #define BUTTON D7
 #define TIMEOUT 5000 // in ms
 
-int run();
+int run(String command);
 void buttonPress();
 void timerSurpassed();
 
@@ -31,7 +31,7 @@ void setup() {
 
     delay(5000);
     Log.info("Setup!");
-    run();
+    run("run");
 }
 
 void loop() {
@@ -46,6 +46,7 @@ void loop() {
 int run(String command) {
     // check if cloud function used right command
     // if (command != "run") {
+    //     Particle.publish("wrong-command", PRIVATE);
     //     return -1;
     // }
 
