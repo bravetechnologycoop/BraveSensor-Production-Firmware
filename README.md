@@ -1,14 +1,14 @@
 # SensorProductionFirmware
 
-Last update to this readme: Apr 7/21
+Last update to this readme: April 16/21
 
-This Repository approximately follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)  It does not use a Develop branch, however; this repo only contains the main (master) branch, Release branch, and feature branches.
+This Repository approximately follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)  It does not use a Develop branch, however; this repo only contains the Production (master) branch, Release branch, and feature branches.
 
-Tags denote the different releases pushed to the master branch.  
+Tags denote the different releases found on the Production branch.  
 
-As of Apr 7/21, the different product firmware versions in this repo are:
+As of April 16/21, the different product firmware versions in this repo are:
 
-2 Argon + XeThru - in the main (master) branch.
+2 Argon + XeThru - in the Production (master) branch.
 2 Argon + INS - in the Release branch.
 1 Boron + INS - in the Local-State-Machine branch.
 
@@ -94,7 +94,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
 
 Unfortunately current versioning is quite complicated, especially because version numbers on the Particle console are limited to single ints and thus cannot match the versioning we've established in the firmware repo tags.  Versioning should become much simpler when the 2 Argon + Radar products are depreciated.  
 
-In the master (main) branch, in the firmware_config.h file, the comments contain the most up to date firmware versioning history.  As of Apr 7/21, this is as follows:
+In the Production (main/master) branch, in the firmware_config.h file, the comments contain the most up to date firmware versioning history.  As of April 16/21, this is as follows:
 
 * v1.0 = Wayne and Sanjan's code is v1 on the Particle console, although this is depreciated now.
 * v1.2 = 2 Argon + XeThru code:  the XeThru Argon's version of the firmware is v3 on the particle console, and the door sensor Argon's firmware is v4
@@ -105,9 +105,19 @@ In the master (main) branch, in the firmware_config.h file, the comments contain
 * Beta release versions for the 2 Argon + INS follow the same numbering scheme of odd for radar Argon and even for Door Argon, except the numbers start at 1001.  There are no tags in the firmware repo since this version has not been released to production yet.
 * State machine beta release will start at #2000 on the Particle Console. There are no corresponding repo tags/versions since this code has not been released to production yet
 
+## Repo Branches Outline
+
+Production: this is the default (aka main or master) branch in the repo.  It contains the firmware that is in production on devices in the field.
+
+Covenant-Production: This contains the firmware that runs on the Covenant devices.  It required a unique hotfix to be in compliance with Covenant's security settings.
+
+Release: this branch contains the firmware that is running on the devices in our beta testing fleet.
+
+All other branches should be feature development, prototyping, or radar testing branches.  Radar testing branches will explicitly say what they are in the branch name.
+
 ## Two Argon and XeThru Firmware
 
-As of Apr 7/21, this firmware is in the main (master) branch, and is in production on the devices at client sites.
+As of April 16/21, this firmware is in the Production (main/master) branch, and is in production on the devices at client sites.
 
 ### Firmware Settings and Config
 
@@ -588,7 +598,7 @@ The IM21 door sensor increments a control byte by 0x01 every time advertising da
 
 ## Two Argons and INS Firmware
 
-As of Apr 7/21, this firmware is in the Release branch, and is running on the beta testing devices.
+As of April 16/21, this firmware is in the Release branch, and is running on the beta testing devices.
 
 ### Firmware Settings
 
