@@ -24,7 +24,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
         - [XETHRU_PARTICLE](#xethru_particle)
         - [PHOTON](#photon)
         - [BRAVE_FIRMWARE_VERSION](#brave_firmware_version)
-        - [PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION](#product_id_betatest-and-product_id_production)
+        - [BRAVE_PRODUCT_ID](#brave_product_id)
         - [Wifi Settings](#wifi-settings)
         - [locationID, deviceID, devicetype](#locationID,-deviceID,-devicetype)
         - [XeThru Configuration Variables](#xethru-configuration-variables)
@@ -59,7 +59,7 @@ As of Apr 7/21, the different product firmware versions in this repo are:
       - [Important Constants and Settings](#important-constants-and-settings)
           - [DEBUG_LEVEL](#debug_level)
           - [BRAVE_FIRMWARE_VERSION: state machine](#brave_firmware_version:-state-machine)
-          - [PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION: state machine](#product_id_betatest-and-product_id_production:-state-machine)
+          - [BRAVE_PRODUCT_ID for state machine](#brave_product_id-for-state-machine)
           - [INS_THRESHOLD](#ins_threshold)
           - [STATE1_MAX_TIME](#state1_max_time)
           - [STATE2_MAX_DURATION](#state2_max_duration)
@@ -152,11 +152,11 @@ Define this in the production firmware's config file.
 
 This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
 
-#### PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION
+#### BRAVE_PRODUCT_ID
 
-Define one of these in the production firmware's config file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
+Define this in the production firmware's config file, depending on whether your firmware is going to the beta test product or the production product on the Particle Console.
 
-These are the product keys that the Particle OS requires.  They define which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups.  The firmware that is flashed to devices in the beta test group must contain the Particle console's key for that group, ditto for the production group and any other groups created in the future.
+The Particle Console requires a product ID key to be set in firmware.  It defines which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups and sub-groups.  The firmware that is flashed to devices in the beta test product group must contain the Particle console's key for that product group, ditto for the production group and any others created in the future.
 
 Product keys are found by looking at the list of different products on the Particle console:
 
@@ -656,11 +656,11 @@ Define this in the main .ino file.
 
 This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
 
-#### PRODUCT_ID_BETATEST and PRODUCT_ID_PRODUCTION: state machine
+#### BRAVE_PRODUCT_ID for state machine
 
-Define one of these in the main .ino file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
+Define this in the main .ino file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
 
-These are the product keys that the Particle OS requires.  They define which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups.  The firmware that is flashed to devices in the beta test group must contain the Particle console's key for that group, ditto for the production group and any other groups created in the future.
+The Particle Console requires a product ID key to be set in firmware.  It defines which product group the device belongs to.  Fleetwide OTA updates of firmware are tied to product groups and sub-groups.  The firmware that is flashed to devices in the beta test product group must contain the Particle console's key for that product group, ditto for the production group and any others created in the future.
 
 Product keys are found by looking at the list of different products on the Particle console:
 
