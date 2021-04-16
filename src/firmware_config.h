@@ -32,5 +32,4 @@
 
 #define BRAVE_PRODUCT_ID 12858  //12858 = betatest, 12876 = production
 
-
 #endif
