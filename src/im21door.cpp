@@ -122,10 +122,10 @@ void logAndPublishDoorWarning(doorData previousDoorData, doorData currentDoorDat
 
   char doorPublishBuffer[128];
 
-  sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\", \"warning\": \"Missed a door event!\" }", 
-          globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
+  sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"prev_control_byte\": \"%02X\", \"curr_control_byte\": \"%02X\" }", 
+          globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, previousDoorData.controlByte, currentDoorData.controlByte);
   Particle.publish("IM21 Warning", doorPublishBuffer, PRIVATE);
-  Log.info("published warning, 0x%02X",currentDoorData.controlByte);
+  Log.warn("published IM21 warning, prev door byte = 0x%02X, curr door byte = 0x%02X",previousDoorData.controlByte, currentDoorData.controlByte);
 
 }
 
