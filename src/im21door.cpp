@@ -81,6 +81,7 @@ doorData checkIM21(){
     else if(currentDoorData.controlByte > (previousDoorData.controlByte+0x01)){
 
       Log.error("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+      logAndPublishDoorWarning(previousDoorData, currentDoorData);
       returnDoorData = currentDoorData;
       previousDoorData = currentDoorData;  
     }

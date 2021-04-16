@@ -31,6 +31,7 @@
 #define DOORID_BYTE2 0xAA
 #define DOORID_BYTE3 0xAA
 
+
 #define CLOSED 0x00
 #define OPEN 0x02
 #define HEARTBEAT 0x08
