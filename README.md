@@ -83,6 +83,7 @@ As of April 16/21, the different product firmware versions in this repo are:
           - [Debug Message](#debug-message)
           - [Debugging: State Transition](#debugging:-state-transition)
           - [Current Door Sensor ID](#current-door-sensor-id)
+          - [IM21 Warning: state machine](#im21-warning:-state-machine)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
 7. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
@@ -976,6 +977,25 @@ Current Door Sensor ID
 1. **Byte1** - first byte of door ID, in hex
 2. **Byte2** - second byte of door ID, in hex
 3. **Byte3** - third byte of door ID, in hex
+
+### “IM21 Warning: state machine”
+
+This event is published if the firmware's checkIM21() function sees that a door event has been missed.
+
+The IM21 door sensor increments a control byte by 0x01 every time a door event (open, close, heartbeat) is transmitted. The firmware will publish an "IM21 Warning” event if it receives a control byte that is greater than the previous event's control byte + 0x01.  
+
+Be aware:  this means that notification a door event is missed won't be published until the next door event is received from the IM21 sensor.  As you can see in the Event Data section below, the last received and the most recently received door control bytes are published to the cloud.  So, for example, if prev_control_byte = 0x05 and curr_door_byte = 0x08, that means you have missed door events 0x06 and 0x07.
+
+**Event Name**: IM21 Warning
+
+**Event data:**  
+
+1. **Byte1** - first byte of door ID, in hex
+2. **Byte2** - second byte of door ID, in hex
+3. **Byte3** - third byte of door ID, in hex
+4. **prev_control_byte** - Last door control byte received
+5. **curr_control_byte** - Most recent door control byte received
+
 
 #### "**spark/device/diagnostics/update**"
 
