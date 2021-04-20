@@ -21,8 +21,8 @@ void timerHandler();
 #line 12 "c:/School/CO-OP/BraveSensor-Production-Firmware/src/sound-light-prototype.ino"
 #define BUZZER D6
 #define BUTTON D7
+#define LED D8
 #define TIMEOUT 5000 // in ms
-#define TONE 1760
 
 int run(String command);
 void buttonPress();
@@ -32,7 +32,7 @@ bool buttonPressed = false;
 bool timerPassed = false;
 Timer timer(TIMEOUT, timerHandler, true);
 
-SerialLogHandler logHandler(LOG_LEVEL_INFO);
+SerialLogHandler logHandler(LOG_LEVEL_ERROR);
 
 void setup() {
     Particle.publishVitals(60);
@@ -40,9 +40,9 @@ void setup() {
     pinMode(BUZZER, OUTPUT);
     pinMode(BUTTON, INPUT);
 
-    delay(5000);
+    Particle.function("soundAlarm", run);
+
     Log.info("Setup!");
-    run("run");
 }
 
 void loop() {
@@ -56,14 +56,16 @@ void loop() {
 // cloud function, called by the cloud when an alert is generated, starts alert session
 int run(String command) {
     // check if cloud function used right command
-    // if (command != "run") {
-    //     return -1;
-    // }
+    if (command != "run") {
+        Particle.publish("wrong-command", PRIVATE);
+        return -1;
+    }
 
     // interrupt is attached only when the alert session starts
-    attachInterrupt(BUTTON, interruptHandler, RISING);
+    attachInterrupt(BUTTON, interruptHandler, RISING); 
     timer.start();
-    tone(BUZZER, TONE);
+    digitalWrite(BUZZER, HIGH);
+    tone(LED, 20);
     Log.info("Running!");
     loop();
     return 1;
@@ -73,20 +75,21 @@ int run(String command) {
 void buttonPress() {
     Log.info("Button pressed!");
     Particle.publish("button-pressed", PRIVATE);
-    noTone(BUZZER);
-
-    // then reset the system
-    while(1); // placeholder
+    digitalWrite(BUZZER, LOW);
+    noTone(LED);
+    timer.stop();
+    detachInterrupt(BUTTON); 
+    buttonPressed = false;
 }
 
 // ends alert session, sends publish message to cloud to escalate
 void timerSurpassed() {
     Log.info("Timer surpassed!");
     Particle.publish("timer-surpassed", PRIVATE);
-    noTone(BUZZER);
-
-    // then reset the system
-    while(1); // placeholder
+    digitalWrite(BUZZER, LOW);
+    noTone(LED);
+    detachInterrupt(BUTTON); 
+    timerPassed = false;
 }
 
 // callback function to change variable that allows buttonPress to be called
