@@ -8,6 +8,7 @@
 #include "ins3331.h"
 #include "stateMachine.h"
 #include "consoleFunctions.h"
+#include "wifi.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
@@ -15,6 +16,7 @@
 
 PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
 PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, see versioning notes above
+SYSTEM_MODE(SEMI_AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
 SerialLogHandler logHandler(DEBUG_LEVEL);
 
@@ -26,6 +28,9 @@ void setup() {
   setupINS3331();
   setupConsoleFunctions();
   setupStateMachine();
+  setupWifi();
+  
+
 
 
   Particle.publishVitals(120);  //two minutes
@@ -33,6 +38,8 @@ void setup() {
 }
 
 void loop() {
+
+    checkWifi();
 
   //officially sanctioned Mariano (at Particle support) code
   //aka don't send commands to peripherals via UART in setup() because
