@@ -39,6 +39,6 @@
 #define ADDR_PASSWORD_FOR_SSIDS 667        //sizeof = 64
 #define ADDR_PASSWORD_FOR_PASSWORDS 731    //sizeof = 64
 
-//next available memory location is 795
+#define ADDR_WIFI_CONNECT_LOG 795
 
 #endif
