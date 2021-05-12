@@ -32,7 +32,7 @@
 void setup();
 void loop();
 #line 26 "/home/heidi/Programming/particleProgramming/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
-PRODUCT_ID(PRODUCT_ID_BETATEST); //you get this number off the particle console
+PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console
 PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, so v1.2.01 == 3
 SYSTEM_MODE(SEMI_AUTOMATIC);
 

@@ -12,7 +12,7 @@
 #define DEBUG_LEVEL LOG_LEVEL_WARN
 
 #define XETHRU_PARTICLE
-//#define IM21_PARTICLE
+// #define IM21_PARTICLE
 
 //beta test versions:
 //no local version numbers yet, since not released to production.
@@ -30,6 +30,6 @@
 //covenant house custom firmware is XeThru = 7, IM21 = 101
 #define BRAVE_FIRMWARE_VERSION 7
 
-#define BRAVE_PRODUCT_ID 12858  //12858 = betatest, 12876 = production
+#define BRAVE_PRODUCT_ID 12876  //12858 = betatest, 12876 = production
 
 #endif
