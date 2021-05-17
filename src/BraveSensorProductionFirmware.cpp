@@ -36,6 +36,9 @@ void setup() {
   setupINS3331();
   setupConsoleFunctions();
   setupStateMachine();
+  setupWifi();
+  
+
 
 
   Particle.publishVitals(120);  //two minutes
@@ -43,6 +46,8 @@ void setup() {
 }
 
 void loop() {
+
+    checkWifi();
 
   //officially sanctioned Mariano (at Particle support) code
   //aka don't send commands to peripherals via UART in setup() because
