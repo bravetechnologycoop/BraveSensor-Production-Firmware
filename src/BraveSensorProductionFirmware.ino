@@ -9,6 +9,7 @@
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 #include "wifi.h"
+#include "xethru.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
@@ -25,10 +26,13 @@ void setup() {
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
   setupIM21();
-  setupINS3331();
+  //setupINS3331();
+  setupXeThru();
+  Log.info("Xethru Setup Complete --------------------------");
   setupConsoleFunctions();
   setupStateMachine();
   setupWifi();
+  Log.info("All Setup Complete -----------------------------");
   
 
 
@@ -52,7 +56,7 @@ void loop() {
     //BLE.selectAntenna(BleAntennaType::EXTERNAL);  
     initializeStateMachineConsts();
     initializeDoorID();
-    startINSSerial();
+    //startINSSerial();
     initialized = true; 
   }
 

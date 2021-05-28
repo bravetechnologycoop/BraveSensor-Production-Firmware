@@ -35,6 +35,20 @@
 //struct with three unsigned chars (uint8_t)
 #define ADDR_IM21_DOORID 664	
 
-//next available address is 667
+//general device settings
+#define ADDR_LOCATION_ID 667          //sizeof = 64
+#define ADDR_DEVICE_ID 731            //sizeof = 4
+#define ADDR_DEVICE_TYPE 735          //sizeof = 64
+
+//xethru
+#define ADDR_XETHRU_LED 799		      	//sizeof = 4
+#define ADDR_XETHRU_NOISEMAP 803      //sizeof = 4
+#define ADDR_XETHRU_SENSITIVITY 807   //sizeof = 4
+#define ADDR_XETHRU_MIN_DETECT 811    //sizeof = 4
+#define ADDR_XETHRU_MAX_DETECT 815    //sizeof = 4
+
+#define ADDR_INITIALIZE_XETHRU_CONSTS_FLAG 819 //sizeof = 2
+
+//next available address is 821
 
 #endif
