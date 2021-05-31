@@ -26,7 +26,7 @@ void setup() {
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
   setupIM21();
-  //setupINS3331();
+  setupINS3331();
   setupXeThru();
   Log.info("Xethru Setup Complete --------------------------");
   setupConsoleFunctions();

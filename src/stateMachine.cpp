@@ -28,10 +28,10 @@ bool stateMachineDebugFlag = false;
 void setupStateMachine(){
 
   //set up debug pins
-  pinMode(D2,OUTPUT);
-  pinMode(D3,OUTPUT);
-  pinMode(D4,OUTPUT);
-  pinMode(D5,OUTPUT);
+  // pinMode(D2,OUTPUT);
+  // pinMode(D3,OUTPUT);
+  // pinMode(D4,OUTPUT);
+  // pinMode(D5,OUTPUT);
 
   //default to not publishing debug logs
   stateMachineDebugFlag = 0;
@@ -78,13 +78,13 @@ void state0_idle(){
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = checkINS3331();
+  checkINS = {0,0,0};
 
   //do stuff in the state
-  digitalWrite(D2,LOW);
-  digitalWrite(D3,LOW);
-  digitalWrite(D4,LOW);
-  digitalWrite(D5,LOW);
+  // digitalWrite(D2,LOW);
+  // digitalWrite(D3,LOW);
+  // digitalWrite(D4,LOW);
+  // digitalWrite(D5,LOW);
 
 
   Log.info("You are in state 0, idle: Door status, iAverage = 0x%02X, %f",checkDoor.doorStatus, checkINS.iAverage);
@@ -118,10 +118,10 @@ void state1_15sCountdown(){
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = checkINS3331();
+  checkINS = {0,0,0};
 
   //do stuff in the state
-  digitalWrite(D2,HIGH);
+  // digitalWrite(D2,HIGH);
   Log.info("You are in state 1, 15s countdown: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state1_timer));
   publishDebugMessage(1, checkDoor.doorStatus, checkINS.iAverage, (millis()-state1_timer));  
 
@@ -170,10 +170,10 @@ void state2_duration(){
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = checkINS3331();
+  checkINS = {0,0,0};
 
   //do stuff in the state
-  digitalWrite(D3,HIGH);
+  // digitalWrite(D3,HIGH);
   Log.info("You are in state 2, duration: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state2_duration_timer)); 
   publishDebugMessage(2, checkDoor.doorStatus, checkINS.iAverage, (millis()-state2_duration_timer));  
 
@@ -221,10 +221,10 @@ void state3_stillness(){
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = checkINS3331();
+  checkINS = {0,0,0};
 
   //do stuff in the state
-  digitalWrite(D4,HIGH);
+  // digitalWrite(D4,HIGH);
   Log.info("You are in state 3, stillness: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state3_stillness_timer));
   publishDebugMessage(3, checkDoor.doorStatus, checkINS.iAverage, (millis()-state3_stillness_timer));   
 
@@ -310,7 +310,7 @@ void getHeartbeat(){
 
     //call over and over again to get the most recent value in the heartbeat interval
     //make static so most recent value is stored.  Ditto door data.
-    currInsHeartbeat = checkINS3331();
+    currInsHeartbeat = {0,0,0};
     currDoorHeartbeat = checkIM21();
 
     if((millis()-lastHeartbeatPublish) > SM_HEARTBEAT_INTERVAL){

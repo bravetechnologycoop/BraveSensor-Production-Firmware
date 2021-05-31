@@ -2,7 +2,7 @@
 //       THIS IS A GENERATED FILE - DO NOT EDIT       //
 /******************************************************/
 
-#line 1 "/home/mario/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+#line 1 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 /*
  * Brave firmware state machine for single Boron
  * written by Heidi Fedorak, Apr 2021
@@ -14,10 +14,11 @@
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 #include "wifi.h"
+#include "xethru.h"
 
 void setup();
 void loop();
-#line 13 "/home/mario/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+#line 14 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
@@ -34,9 +35,12 @@ void setup() {
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
   setupIM21();
   setupINS3331();
+  setupXeThru();
+  Log.info("Xethru Setup Complete --------------------------");
   setupConsoleFunctions();
   setupStateMachine();
   setupWifi();
+  Log.info("All Setup Complete -----------------------------");
   
 
 
@@ -60,7 +64,7 @@ void loop() {
     //BLE.selectAntenna(BleAntennaType::EXTERNAL);  
     initializeStateMachineConsts();
     initializeDoorID();
-    startINSSerial();
+    //startINSSerial();
     initialized = true; 
   }
 

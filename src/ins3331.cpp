@@ -75,58 +75,59 @@ filteredINSData checkINS3331(){
 //*********************************threads***************************************
 void threadINSReader(void *param) {
 
-  static signed char receiveBuffer[14];
-  static int receiveBufferIndex;
-  signed char iHighByte;
-  signed char iLowByte;
-  signed char qHighByte;
-  signed char qLowByte;
+  // static signed char receiveBuffer[14];
+  // static int receiveBufferIndex;
+  // signed char iHighByte;
+  // signed char iLowByte;
+  // signed char qHighByte;
+  // signed char qLowByte;
 
-  rawINSData rawData;
+  // rawINSData rawData;
 
   while(true){
+      Log.info("Looping in thread");
+      delay(1000);
+//     if(SerialRadar.available())
+//     {
 
-    if(SerialRadar.available())
-    {
+//       unsigned char c = SerialRadar.read();
 
-      unsigned char c = SerialRadar.read();
+//       if(c == START_DELIMITER) receiveBufferIndex = 0;
 
-      if(c == START_DELIMITER) receiveBufferIndex = 0;
+//       receiveBuffer[receiveBufferIndex] = c;
 
-      receiveBuffer[receiveBufferIndex] = c;
+//       receiveBufferIndex++;
 
-      receiveBufferIndex++;
+//       //Log.info("receiveBufferIndex = %d", receiveBufferIndex);
 
-      //Log.info("receiveBufferIndex = %d", receiveBufferIndex);
+//       //if c = frame end deliminator = 0x16, frame has completed transmission 
+//       //so break and put the raw I and Q bytes in a queue
+//       if(c == END_DELIMITER) {
 
-      //if c = frame end deliminator = 0x16, frame has completed transmission 
-      //so break and put the raw I and Q bytes in a queue
-      if(c == END_DELIMITER) {
+//         //extract i and q in byte form
+//         iHighByte = receiveBuffer[7];
+//         iLowByte = receiveBuffer[8];
+//         qHighByte = receiveBuffer[9];
+//         qLowByte = receiveBuffer[10];
 
-        //extract i and q in byte form
-        iHighByte = receiveBuffer[7];
-        iLowByte = receiveBuffer[8];
-        qHighByte = receiveBuffer[9];
-        qLowByte = receiveBuffer[10];
-
-/*        Log.info("iHigh = 0x%02X", receiveBuffer[7]);
-        Log.info("iLow = 0x%02X", receiveBuffer[8]);
-        Log.info("qHigh = 0x%02X", receiveBuffer[9]);
-        Log.info("qLow = 0x%02X", receiveBuffer[10]);
-*/
-        //convert bytes to signed integer
-        rawData.inPhase = (int)(iHighByte << 8 | iLowByte);
-        rawData.quadrature = (int)(qHighByte << 8 | qLowByte);
+// /*        Log.info("iHigh = 0x%02X", receiveBuffer[7]);
+//         Log.info("iLow = 0x%02X", receiveBuffer[8]);
+//         Log.info("qHigh = 0x%02X", receiveBuffer[9]);
+//         Log.info("qLow = 0x%02X", receiveBuffer[10]);
+// */
+//         //convert bytes to signed integer
+//         rawData.inPhase = (int)(iHighByte << 8 | iLowByte);
+//         rawData.quadrature = (int)(qHighByte << 8 | qLowByte);
         
-        os_queue_put(insQueue, (void *)&rawData, 0, 0);
+//         os_queue_put(insQueue, (void *)&rawData, 0, 0);
 
-        //print to log
-        //Log.info("iINS: %d", rawData.inPhase);
-        //Log.info("qINS, %d", rawData.quadrature);
+//         //print to log
+//         //Log.info("iINS: %d", rawData.inPhase);
+//         //Log.info("qINS, %d", rawData.quadrature);
 
-      }//end frame delimter if
+//       }//end frame delimter if
 
-    } //end radar available if
+//     } //end radar available if
 
     os_thread_yield();
 
