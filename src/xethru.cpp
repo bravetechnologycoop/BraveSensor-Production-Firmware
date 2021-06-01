@@ -23,6 +23,8 @@ int xethru_sensitivity = XETHRU_SENSITIVITY_SETTING;
 float xethru_min_detect = XETHRU_MIN_DETECT_SETTING;
 float xethru_max_detect = XETHRU_MAX_DETECT_SETTING; 
 
+// Multithread
+os_queue_t xeThruQueue;
 
 /***********************************************************called from setup() sub-functions************************************************************/
 
@@ -54,6 +56,11 @@ void setupXeThru(){
   Log.warn("Device Identifiers read from flash during xethru setup:");
   Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
 
+  // Multithread:
+  // Create a queue
+  os_queue_create(&xeThruQueue, sizeof(RespirationMessage), 128, 0);
+	// Create the thread 
+  new Thread("readXeThruThread", threadXeThruReader);
 }
 
 // Added by James
@@ -173,10 +180,26 @@ void xethru_configuration(XeThruConfigSettings* configSettings) {
 
 /********************************************************called from loop() or loop() sub-functions********************************************************/
 
-//called from loop(), this is the main operation of the Xethru device
-void checkXeThru(){  
+// Plan B XeThru message reading
+RespirationMessage checkXeThruB(){
+  RespirationMessage dataToParse;
+  static RespirationMessage returnXeThruMessage = {0,0,0,0};
 
-  static RespirationMessage msg;
+  // os_queue returns 0 on success
+  if (os_queue_take(xeThruQueue, &dataToParse, 0, 0) == 0) {
+    Log.info("Message taken from queue");
+    returnXeThruMessage.movement_fast = dataToParse.movement_fast;
+    returnXeThruMessage.movement_slow = dataToParse.movement_slow;
+    returnXeThruMessage.state_code = dataToParse.state_code;
+    returnXeThruMessage.timestamp = millis();
+  } // end queue if
+  return returnXeThruMessage;
+} // end checkXeThruB()
+
+//called from loop(), this is the main operation of the Xethru device
+RespirationMessage checkXeThru(){  
+
+  static RespirationMessage msg = {0,0,0,0};
 
   //if we get a respiration message
   if(get_respiration_data(&msg)) {
@@ -184,12 +207,15 @@ void checkXeThru(){
     //and if the message is of the right type
     if(msg.state_code != XTS_VAL_RESP_STATE_INITIALIZING || msg.state_code != XTS_VAL_RESP_STATE_ERROR || msg.state_code != XTS_VAL_RESP_STATE_UNKNOWN) {
 
-      publishXethruData(&msg);
-        
+      //publishXethruData(&msg);
+      Log.info("Message received, correct state");
+      return msg;
+
     }//end if message is correct
 
   }//end if there is a message
 
+  return msg;
 }
 
 //reads a single respiration message from the xethru
@@ -215,9 +241,9 @@ int get_respiration_data(RespirationMessage* resp_msg) {
   
       // Extract the respiration message data:
       resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
-      resp_msg->rpm = *((float*)&xethru_recv_buf[14]);
-      resp_msg->distance = *((float*)&xethru_recv_buf[18]);
-      resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[22]);
+      //resp_msg->rpm = *((float*)&xethru_recv_buf[14]);
+      //resp_msg->distance = *((float*)&xethru_recv_buf[18]);
+      //resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[22]);
       resp_msg->movement_slow = *((float*)&xethru_recv_buf[26]);
       resp_msg->movement_fast = *((float*)&xethru_recv_buf[30]);
       
@@ -229,10 +255,10 @@ int get_respiration_data(RespirationMessage* resp_msg) {
       
       // Extract the respiration message data:
       resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
-      resp_msg->rpm = *((uint32_t*)&xethru_recv_buf[14]);                 //State_data (RPM) according to datasheet
-      resp_msg->distance = *((float*)&xethru_recv_buf[18]);
-      resp_msg->breathing_pattern = *((float*)&xethru_recv_buf[22]);
-      resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[26]);
+      //resp_msg->rpm = *((uint32_t*)&xethru_recv_buf[14]);                 //State_data (RPM) according to datasheet
+      //resp_msg->distance = *((float*)&xethru_recv_buf[18]);
+      //resp_msg->breathing_pattern = *((float*)&xethru_recv_buf[22]);
+      //resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[26]);
       
       //Particle.publish("id2", String(xts_id));
       // Return OK
@@ -244,26 +270,82 @@ int get_respiration_data(RespirationMessage* resp_msg) {
 //called from checkXethru(), which is in turn called from loop()
 // Takes the data received from the XeThru message and publishes it to the Particle Cloud
 // There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
-void publishXethruData(RespirationMessage* message) {
+// void publishXethruData(RespirationMessage* message) {
 
-  static unsigned long int last_publish;
-  char buf[1024];
-  // The data values can't be inserted on the publish message so it must be printed into a buffer first.
-  // The backslash is used as an escape character for the quotation marks.
-  snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
-        deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
+//   static unsigned long int last_publish;
+//   char buf[1024];
+//   // The data values can't be inserted on the publish message so it must be printed into a buffer first.
+//   // The backslash is used as an escape character for the quotation marks.
+//   snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
+//         deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
 
-  //Particle.publish("XeThru", buf, PRIVATE); 
+//   //Particle.publish("XeThru", buf, PRIVATE); 
 
-  //publish the string every 2s
-  if((millis()-last_publish) > 2000){
-    //publish to cloud
-    Particle.publish("XeThru", buf, PRIVATE);  
-    last_publish = millis();
-  }
+//   //publish the string every 2s
+//   if((millis()-last_publish) > 2000){
+//     //publish to cloud
+//     Particle.publish("XeThru", buf, PRIVATE);  
+//     last_publish = millis();
+//   }
 
-}
+// }
 
+//*********************************threads***************************************
+
+// Multithread 
+// todo: handling checksums, handling escapes
+void threadXeThruReader(void *param) {
+  static unsigned char receiveBuffer[64];
+  static int receiveBufferIndex;
+  RespirationMessage resp_msg;
+  static bool escFlag = false;
+
+  while(true){
+    //Log.info("Looping through thread");
+    if(SerialRadar.available()) {
+
+      unsigned char c = SerialRadar.read();
+      
+      if (c == XT_ESCAPE) {
+      // If it's an escape character next character in buffer is data and not special character:
+        while (!SerialRadar.available());
+        c = SerialRadar.read();
+        escFlag = true;
+        Log.info("Escaping");
+      } 
+
+      if(c == XT_START && !escFlag) receiveBufferIndex = 0;
+
+      receiveBuffer[receiveBufferIndex] = c;
+
+      receiveBufferIndex++;
+
+      
+      if(c == XT_STOP && !escFlag) {
+        // Read message id
+        uint32_t xts_id = *((uint32_t*)&receiveBuffer[2]);
+
+        // Sleep message is the only relevant message containing movementFast
+        if(xts_id == XTS_ID_SLEEP_STATUS) {
+          resp_msg.movement_slow = *((float*)&receiveBuffer[26]);
+          resp_msg.movement_fast = *((float*)&receiveBuffer[30]);
+          resp_msg.state_code = *((uint32_t*)&receiveBuffer[10]);
+
+          Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) resp_msg.state_code, resp_msg.movement_fast, resp_msg.movement_slow);
+          //os_queue_put(xeThruQueue, (void *)&resp_msg, 0, 0);
+        } else {
+          Log.info("Received other message");
+        }
+
+      } // end 
+
+      escFlag = false;
+
+    } // end radar available if
+
+  } // end thread while
+
+} // end threadXeThruReader
 
 /********************************************************particle console functions*********************************************************************/
 
