@@ -299,6 +299,7 @@ void threadXeThruReader(void *param) {
   static int receiveBufferIndex;
   RespirationMessage resp_msg;
   static bool escFlag = false;
+  static bool bufferFlag = false;
 
   while(true){
     //Log.info("Looping through thread");
@@ -316,10 +317,16 @@ void threadXeThruReader(void *param) {
 
       if(c == XT_START && !escFlag) receiveBufferIndex = 0;
 
-      receiveBuffer[receiveBufferIndex] = c;
-
+      if(!bufferFlag) receiveBuffer[receiveBufferIndex] = c;
       receiveBufferIndex++;
 
+      if (receiveBufferIndex >= RX_BUF_LENGTH) {
+        //errorPublish("Buffer Overflow");
+        Log.info("BUFFER OVERFLOW!");
+        bufferFlag = true;
+      } else {
+        bufferFlag = false;
+      }
       
       if(c == XT_STOP && !escFlag) {
         // Read message id
