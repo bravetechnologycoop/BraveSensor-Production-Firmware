@@ -6,7 +6,8 @@
 #include "Particle.h"
 #include "stateMachine.h"
 #include "im21door.h"
-#include "ins3331.h"
+//#include "ins3331.h"
+#include "xethru.h"
 #include "flashAddresses.h"
 
 //define and initialize state machine pointer
@@ -73,12 +74,12 @@ void state0_idle(){
 
   //scan inputs
   doorData checkDoor;
-  filteredINSData checkINS;
+  RespirationMessage checkINS;
   //this returns the previous door event value until a new door event is received
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = {0,0,0};
+  checkINS = checkXeThruB();
 
   //do stuff in the state
   // digitalWrite(D2,LOW);
@@ -87,15 +88,15 @@ void state0_idle(){
   // digitalWrite(D5,LOW);
 
 
-  Log.info("You are in state 0, idle: Door status, iAverage = 0x%02X, %f",checkDoor.doorStatus, checkINS.iAverage);
+  Log.info("You are in state 0, idle: Door status, movement_fast = 0x%02X, %f",checkDoor.doorStatus, checkINS.movement_fast);
   //default timer to 0 when state doesn't have a timer
-  publishDebugMessage(0, checkDoor.doorStatus, checkINS.iAverage, 0); 
+  publishDebugMessage(0, checkDoor.doorStatus, checkINS.movement_fast, 0); 
 
   //fix outputs and state exit conditions accordingly
-  if(((unsigned long)checkINS.iAverage > ins_threshold) && isDoorClosed(checkDoor.doorStatus)){
+  if(((unsigned long)checkINS.movement_fast > ins_threshold) && isDoorClosed(checkDoor.doorStatus)){
 
     Log.warn("In state 0, door closed and seeing movement, heading to state 1");
-    publishStateTransition(0, 1, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(0, 1, checkDoor.doorStatus, checkINS.movement_fast);
     //zero the state 1 timer
     state1_timer = millis();
     //head to state 1
@@ -113,38 +114,38 @@ void state1_15sCountdown(){
 
   //scan inputs
   doorData checkDoor;
-  filteredINSData checkINS;
+  RespirationMessage checkINS;
   //this returns the previous door event value until a new door event is received
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = {0,0,0};
+  checkINS = checkXeThruB();
 
   //do stuff in the state
   // digitalWrite(D2,HIGH);
-  Log.info("You are in state 1, 15s countdown: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state1_timer));
-  publishDebugMessage(1, checkDoor.doorStatus, checkINS.iAverage, (millis()-state1_timer));  
+  Log.info("You are in state 1, 15s countdown: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.movement_fast, (millis() - state1_timer));
+  publishDebugMessage(1, checkDoor.doorStatus, checkINS.movement_fast, (millis()-state1_timer));  
 
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkINS.iAverage > 0 && (unsigned long)checkINS.iAverage < ins_threshold){
+  if((unsigned long)checkINS.movement_fast > 0 && (unsigned long)checkINS.movement_fast < ins_threshold){
 
     Log.warn("no movement, you're going back to state 0 from state 1");
-    publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.movement_fast);
     stateHandler = state0_idle;
 
   }
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("door was opened, you're going back to state 0 from state 1");
-    publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.movement_fast);
     stateHandler = state0_idle;
 
   }
   else if( millis() - state1_timer >= state1_max_time){
 
     Log.warn("door closed && motion for > Xs, going to state 2 from state1");
-    publishStateTransition(1, 2, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(1, 2, checkDoor.doorStatus, checkINS.movement_fast);
     //zero the duration timer
     state2_duration_timer = millis();
     //head to duration state
@@ -165,23 +166,23 @@ void state2_duration(){
 
   //scan inputs
   doorData checkDoor;
-  filteredINSData checkINS;
+  RespirationMessage checkINS;
   //this returns the previous door event value until a new door event is received
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = {0,0,0};
+  checkINS = checkXeThruB();
 
   //do stuff in the state
   // digitalWrite(D3,HIGH);
-  Log.info("You are in state 2, duration: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state2_duration_timer)); 
-  publishDebugMessage(2, checkDoor.doorStatus, checkINS.iAverage, (millis()-state2_duration_timer));  
+  Log.info("You are in state 2, duration: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.movement_fast, (millis() - state2_duration_timer)); 
+  publishDebugMessage(2, checkDoor.doorStatus, checkINS.movement_fast, (millis()-state2_duration_timer));  
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkINS.iAverage > 0 && (unsigned long)checkINS.iAverage < ins_threshold){
+  if((unsigned long)checkINS.movement_fast > 0 && (unsigned long)checkINS.movement_fast < ins_threshold){
 
     Log.warn("Seeing stillness, going to state3_stillness from state2_duration");
-    publishStateTransition(2, 3, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(2, 3, checkDoor.doorStatus, checkINS.movement_fast);
     //zero the stillness timer
     state3_stillness_timer = millis();
     //go to stillness state
@@ -191,14 +192,14 @@ void state2_duration(){
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("Door opened, session over, going to idle from state2_duration");
-    publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.movement_fast);
     stateHandler = state0_idle;
 
   }
   else if(millis() - state2_duration_timer >= state2_max_duration){
 
     Log.warn("See duration alert, going from state2_duration to idle after alert publish");
-    publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.movement_fast);
     Log.error("Duration Alert!!");
     Particle.publish("Duration Alert", "duration alert", PRIVATE);
     stateHandler = state0_idle;
@@ -216,23 +217,23 @@ void state3_stillness(){
 
   //scan inputs
   doorData checkDoor;
-  filteredINSData checkINS;
+  RespirationMessage checkINS;
   //this returns the previous door event value until a new door event is received
   //on code boot up it initializes to returning 0x99
   checkDoor = checkIM21();
   //this returns 0.0 if the INS has no new data to transmit
-  checkINS = {0,0,0};
+  checkINS = checkXeThruB();
 
   //do stuff in the state
   // digitalWrite(D4,HIGH);
-  Log.info("You are in state 3, stillness: Door status, iAverage, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.iAverage, (millis() - state3_stillness_timer));
-  publishDebugMessage(3, checkDoor.doorStatus, checkINS.iAverage, (millis()-state3_stillness_timer));   
+  Log.info("You are in state 3, stillness: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkINS.movement_fast, (millis() - state3_stillness_timer));
+  publishDebugMessage(3, checkDoor.doorStatus, checkINS.movement_fast, (millis()-state3_stillness_timer));   
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkINS.iAverage > ins_threshold){
+  if((unsigned long)checkINS.movement_fast > ins_threshold){
 
     Log.warn("motion spotted again, going from state3_stillness to state2_duration");
-    publishStateTransition(3, 2, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(3, 2, checkDoor.doorStatus, checkINS.movement_fast);
     //zero the duration timer
     state2_duration_timer = millis();
     //go back to state 2, duration
@@ -242,14 +243,14 @@ void state3_stillness(){
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("door opened, session over, going from state3_stillness to idle");
-    publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.movement_fast);
     stateHandler = state0_idle;
 
   }
   else if(millis() - state3_stillness_timer >= state3_max_stillness_time){
 
     Log.warn("stillness alert, going from state3 to idle after publish");
-    publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.iAverage);
+    publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.movement_fast);
     Log.error("Stillness Alert!!");
     Particle.publish("Stillness Alert", "stillness alert!!!", PRIVATE);
     stateHandler = state0_idle;
@@ -305,18 +306,18 @@ void getHeartbeat(){
     float insStatus = 0;
     unsigned char doorStatus;
 
-    static filteredINSData currInsHeartbeat = {0,0,0};
+    static RespirationMessage currInsHeartbeat = {0,0,0,0};
     static doorData currDoorHeartbeat = {0x99,0x99,0};
 
     //call over and over again to get the most recent value in the heartbeat interval
     //make static so most recent value is stored.  Ditto door data.
-    currInsHeartbeat = {0,0,0};
+    currInsHeartbeat = {0,0,0,0};
     currDoorHeartbeat = checkIM21();
 
     if((millis()-lastHeartbeatPublish) > SM_HEARTBEAT_INTERVAL){
 
       doorStatus = currDoorHeartbeat.doorStatus;
-      insStatus = currInsHeartbeat.iAverage;
+      insStatus = currInsHeartbeat.movement_fast;
 
       currInsTimestamp = currInsHeartbeat.timestamp;
       currDoorTimestamp = currDoorHeartbeat.timestamp;
