@@ -129,17 +129,13 @@ typedef struct XeThruConfigSettings{
   float max_detect; 
 } XeThruConfigSettings;
 
-// Struct to hold respiration message from radar
-typedef struct RespirationMessage {
+// Struct to hold sleep message from radar
+typedef struct SleepMessage {
   uint32_t state_code;
-  //float rpm;
-  //float distance;
-  //uint32_t signal_quality;  //this is filled from xethru data but never published or used anywhere
   float movement_slow;
   float movement_fast;
-  //float breathing_pattern;
   unsigned long timestamp;
-} RespirationMessage;
+} SleepMessage;
 
 //***************************function declarations***************
 
@@ -148,13 +144,13 @@ int setxeThruConfigValsFromConsole(String command);
 void writeXeThruConfigToFlash(XeThruConfigSettings);
 
 //loop() functions and sub-functions:
-RespirationMessage checkXeThru();
-int get_respiration_data(RespirationMessage* resp_msg); //this calls receive_data()
-void publishXethruData(RespirationMessage* message);
+SleepMessage checkXeThru(void);
+
+//threads
+void threadXeThruReader(void *param);
 
 //setup() functions and sub-functions:
 void setupXeThru();
-void readDeviceIdentifiersFromFlash();
 XeThruConfigSettings readXeThruConfigFromFlash();  //this also called from console function
 void xethru_reset();  //this one also called from console function
 void xethru_configuration(XeThruConfigSettings* config_settings);
@@ -182,11 +178,5 @@ void errorPublish(String message);
 
 //called from get_respiration_data(), wait_for_ready_message(), get_ack()
 int receive_data();
-
-//loop() functions
-RespirationMessage checkXeThruB(void);
-
-//threads
-void threadXeThruReader(void *param);
 
 #endif

@@ -5,7 +5,6 @@
 
 #include "Particle.h"
 #include "im21door.h"
-#include "ins3331.h"
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 #include "wifi.h"
@@ -26,13 +25,12 @@ void setup() {
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
   setupIM21();
-  //setupINS3331();
   setupXeThru();
-  Log.info("Xethru Setup Complete --------------------------");
+  //Log.info("Xethru Setup Complete --------------------------");
   setupConsoleFunctions();
   setupStateMachine();
   setupWifi();
-  Log.info("All Setup Complete -----------------------------");
+  //Log.info("All Setup Complete -----------------------------");
   
 
 
@@ -56,7 +54,6 @@ void loop() {
     //BLE.selectAntenna(BleAntennaType::EXTERNAL);  
     initializeStateMachineConsts();
     initializeDoorID();
-    //startINSSerial();
     initialized = true; 
   }
 

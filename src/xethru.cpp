@@ -9,12 +9,6 @@
 unsigned char xethru_send_buf[TX_BUF_LENGTH];  // Buffer for sending data to radar.
 unsigned char xethru_recv_buf[RX_BUF_LENGTH];  // Buffer for receiving data from radar.
 
-//global device settings -> fastest/easiest way around having to read these from flash once per second in loop()
-//is to make them global and read them once in setup().  Janky but we won't have the XeThru for much longer so tolerable?
-char locationID[MAXLEN];
-int deviceID;
-char deviceType[MAXLEN];
-
 
 //initialize constants to sensible default values
 int xethru_led = XETHRU_LED_SETTING; 
@@ -39,9 +33,8 @@ void setupXeThru(){
   // Set up serial communication
   SerialRadar.begin(115200);
 
-  //load global settings (deviceID, locationID, deviceType) from flash:
+  //load xethru flash:
   initializeXeThruConsts();
-  readDeviceIdentifiersFromFlash();
 
   XeThruConfigSettings xeThruConfig;
   xeThruConfig = readXeThruConfigFromFlash();
@@ -53,19 +46,17 @@ void setupXeThru(){
   Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
             xeThruConfig.led, xeThruConfig.noisemap, xeThruConfig.sensitivity, xeThruConfig.min_detect, xeThruConfig.max_detect);
 
-  Log.warn("Device Identifiers read from flash during xethru setup:");
-  Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
-
+  // Wait for xethru to transmit response
   delay(3000);
   // Multithread:
   // Create a queue
-  os_queue_create(&xeThruQueue, sizeof(RespirationMessage), 128, 0);
+  os_queue_create(&xeThruQueue, sizeof(SleepMessage), 128, 0);
 	// Create the thread 
   new Thread("readXeThruThread", threadXeThruReader);
 }
 
-// Added by James
-// Imitate structure from initializeStateMachineConsts()
+
+// Since there is no setup-firmware flash stage, the flash memory is set with default values here.
 void initializeXeThruConsts(){
 
   uint16_t initializeXeThruFlag;
@@ -97,7 +88,7 @@ void initializeXeThruConsts(){
 }
 
 
-//called from xethruSetup()
+//called from xethruSetup() and console function
 XeThruConfigSettings readXeThruConfigFromFlash(){
 
   XeThruConfigSettings xeThruConfig;
@@ -110,19 +101,6 @@ XeThruConfigSettings readXeThruConfigFromFlash(){
   EEPROM.get(ADDR_XETHRU_MIN_DETECT, xeThruConfig.min_detect);
 
   return xeThruConfig;
-
-}
-
-//using structure from initializeStateMachineConsts()
-// called from xethruSetup()
-
-
-//called from xethruSetup()
-void readDeviceIdentifiersFromFlash(){
-
-  EEPROM.get(ADDR_LOCATION_ID, locationID);
-  EEPROM.get(ADDR_DEVICE_TYPE, deviceType);
-  EEPROM.get(ADDR_DEVICE_ID, deviceID);
 
 }
 
@@ -181,10 +159,14 @@ void xethru_configuration(XeThruConfigSettings* configSettings) {
 
 /********************************************************called from loop() or loop() sub-functions********************************************************/
 
-// Plan B XeThru message reading
-RespirationMessage checkXeThruB(){
-  RespirationMessage dataToParse;
-  static RespirationMessage returnXeThruMessage = {0,0,0,0};
+/*
+ * Checks queue if there is new data from the XeThru radar.
+ * Returns a SleepMessage with new data and a timestamp at time of data pulled from queue
+ * If no data in queue, returns a SleepMessage with all fields zero.
+ */
+SleepMessage checkXeThru(){
+  SleepMessage dataToParse;
+  static SleepMessage returnXeThruMessage = {0,0,0,0};
 
   // os_queue returns 0 on success
   if (os_queue_take(xeThruQueue, &dataToParse, 0, 0) == 0) {
@@ -195,118 +177,24 @@ RespirationMessage checkXeThruB(){
     returnXeThruMessage.timestamp = millis();
   } // end queue if
   return returnXeThruMessage;
-} // end checkXeThruB()
+} // end checkXeThru()
 
-//called from loop(), this is the main operation of the Xethru device
-RespirationMessage checkXeThru(){  
-
-  static RespirationMessage msg = {0,0,0,0};
-
-  //if we get a respiration message
-  if(get_respiration_data(&msg)) {
-    
-    //and if the message is of the right type
-    if(msg.state_code != XTS_VAL_RESP_STATE_INITIALIZING || msg.state_code != XTS_VAL_RESP_STATE_ERROR || msg.state_code != XTS_VAL_RESP_STATE_UNKNOWN) {
-
-      //publishXethruData(&msg);
-      Log.info("Message received, correct state");
-      return msg;
-
-    }//end if message is correct
-
-  }//end if there is a message
-
-  return msg;
-}
-
-//reads a single respiration message from the xethru
-//returns 1 if successful, 0 if not successful
-int get_respiration_data(RespirationMessage* resp_msg) {
-
-  // receive_data() fills xethru_recv_buf[] with data.
-  if (receive_data() < 1) {
-      // Particle.publish("check", "This is not receiving data");
-      return 0;
-  }
-  
-  // Respiration Sleep message format:
-  //
-  // <Start> + <XTS_SPR_APPDATA> + [XTS_ID_SLEEP_STATUS(i)] + [Counter(i)]
-  // + [StateCode(i)] + [RespirationsPerMinute(f)] + [Distance(f)]
-  // + [SignalQuality(i)] + [MovementSlow(f)] + [MovementFast(f)]
-  //
-  
-  // Check that it's a sleep message (XTS_ID_SLEEP_STATUS)
-  uint32_t xts_id = *((uint32_t*)&xethru_recv_buf[2]);
-  if (xts_id == XTS_ID_SLEEP_STATUS) {
-  
-      // Extract the respiration message data:
-      resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
-      //resp_msg->rpm = *((float*)&xethru_recv_buf[14]);
-      //resp_msg->distance = *((float*)&xethru_recv_buf[18]);
-      //resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[22]);
-      resp_msg->movement_slow = *((float*)&xethru_recv_buf[26]);
-      resp_msg->movement_fast = *((float*)&xethru_recv_buf[30]);
-      
-      //Particle.publish("id1", String(xts_id));
-      // Return OK
-      return 1;
-  }
-  if (xts_id == XTS_ID_RESP_STATUS) {
-      
-      // Extract the respiration message data:
-      resp_msg->state_code = *((uint32_t*)&xethru_recv_buf[10]);
-      //resp_msg->rpm = *((uint32_t*)&xethru_recv_buf[14]);                 //State_data (RPM) according to datasheet
-      //resp_msg->distance = *((float*)&xethru_recv_buf[18]);
-      //resp_msg->breathing_pattern = *((float*)&xethru_recv_buf[22]);
-      //resp_msg->signal_quality = *((uint32_t*)&xethru_recv_buf[26]);
-      
-      //Particle.publish("id2", String(xts_id));
-      // Return OK
-      return 1;
-  }
-  return 0;
-}
-
-//called from checkXethru(), which is in turn called from loop()
-// Takes the data received from the XeThru message and publishes it to the Particle Cloud
-// There is a webhook set up to send the data to Firebase Database from the event trigger of the publish
-// void publishXethruData(RespirationMessage* message) {
-
-//   static unsigned long int last_publish;
-//   char buf[1024];
-//   // The data values can't be inserted on the publish message so it must be printed into a buffer first.
-//   // The backslash is used as an escape character for the quotation marks.
-//   snprintf(buf, sizeof(buf), "{\"devicetype\":\"%s\", \"location\":\"%s\", \"device\":\"%d\", \"distance\":\"%f\", \"rpm\":\"%f\", \"slow\":\"%f\", \"fast\":\"%f\", \"state\":\"%lu\"}", 
-//         deviceType, locationID, deviceID, message->distance, message->rpm, message->movement_slow, message->movement_fast, message->state_code);
-
-//   //Particle.publish("XeThru", buf, PRIVATE); 
-
-//   //publish the string every 2s
-//   if((millis()-last_publish) > 2000){
-//     //publish to cloud
-//     Particle.publish("XeThru", buf, PRIVATE);  
-//     last_publish = millis();
-//   }
-
-// }
 
 //*********************************threads***************************************
 
 // Multithread 
-// todo: handling checksums, handling escapes
 void threadXeThruReader(void *param) {
   static unsigned char receiveBuffer[64];
   static int receiveBufferIndex;
-  RespirationMessage resp_msg;
+  SleepMessage sleepMsg;
   static bool escFlag = false;
   static bool bufferFlag = false;
-  static unsigned long lastRead = millis();
+  static unsigned long lastUnavailable = millis();
 
   while(true){
-    if (!SerialRadar.available()) lastRead = millis();
+    if (!SerialRadar.available()) lastUnavailable = millis();
     //Log.info("Looping through thread");
-    if(SerialRadar.available() && millis() - lastRead >= READ_RADAR_DELAY) {  // If you remove this delay the firmware will hard fault
+    if(SerialRadar.available() && millis() - lastUnavailable >= READ_RADAR_DELAY) {  // If this delay is removed the firmware will hard fault
 
       unsigned char c = SerialRadar.read();
       
@@ -315,7 +203,6 @@ void threadXeThruReader(void *param) {
         while (!SerialRadar.available());
         c = SerialRadar.read();
         escFlag = true;
-        Log.info("Escaping");
       } 
 
       if(c == XT_START && !escFlag) receiveBufferIndex = 0;
@@ -349,21 +236,16 @@ void threadXeThruReader(void *param) {
           // Read message id
           uint32_t xts_id = *((uint32_t*)&receiveBuffer[2]);
 
-          // Sleep message is the only relevant message containing movementFast
+          // Sleep message is the only relevant message containing movementFast, movementSlow
           if(xts_id == XTS_ID_SLEEP_STATUS) {
-            resp_msg.movement_slow = *((float*)&receiveBuffer[26]);
-            resp_msg.movement_fast = *((float*)&receiveBuffer[30]);
-            resp_msg.state_code = *((uint32_t*)&receiveBuffer[10]);
-            // Dummy values
-            // float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            // resp_msg.movement_slow = r;
-            // resp_msg.movement_fast = r;
-            // resp_msg.state_code = 1;
+            sleepMsg.movement_slow = *((float*)&receiveBuffer[26]);
+            sleepMsg.movement_fast = *((float*)&receiveBuffer[30]);
+            sleepMsg.state_code = *((uint32_t*)&receiveBuffer[10]);
 
-            Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) resp_msg.state_code, resp_msg.movement_fast, resp_msg.movement_slow);
-            os_queue_put(xeThruQueue, (void *)&resp_msg, 0, 0);
+            //Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) sleepMsg.state_code, sleepMsg.movement_fast, sleepMsg.movement_slow);
+            os_queue_put(xeThruQueue, (void *)&sleepMsg, 0, 0);
           } else {
-            Log.info("Received other message");
+            //Log.info("Received other message");
           }
         } // end crc if
 
@@ -760,7 +642,7 @@ void send_command(int len)
   
   
 /* 
- * Receive data from radar module
+ * Used to receive data for XeThru setup.
  *  -Data is stored in the global array xethru_recv_buf[]
  *  -On success it returns number of bytes received (without escape bytes
  *  -On error it returns -1

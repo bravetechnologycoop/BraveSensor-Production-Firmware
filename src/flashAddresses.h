@@ -26,7 +26,7 @@
 
 //state machine constants
 //all are uint32_t so 4 bytes each
-#define ADDR_INS_THRESHOLD 648   	  		    	
+#define ADDR_XETHRU_THRESHOLD 648   	  		    	
 #define ADDR_STATE1_MAX_TIME 652			        	
 #define ADDR_STATE2_MAX_DURATION 656		
 #define ADDR_STATE3_MAX_STILLNES_TIME 660
@@ -35,19 +35,14 @@
 //struct with three unsigned chars (uint8_t)
 #define ADDR_IM21_DOORID 664	
 
-//general device settings
-#define ADDR_LOCATION_ID 667          //sizeof = 64
-#define ADDR_DEVICE_ID 731            //sizeof = 4
-#define ADDR_DEVICE_TYPE 735          //sizeof = 64
-
 //xethru
-#define ADDR_XETHRU_LED 799		      	//sizeof = 4
-#define ADDR_XETHRU_NOISEMAP 803      //sizeof = 4
-#define ADDR_XETHRU_SENSITIVITY 807   //sizeof = 4
-#define ADDR_XETHRU_MIN_DETECT 811    //sizeof = 4
-#define ADDR_XETHRU_MAX_DETECT 815    //sizeof = 4
+#define ADDR_XETHRU_LED 667		      	//sizeof = 4
+#define ADDR_XETHRU_NOISEMAP 671      //sizeof = 4
+#define ADDR_XETHRU_SENSITIVITY 675   //sizeof = 4
+#define ADDR_XETHRU_MIN_DETECT 679    //sizeof = 4
+#define ADDR_XETHRU_MAX_DETECT 683    //sizeof = 4
 
-#define ADDR_INITIALIZE_XETHRU_CONSTS_FLAG 819 //sizeof = 2
+#define ADDR_INITIALIZE_XETHRU_CONSTS_FLAG 687 //sizeof = 2
 
 //next available address is 821
 

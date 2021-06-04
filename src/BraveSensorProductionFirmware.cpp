@@ -10,7 +10,6 @@
 
 #include "Particle.h"
 #include "im21door.h"
-#include "ins3331.h"
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 #include "wifi.h"
@@ -18,7 +17,7 @@
 
 void setup();
 void loop();
-#line 14 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+#line 13 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
@@ -34,13 +33,12 @@ void setup() {
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
   setupIM21();
-  //setupINS3331();
   setupXeThru();
-  Log.info("Xethru Setup Complete --------------------------");
+  //Log.info("Xethru Setup Complete --------------------------");
   setupConsoleFunctions();
   setupStateMachine();
   setupWifi();
-  Log.info("All Setup Complete -----------------------------");
+  //Log.info("All Setup Complete -----------------------------");
   
 
 
@@ -64,7 +62,6 @@ void loop() {
     //BLE.selectAntenna(BleAntennaType::EXTERNAL);  
     initializeStateMachineConsts();
     initializeDoorID();
-    //startINSSerial();
     initialized = true; 
   }
 

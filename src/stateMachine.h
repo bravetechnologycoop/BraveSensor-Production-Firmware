@@ -14,7 +14,7 @@
 
 //initial (default) values for state machine, can be changed via console function
 //or by writing something other than 0x8888 to the above flag in flash
-#define INS_THRESHOLD 60
+#define XETHRU_THRESHOLD 60
 #define STATE1_MAX_TIME 15000 //ms = 15s
 #define STATE2_MAX_DURATION 1200000 //ms = 20 min
 #define STATE3_MAX_STILLNESS_TIME 120000 //ms = 2 minutes
@@ -62,7 +62,7 @@ extern unsigned long state2_duration_timer;
 extern unsigned long state3_stillness_timer;
 
 //state machine constants stored in flash
-extern unsigned long ins_threshold;
+extern unsigned long xethru_threshold;
 extern unsigned long state1_max_time;
 extern unsigned long state2_max_duration;
 extern unsigned long state3_max_stillness_time;
