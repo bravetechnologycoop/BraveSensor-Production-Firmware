@@ -56,6 +56,7 @@ void setupXeThru(){
   Log.warn("Device Identifiers read from flash during xethru setup:");
   Log.warn("location ID: %s, device ID: %d, deviceType: %s", locationID, deviceID, deviceType); 
 
+  delay(3000);
   // Multithread:
   // Create a queue
   os_queue_create(&xeThruQueue, sizeof(RespirationMessage), 128, 0);
@@ -300,10 +301,12 @@ void threadXeThruReader(void *param) {
   RespirationMessage resp_msg;
   static bool escFlag = false;
   static bool bufferFlag = false;
+  static unsigned long lastRead = millis();
 
   while(true){
+    if (!SerialRadar.available()) lastRead = millis();
     //Log.info("Looping through thread");
-    if(SerialRadar.available()) {
+    if(SerialRadar.available() && millis() - lastRead >= READ_RADAR_DELAY) {  // If you remove this delay the firmware will hard fault
 
       unsigned char c = SerialRadar.read();
       
@@ -327,29 +330,44 @@ void threadXeThruReader(void *param) {
       } else {
         bufferFlag = false;
       }
-      
-      if(c == XT_STOP && !escFlag) {
-        // Read message id
-        uint32_t xts_id = *((uint32_t*)&receiveBuffer[2]);
 
-        // Sleep message is the only relevant message containing movementFast
-        if(xts_id == XTS_ID_SLEEP_STATUS) {
-          resp_msg.movement_slow = *((float*)&receiveBuffer[26]);
-          resp_msg.movement_fast = *((float*)&receiveBuffer[30]);
-          resp_msg.state_code = *((uint32_t*)&receiveBuffer[10]);
-          // // Dummy values
-          // float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-          // resp_msg.movement_slow = r;
-          // resp_msg.movement_fast = r;
-          // resp_msg.state_code = 1;
+      if(c == XT_STOP && !escFlag && !bufferFlag) {
+        unsigned char crc = 0;
+  
+        // CRC is calculated without the crc itself and the stop byte, hence the -2 in the counter
+        for (int i = 0; i < receiveBufferIndex-2; i++) 
+          crc ^= receiveBuffer[i];
 
-          Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) resp_msg.state_code, resp_msg.movement_fast, resp_msg.movement_slow);
-          os_queue_put(xeThruQueue, (void *)&resp_msg, 0, 0);
+        // Check if calculated CRC matches the recieved
+        if (crc != receiveBuffer[receiveBufferIndex-2]) 
+        {
+          Log.info("CRC mismatch: ");
+          Log.info("crc, HEX: %u, %x", crc, HEX);
+          Log.info(" != ");
+          Log.info("receiveBuffer, HEX: %u, %x", receiveBuffer[receiveBufferIndex-2], HEX);
         } else {
-          Log.info("Received other message");
-        }
+          // Read message id
+          uint32_t xts_id = *((uint32_t*)&receiveBuffer[2]);
 
-      } // end 
+          // Sleep message is the only relevant message containing movementFast
+          if(xts_id == XTS_ID_SLEEP_STATUS) {
+            resp_msg.movement_slow = *((float*)&receiveBuffer[26]);
+            resp_msg.movement_fast = *((float*)&receiveBuffer[30]);
+            resp_msg.state_code = *((uint32_t*)&receiveBuffer[10]);
+            // Dummy values
+            // float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+            // resp_msg.movement_slow = r;
+            // resp_msg.movement_fast = r;
+            // resp_msg.state_code = 1;
+
+            Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) resp_msg.state_code, resp_msg.movement_fast, resp_msg.movement_slow);
+            os_queue_put(xeThruQueue, (void *)&resp_msg, 0, 0);
+          } else {
+            Log.info("Received other message");
+          }
+        } // end crc if
+
+      } // end stop if
 
       escFlag = false;
 

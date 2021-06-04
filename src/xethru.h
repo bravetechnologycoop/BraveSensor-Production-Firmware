@@ -114,6 +114,8 @@
 //which is also unlikely to be part of a door ID or a threshold/timer const
 #define INITIALIZE_XETHRU_CONSTS_FLAG 0x8888
 
+#define READ_RADAR_DELAY 500 // delay between radar reads
+
 //***************************global variable declarations******************************
 
 // struct to contain XeThru configuration variables
