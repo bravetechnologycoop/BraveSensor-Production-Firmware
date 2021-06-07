@@ -15,7 +15,11 @@
  *    -removed delay(1000) and adapted publishXethruData() to control
  *     rate of messages being published to the cloud
  * 
- * 
+ * Edits for Xethru local state machine by James Seto
+ *    -defined global constants for xethru settings
+ *    -added multithread to read sleep messages from XeThru and push to queue
+ *    -changed checkXethru to pop data from queue and return data
+ *    -refactored console function into consoleFunctons.cpp
  */
 
 #ifndef XETHRU_H
@@ -102,8 +106,7 @@
 #define TX_BUF_LENGTH 64
 #define RX_BUF_LENGTH 64
 
-// Added by James
-// Default values that are copied from setupFirmware.h
+// Reasonable default values, to be stored in EEPROM if consts are not initialized
 #define XETHRU_LED_SETTING 0            //int
 #define XETHRU_NOISEMAP_SETTING 0       //int
 #define XETHRU_SENSITIVITY_SETTING 5    //int
@@ -118,16 +121,12 @@
 
 //***************************global variable declarations******************************
 
-// struct to contain XeThru configuration variables
-// initialized in setup() by calling init_XeThruConfigSettings()
-// initial values set by programmer in odetect_config.h defines
-typedef struct XeThruConfigSettings{
-  int led; 
-  int noisemap;
-  int sensitivity; 
-  float min_detect;
-  float max_detect; 
-} XeThruConfigSettings;
+// Xethru settings, initialized in setup and modified with console function
+extern int xethru_led;
+extern int xethru_noisemap;
+extern int xethru_sensitivity;
+extern float xethru_min_detect;
+extern float xethru_max_detect;
 
 // Struct to hold sleep message from radar
 typedef struct SleepMessage {
@@ -139,10 +138,6 @@ typedef struct SleepMessage {
 
 //***************************function declarations***************
 
-//console functions
-int setxeThruConfigValsFromConsole(String command);
-void writeXeThruConfigToFlash(XeThruConfigSettings);
-
 //loop() functions and sub-functions:
 SleepMessage checkXeThru(void);
 
@@ -151,20 +146,19 @@ void threadXeThruReader(void *param);
 
 //setup() functions and sub-functions:
 void setupXeThru();
-XeThruConfigSettings readXeThruConfigFromFlash();  //this also called from console function
 void xethru_reset();  //this one also called from console function
-void xethru_configuration(XeThruConfigSettings* config_settings);
-void initializeXeThruConsts(); // *** added by james
+void initializeXeThruConsts(); // replaces xethru_configuration
+void xethru_configuration();
 
 //called from xethru_configuration():
 void wait_for_ready_message();  //this calls receive_data()
 void stop_module();
 void set_debug_level();
 void load_profile(uint32_t profile);
-void configure_noisemap(uint32_t code);
-void set_led_control(uint32_t control);
-void set_detection_zone(float zone_start, float zone_end);
-void set_sensitivity(uint32_t sensitivity);
+void configure_noisemap();
+void set_led_control();
+void set_detection_zone();
+void set_sensitivity();
 void enable_output_message(uint32_t message);
 void disable_output_message(uint32_t message);
 void run_profile();

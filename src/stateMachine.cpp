@@ -1,6 +1,10 @@
 /*
  * Brave firmware state machine for single Boron
  * written by Heidi Fedorak, Apr 2021
+ * 
+ * Edits for Xethru local state machine by James Seto
+ *    -Check for SleepMessage data from XeThru module
+ *    -Slight modifications to no new data check for heartbeat
 */
 
 #include "Particle.h"
@@ -293,50 +297,43 @@ void publishDebugMessage(int state, unsigned char doorStatus, float XeThruValue,
 
 }
 
-// Heartbeat is flawed right now, will need fix
 void getHeartbeat(){
 
     static unsigned long lastHeartbeatPublish = 0;
-    unsigned long insTimeDiff = 0;
+    unsigned long xeThruTimeDiff = 0;
     unsigned long doorTimeDiff = 0;
-    static unsigned long currInsTimestamp = 0;
-    static unsigned long prevInsTimestamp = 0;
+    static unsigned long currXeThruTimestamp = 0;
+    static unsigned long prevXeThruTimestamp = 0;
     static unsigned long currDoorTimestamp = 0;
     static unsigned long prevDoorTimestamp = 0;
-    float insStatus = 0;
+    float xeThruStatus = 0;
     unsigned char doorStatus;
 
-    static SleepMessage currInsHeartbeat = {0,0,0,0};
+    static SleepMessage currXeThruHeartbeat = {0,0,0,0};
     static doorData currDoorHeartbeat = {0x99,0x99,0};
 
     //call over and over again to get the most recent value in the heartbeat interval
     //make static so most recent value is stored.  Ditto door data.
-    currInsHeartbeat = {0,0,0,0};
+    currXeThruHeartbeat = checkXeThru();
     currDoorHeartbeat = checkIM21();
-
     if((millis()-lastHeartbeatPublish) > SM_HEARTBEAT_INTERVAL){
 
       doorStatus = currDoorHeartbeat.doorStatus;
-      insStatus = currInsHeartbeat.movement_fast;
+      xeThruStatus = currXeThruHeartbeat.movement_fast;
 
-      currInsTimestamp = currInsHeartbeat.timestamp;
+      currXeThruTimestamp = currXeThruHeartbeat.timestamp;
       currDoorTimestamp = currDoorHeartbeat.timestamp;
 
-      if((int)insStatus == 0){
-        //when ins returns 0 that means no data
-        insTimeDiff = 0;
-        prevInsTimestamp = currInsTimestamp;        
-      }
-      else if(currInsTimestamp == prevInsTimestamp){
+      if(currXeThruTimestamp == prevXeThruTimestamp){
         //if time stamps are the same, no new data
-        insTimeDiff = 0;
-        insStatus = 0;
-        prevInsTimestamp = currInsTimestamp;
+        xeThruTimeDiff = 0;
+        xeThruStatus = 0;
+        prevXeThruTimestamp = currXeThruTimestamp;
       }
       else{
         //timestamps different and no 0 data, so report new data point
-        insTimeDiff = millis() - currInsTimestamp;
-        prevInsTimestamp = currInsTimestamp;
+        xeThruTimeDiff = millis() - currXeThruTimestamp;
+        prevXeThruTimestamp = currXeThruTimestamp;
       }
 
 
@@ -360,7 +357,7 @@ void getHeartbeat(){
       //from particle docs, max length of publish is 622 chars, I am assuming this includes null char
       char heartbeatMessage[622];
       snprintf(heartbeatMessage, sizeof(heartbeatMessage),
-                " {\"door_status\":\"0x%02X\", \"door_time\":\"%ld\", \"INS_status\":\"%f\", \"ins_time\":\"%ld\" }", doorStatus, doorTimeDiff, insStatus, insTimeDiff); 
+                " {\"door_status\":\"0x%02X\", \"door_time\":\"%ld\", \"XeThru_status\":\"%f\", \"XeThru_time\":\"%ld\" }", doorStatus, doorTimeDiff, xeThruStatus, xeThruTimeDiff); 
       Particle.publish("Heartbeat", heartbeatMessage, PRIVATE);
       Log.warn(heartbeatMessage);
       lastHeartbeatPublish = millis();

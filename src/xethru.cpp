@@ -36,15 +36,12 @@ void setupXeThru(){
   //load xethru flash:
   initializeXeThruConsts();
 
-  XeThruConfigSettings xeThruConfig;
-  xeThruConfig = readXeThruConfigFromFlash();
-
   xethru_reset();
-  xethru_configuration(&xeThruConfig);
+  xethru_configuration();
 
   Log.warn("xeThruConfig read from flash during xethru setup:");
   Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
-            xeThruConfig.led, xeThruConfig.noisemap, xeThruConfig.sensitivity, xeThruConfig.min_detect, xeThruConfig.max_detect);
+            xethru_led, xethru_noisemap, xethru_sensitivity, xethru_min_detect, xethru_max_detect);
 
   // Wait for xethru to transmit response
   delay(3000);
@@ -87,23 +84,6 @@ void initializeXeThruConsts(){
 
 }
 
-
-//called from xethruSetup() and console function
-XeThruConfigSettings readXeThruConfigFromFlash(){
-
-  XeThruConfigSettings xeThruConfig;
-
-  
-  EEPROM.get(ADDR_XETHRU_LED,xeThruConfig.led);
-  EEPROM.get(ADDR_XETHRU_NOISEMAP, xeThruConfig.noisemap);
-  EEPROM.get(ADDR_XETHRU_SENSITIVITY, xeThruConfig.sensitivity);
-  EEPROM.get(ADDR_XETHRU_MAX_DETECT, xeThruConfig.max_detect);
-  EEPROM.get(ADDR_XETHRU_MIN_DETECT, xeThruConfig.min_detect);
-
-  return xeThruConfig;
-
-}
-
 //called from xethruSetup() 
 void xethru_reset() {
   //
@@ -119,7 +99,7 @@ void xethru_reset() {
 }
 
 //called from xethruSetup()
-void xethru_configuration(XeThruConfigSettings* configSettings) {
+void xethru_configuration() {
 
   // After the module resets, the XTS_SPRS_BOOTING message is sent. Then, after the 
   // module booting sequence is completed and the module is ready to accept further
@@ -135,16 +115,16 @@ void xethru_configuration(XeThruConfigSettings* configSettings) {
   load_profile(XTS_ID_APP_RESPIRATION_2);
 
    // Configure the noisemap
-  configure_noisemap(configSettings->noisemap);
+  configure_noisemap();
   
   // Set LED control
-  set_led_control(configSettings->led); // 0: OFF; 1: SIMPLE; 2: FULL
+  set_led_control(); // 0: OFF; 1: SIMPLE; 2: FULL
 
   // Set detection zone
-  set_detection_zone(configSettings->min_detect, configSettings->max_detect); // First variable = Lower limit, Second variable = Upper limit
+  set_detection_zone(); // First variable = Lower limit, Second variable = Upper limit
 
   // Set sensitivity
-  set_sensitivity(configSettings->sensitivity);
+  set_sensitivity();
 
   // Enable only the Sleep message, disable all others
   enable_output_message(XTS_ID_SLEEP_STATUS);
@@ -259,72 +239,6 @@ void threadXeThruReader(void *param) {
 
 } // end threadXeThruReader
 
-/********************************************************particle console functions*********************************************************************/
-
-//particle console function to get new xethru config values
-int setxeThruConfigValsFromConsole(String command) { // command is a long string with all the config values
-
-  //get pointer to user-entered string
-  const char* checkForEcho = command.c_str();
-
-  //if user has entered e for echo, print current settings
-  if(*checkForEcho == 'e'){
-
-    XeThruConfigSettings holder = readXeThruConfigFromFlash();
-
-    char buffer[512];
-    snprintf(buffer, sizeof(buffer), "{\"led\":\"%d\", \"noisemap\":\"%d\",  \"sensitivity\":\"%d\",  \"min_detect\":\"%f\", \"max_detect\":\"%f\" }", 
-            holder.led,  holder.noisemap, holder.sensitivity, holder.min_detect, holder.max_detect); 
-
-    Particle.publish("Current XeThru config settings",buffer,PRIVATE);
-
-  } else //if we're not echoing, we have a command to parse
-  {
-    // command is in the form "led,noisemap,sensitivity,min_detect,max_detect"
-    // where variable names are replaced with appropriate numbers
-    // 1, 2, 3, 2.5, 3.5
-    XeThruConfigSettings newConfig;
-    int split1 = command.indexOf(',');
-    newConfig.led = command.substring(0,split1).toInt();
-    int split2 = command.indexOf(',', split1+1);
-    newConfig.noisemap = command.substring(split1+1,split2).toInt();
-    int split3 = command.indexOf(',', split2+1);
-    newConfig.sensitivity = command.substring(split2+1,split3).toInt();
-    int split4 = command.indexOf(',', split3+1);
-    newConfig.min_detect = command.substring(split3+1,split4).toFloat();
-    int split5 = command.indexOf(',', split4+1);
-    newConfig.max_detect = command.substring(split4+1,split5).toFloat();
-
-    writeXeThruConfigToFlash(newConfig);
-
-    //did it get written correctly?
-    XeThruConfigSettings holder = readXeThruConfigFromFlash();
-    Log.warn("xethruConfig after console function called:");
-    Log.warn("led: %d, noisemap: %d, sensitivity: %d, min: %f, max: %f", 
-              holder.led, holder.noisemap, holder.sensitivity, holder.min_detect, holder.max_detect); 
-
-    //reset XeThru and restart with new config settings
-    xethru_reset();
-    xethru_configuration(&newConfig);
-
-  } //end if-else
-
-  return 1;
-
-}
-
-
-void writeXeThruConfigToFlash(XeThruConfigSettings xeThruConfig) {
-
-  EEPROM.put(ADDR_XETHRU_LED, xeThruConfig.led);
-  EEPROM.put(ADDR_XETHRU_NOISEMAP, xeThruConfig.noisemap);
-  EEPROM.put(ADDR_XETHRU_SENSITIVITY, xeThruConfig.sensitivity);
-  EEPROM.put(ADDR_XETHRU_MAX_DETECT, xeThruConfig.max_detect);
-  EEPROM.put(ADDR_XETHRU_MIN_DETECT, xeThruConfig.min_detect);
-
-}
-
-
 /********************************************************sub-functions for all of the above****************************************************************/
 
 
@@ -349,8 +263,9 @@ void stop_module()
 
 
 // Set sensitivity
-void set_sensitivity(uint32_t sensitivity) 
+void set_sensitivity() 
 {
+  uint32_t sensitivity = xethru_sensitivity;
   //Fill send buffer
   xethru_send_buf[0] = XT_START;
   xethru_send_buf[1] = XTS_SPC_APPCOMMAND;
@@ -374,8 +289,10 @@ void set_sensitivity(uint32_t sensitivity)
 
 
 // Set detection zone
-void set_detection_zone(float zone_start, float zone_end) 
+void set_detection_zone() 
 {
+  float zone_start = xethru_min_detect;
+  float zone_end = xethru_max_detect;
   //Fill send buffer
   xethru_send_buf[0] = XT_START;
   xethru_send_buf[1] = XTS_SPC_APPCOMMAND;
@@ -435,13 +352,13 @@ void set_debug_level()
 }
 
 // Set Debug Level
-void set_led_control(uint32_t control) 
+void set_led_control() 
 {
   // For byte index 2
   // 0: OFF
   // 1: SIMPLE
   // 2: FULL
-    
+  uint32_t control = xethru_led;
   //Fill send buffer
   xethru_send_buf[0] = XT_START;
   xethru_send_buf[1] = XTS_SPC_MOD_SETLEDCONTROL;
@@ -472,7 +389,7 @@ void load_profile(uint32_t profile)
   get_ack();
 }
 
-void configure_noisemap(uint32_t code) 
+void configure_noisemap() 
 {
   // xethru_send_buf[3] Configuration:
   //
@@ -480,7 +397,7 @@ void configure_noisemap(uint32_t code)
   // Bit 1: ADAPTIVE NOISEMAP ON
   // Bit 2: USE DEFAULT NOISEMAP
   // 
-
+  uint32_t code = xethru_noisemap;
   //Fill send buffer
   xethru_send_buf[0] = XT_START;
   xethru_send_buf[1] = XTS_SPC_MOD_NOISEMAP;

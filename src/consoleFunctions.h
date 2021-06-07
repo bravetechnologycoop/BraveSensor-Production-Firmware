@@ -1,6 +1,8 @@
 /*
  * Brave firmware state machine for single Boron
  * written by Heidi Fedorak, Apr 2021
+ * 
+ * Edits for Xethru local state machine by James Seto
 */
 
 #ifndef CONSOLEFUNCTIONS_H
@@ -24,5 +26,6 @@ int xethru_threshold_set(String);
 int im21_door_id_set(String);
 int toggle_debugging_publishes(String);
 int im21_door_id_set(String);
+int setxeThruConfigValsFromConsole(String);
 
 #endif

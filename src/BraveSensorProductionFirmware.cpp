@@ -6,6 +6,8 @@
 /*
  * Brave firmware state machine for single Boron
  * written by Heidi Fedorak, Apr 2021
+ * 
+ * Edits for Xethru local state machine by James Seto
 */
 
 #include "Particle.h"
@@ -17,7 +19,7 @@
 
 void setup();
 void loop();
-#line 13 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+#line 15 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units

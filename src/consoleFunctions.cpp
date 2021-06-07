@@ -9,7 +9,9 @@
  *  Reason 2: I don't have to spend time programming a command parser for 
  *              things like 60 -threshold vs 100 -stillnessTime
  *
- *
+ * Edits for Xethru local state machine by James Seto
+ *    -Added a modified changeXeThruConfigVals console function from xethru.cpp
+ *    -Added checks for valid XeThru config vals
  *
 */
 #include "Particle.h"
@@ -18,6 +20,7 @@
 #include "stateMachine.h"
 #include "im21door.h"
 #include "wifi.h"
+#include "xethru.h"
 
 void setupConsoleFunctions(){
 
@@ -31,6 +34,7 @@ void setupConsoleFunctions(){
   Particle.function("changeSSID", setSSIDFromConsole);  //wifi code
   Particle.function("changePwd", setPwdFromConsole);    //wifi code
   Particle.function("getWifiLog", getWifiLogFromConsole);       //wifi code
+  Particle.function("changeXeThruConfigVals", setxeThruConfigValsFromConsole);
 
 }
 
@@ -240,6 +244,84 @@ int im21_door_id_set(String command) { // command is a long string with all the 
     EEPROM.put((ADDR_IM21_DOORID+1),globalDoorID.byte2);  
     EEPROM.put((ADDR_IM21_DOORID+2),globalDoorID.byte3);  
   
+  } //end if-else
+
+  return 1;
+
+}
+
+//particle console function to get new xethru config values
+int setxeThruConfigValsFromConsole(String command) { // command is a long string with all the config values
+
+  //get pointer to user-entered string
+  const char* checkForEcho = command.c_str();
+
+  //if user has entered e for echo, print current settings
+  if(*checkForEcho == 'e'){
+
+    char buffer[512];
+    snprintf(buffer, sizeof(buffer), "{\"led\":\"%d\", \"noisemap\":\"%d\",  \"sensitivity\":\"%d\",  \"min_detect\":\"%f\", \"max_detect\":\"%f\" }", 
+            xethru_led,  xethru_noisemap, xethru_sensitivity, xethru_min_detect, xethru_max_detect); 
+
+    Particle.publish("Current XeThru config settings",buffer,PRIVATE);
+
+  } else //if we're not echoing, we have a command to parse
+  {
+    // command is in the form "led,noisemap,sensitivity,min_detect,max_detect"
+    // where variable names are replaced with appropriate numbers
+    // 1, 2, 3, 2.5, 3.5
+
+    int split1 = command.indexOf(',');
+    int new_led = command.substring(0,split1).toInt();
+    int split2 = command.indexOf(',', split1+1);
+    int new_noisemap = command.substring(split1+1,split2).toInt();
+    int split3 = command.indexOf(',', split2+1);
+    int new_sensitivity = command.substring(split2+1,split3).toInt();
+    int split4 = command.indexOf(',', split3+1);
+    float new_min_detect = command.substring(split3+1,split4).toFloat();
+    int split5 = command.indexOf(',', split4+1);
+    float new_max_detect = command.substring(split4+1,split5).toFloat();
+
+    // check if valid input
+    if (new_led >2 || new_led < 0) {
+      Log.warn("invalid led setting");
+      return -1;
+    }
+    Log.warn("new led: %d", new_led);
+    
+    if (new_noisemap > 7 || new_noisemap < 0) {
+      Log.warn("invalid noisemap setting");
+      return -1;
+    } 
+    Log.warn("new noisemap: %d", new_noisemap);
+
+    if (new_sensitivity > 9 || new_sensitivity < 0) {
+      Log.warn("invalid sensitivity setting");
+      return -1;
+    }
+    Log.warn("new sensitivity: %d", new_sensitivity);
+
+    if (new_min_detect < 0 || new_max_detect < new_min_detect) {
+      Log.warn("invalid detection zone setting");
+      return -1;
+    }
+    Log.warn("new detection min: %f max: %f", new_min_detect, new_max_detect);
+
+    EEPROM.put(ADDR_XETHRU_LED, new_led);
+    EEPROM.put(ADDR_XETHRU_NOISEMAP, new_noisemap);
+    EEPROM.put(ADDR_XETHRU_SENSITIVITY, new_sensitivity);
+    EEPROM.put(ADDR_XETHRU_MAX_DETECT, new_max_detect);
+    EEPROM.put(ADDR_XETHRU_MIN_DETECT, new_min_detect);
+    xethru_led = new_led;
+    xethru_noisemap = new_noisemap;
+    xethru_sensitivity = new_sensitivity;
+    xethru_min_detect = new_min_detect;
+    xethru_max_detect = new_max_detect;
+
+    //reset XeThru and restart with new config settings
+    xethru_reset();
+    xethru_configuration();
+    // bug to fix: state machine stops receiving xethru data once xethru settings are updated
   } //end if-else
 
   return 1;

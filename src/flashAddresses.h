@@ -3,6 +3,8 @@
  * Brave firmware state machine for single Argon
  * written by Heidi Fedorak/Mario Cimet, Apr 2021
  * 
+ * Edits for Xethru local state machine by James Seto
+ * 
  *  Addresses for where in EEPROM certain variables are written.
  *  All except the flags are values that initialize to defaults 
  *  when firmware is first flashed, and can later be changed using
