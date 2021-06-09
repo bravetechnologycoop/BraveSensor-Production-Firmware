@@ -242,8 +242,6 @@ void state3_stillness(){
 
     Log.warn("motion spotted again, going from state3_stillness to state2_duration");
     publishStateTransition(3, 2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
-    //zero the duration timer
-    state2_duration_timer = millis();
     //go back to state 2, duration
     stateHandler = state2_duration;
 
@@ -254,6 +252,14 @@ void state3_stillness(){
     publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     stateHandler = state0_idle;
 
+  }
+  else if(millis() - state2_duration_timer >= state2_max_duration){
+
+    Log.warn("See duration alert, going from state3 to idle after alert publish");
+    publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
+    Log.error("Duration Alert!!");
+    Particle.publish("Duration Alert", "duration alert", PRIVATE);
+    stateHandler = state0_idle;
   }
   else if(millis() - state3_stillness_timer >= state3_max_stillness_time){
 
