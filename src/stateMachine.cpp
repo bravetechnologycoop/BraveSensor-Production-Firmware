@@ -134,7 +134,7 @@ void state1_15sCountdown(){
 
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_fast > 0 && ((unsigned long)checkXT.movement_fast < FAST_THRESHOLD)){
+  if((unsigned long)checkXT.movement_fast < FAST_THRESHOLD){
 
     Log.warn("no movement, you're going back to state 0 from state 1");
     publishStateTransition(1, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
@@ -186,7 +186,7 @@ void state2_duration(){
   publishDebugMessage(2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis()-state2_duration_timer));  
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_fast > 0 && ((unsigned long)checkXT.movement_slow < slow_threshold)){
+  if(((unsigned long)checkXT.movement_slow < slow_threshold)){
 
     Log.warn("Seeing stillness, going to state3_stillness from state2_duration");
     publishStateTransition(2, 3, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
