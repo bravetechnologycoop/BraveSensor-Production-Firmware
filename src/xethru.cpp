@@ -222,7 +222,7 @@ void threadXeThruReader(void *param) {
             sleepMsg.movement_fast = *((float*)&receiveBuffer[30]);
             sleepMsg.state_code = *((uint32_t*)&receiveBuffer[10]);
 
-            //Log.info("Received sleep message: StateCode=%lu, MovementFast=%f, MovementSlow=%f", (unsigned long) sleepMsg.state_code, sleepMsg.movement_fast, sleepMsg.movement_slow);
+            //Log.warn("Received sleep message: StateCode, MovementSlow, Movementfast = \"%lu\" \"%f\" \"%f\"", (unsigned long) sleepMsg.state_code, sleepMsg.movement_slow, sleepMsg.movement_fast);
             os_queue_put(xeThruQueue, (void *)&sleepMsg, 0, 0);
           } else {
             //Log.info("Received other message");

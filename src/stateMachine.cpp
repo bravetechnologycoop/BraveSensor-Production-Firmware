@@ -21,7 +21,7 @@ unsigned long state1_timer;
 unsigned long state2_duration_timer;
 unsigned long state3_stillness_timer;
 //initialize constants to sensible default values
-unsigned long xethru_threshold = XETHRU_THRESHOLD;
+unsigned long slow_threshold = SLOW_THRESHOLD;
 unsigned long state1_max_time = STATE1_MAX_TIME;
 unsigned long state2_max_duration = STATE2_MAX_DURATION;
 unsigned long state3_max_stillness_time = STATE3_MAX_STILLNESS_TIME;
@@ -51,7 +51,7 @@ void initializeStateMachineConsts(){
   Log.info("state machine constants flag is 0x%04X", initializeConstsFlag);
 
   if(initializeConstsFlag != INITIALIZE_STATE_MACHINE_CONSTS_FLAG){
-    EEPROM.put(ADDR_XETHRU_THRESHOLD, xethru_threshold);
+    EEPROM.put(ADDR_SLOW_THRESHOLD, slow_threshold);
     EEPROM.put(ADDR_STATE1_MAX_TIME, state1_max_time);
     EEPROM.put(ADDR_STATE2_MAX_DURATION, state2_max_duration);
     EEPROM.put(ADDR_STATE3_MAX_STILLNES_TIME, state3_max_stillness_time);
@@ -60,7 +60,7 @@ void initializeStateMachineConsts(){
     Log.info("State machine constants were written to flash on bootup.");
   }
   else{
-    EEPROM.get(ADDR_XETHRU_THRESHOLD, xethru_threshold);
+    EEPROM.get(ADDR_SLOW_THRESHOLD, slow_threshold);
     EEPROM.get(ADDR_STATE1_MAX_TIME, state1_max_time);
     EEPROM.get(ADDR_STATE2_MAX_DURATION, state2_max_duration);
     EEPROM.get(ADDR_STATE3_MAX_STILLNES_TIME, state3_max_stillness_time);
@@ -91,15 +91,17 @@ void state0_idle(){
   // digitalWrite(D5,LOW);
 
 
-  Log.info("You are in state 0, idle: Door status, movement_fast = 0x%02X, %f",checkDoor.doorStatus, checkXT.movement_fast);
+  Log.info("You are in state 0, idle: Door status, movement_fast, movement_slow = 0x%02X, %f, %f",
+          checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
   //default timer to 0 when state doesn't have a timer
-  publishDebugMessage(0, checkDoor.doorStatus, checkXT.movement_fast, 0); 
+  publishDebugMessage(0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, 0); 
 
   //fix outputs and state exit conditions accordingly
-  if(((unsigned long)checkXT.movement_fast > xethru_threshold) && isDoorClosed(checkDoor.doorStatus)){
+  if(((unsigned long)checkXT.movement_fast > FAST_THRESHOLD)
+          && isDoorClosed(checkDoor.doorStatus)){
 
     Log.warn("In state 0, door closed and seeing movement, heading to state 1");
-    publishStateTransition(0, 1, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(0, 1, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     //zero the state 1 timer
     state1_timer = millis();
     //head to state 1
@@ -126,29 +128,30 @@ void state1_15sCountdown(){
 
   //do stuff in the state
   // digitalWrite(D2,HIGH);
-  Log.info("You are in state 1, 15s countdown: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkXT.movement_fast, (millis() - state1_timer));
-  publishDebugMessage(1, checkDoor.doorStatus, checkXT.movement_fast, (millis()-state1_timer));  
+  Log.info("You are in state 1, 15s countdown: Door status, movement_fast, movement_slow, timer = 0x%02X, %f, %f, %ld",
+          checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis() - state1_timer));
+  publishDebugMessage(1, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis()-state1_timer));  
 
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_fast > 0 && (unsigned long)checkXT.movement_fast < xethru_threshold){
+  if((unsigned long)checkXT.movement_fast > 0 && ((unsigned long)checkXT.movement_fast < FAST_THRESHOLD)){
 
     Log.warn("no movement, you're going back to state 0 from state 1");
-    publishStateTransition(1, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(1, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     stateHandler = state0_idle;
 
   }
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("door was opened, you're going back to state 0 from state 1");
-    publishStateTransition(1, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(1, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     stateHandler = state0_idle;
 
   }
   else if( millis() - state1_timer >= state1_max_time){
 
     Log.warn("door closed && motion for > Xs, going to state 2 from state1");
-    publishStateTransition(1, 2, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(1, 2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     //zero the duration timer
     state2_duration_timer = millis();
     //head to duration state
@@ -178,14 +181,15 @@ void state2_duration(){
 
   //do stuff in the state
   // digitalWrite(D3,HIGH);
-  Log.info("You are in state 2, duration: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkXT.movement_fast, (millis() - state2_duration_timer)); 
-  publishDebugMessage(2, checkDoor.doorStatus, checkXT.movement_fast, (millis()-state2_duration_timer));  
+  Log.info("You are in state 2, duration: Door status, movement_fast, movement_slow, timer = 0x%02X, %f, %f, %ld",
+          checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis() - state2_duration_timer)); 
+  publishDebugMessage(2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis()-state2_duration_timer));  
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_fast > 0 && (unsigned long)checkXT.movement_fast < xethru_threshold){
+  if((unsigned long)checkXT.movement_fast > 0 && ((unsigned long)checkXT.movement_slow < slow_threshold)){
 
     Log.warn("Seeing stillness, going to state3_stillness from state2_duration");
-    publishStateTransition(2, 3, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(2, 3, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     //zero the stillness timer
     state3_stillness_timer = millis();
     //go to stillness state
@@ -195,14 +199,14 @@ void state2_duration(){
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("Door opened, session over, going to idle from state2_duration");
-    publishStateTransition(2, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(2, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     stateHandler = state0_idle;
 
   }
   else if(millis() - state2_duration_timer >= state2_max_duration){
 
     Log.warn("See duration alert, going from state2_duration to idle after alert publish");
-    publishStateTransition(2, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(2, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     Log.error("Duration Alert!!");
     Particle.publish("Duration Alert", "duration alert", PRIVATE);
     stateHandler = state0_idle;
@@ -229,14 +233,15 @@ void state3_stillness(){
 
   //do stuff in the state
   // digitalWrite(D4,HIGH);
-  Log.info("You are in state 3, stillness: Door status, movement_fast, timer = 0x%02X, %f, %ld",checkDoor.doorStatus, checkXT.movement_fast, (millis() - state3_stillness_timer));
-  publishDebugMessage(3, checkDoor.doorStatus, checkXT.movement_fast, (millis()-state3_stillness_timer));   
+  Log.info("You are in state 3, stillness: Door status, movement_fast, movement_slow, timer = 0x%02X, %f, %f, %ld",
+          checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis() - state3_stillness_timer));
+  publishDebugMessage(3, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis()-state3_stillness_timer));   
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_fast > xethru_threshold){
+  if((unsigned long)checkXT.movement_slow > slow_threshold){
 
     Log.warn("motion spotted again, going from state3_stillness to state2_duration");
-    publishStateTransition(3, 2, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(3, 2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     //zero the duration timer
     state2_duration_timer = millis();
     //go back to state 2, duration
@@ -246,14 +251,14 @@ void state3_stillness(){
   else if(isDoorOpen(checkDoor.doorStatus)){
 
     Log.warn("door opened, session over, going from state3_stillness to idle");
-    publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     stateHandler = state0_idle;
 
   }
   else if(millis() - state3_stillness_timer >= state3_max_stillness_time){
 
     Log.warn("stillness alert, going from state3 to idle after publish");
-    publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast);
+    publishStateTransition(3, 0, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
     Log.error("Stillness Alert!!");
     Particle.publish("Stillness Alert", "stillness alert!!!", PRIVATE);
     stateHandler = state0_idle;
@@ -266,21 +271,21 @@ void state3_stillness(){
 
 } //end state3_stillness
 
-void publishStateTransition(int prevState, int nextState, unsigned char doorStatus, float XeThruValue){
+void publishStateTransition(int prevState, int nextState, unsigned char doorStatus, float fastValue, float slowValue){
 
     if(stateMachineDebugFlag){
 
       //from particle docs, max length of publish is 622 chars, I am assuming this includes null char
       char stateTransition[622];
       snprintf(stateTransition, sizeof(stateTransition), 
-              "{\"prev_state\":\"%d\", \"next_state\":\"%d\", \"door_status\":\"0x%02X\", \"xethru_val\":\"%f\"}", prevState, nextState, doorStatus, XeThruValue); 
+              "{\"prev_state\":\"%d\", \"next_state\":\"%d\", \"door_status\":\"0x%02X\", \"xethru_fast_val\":\"%f\", \"xethru_slow_val\":\"%f\"}", prevState, nextState, doorStatus, fastValue, slowValue); 
       Particle.publish("State Transition", stateTransition, PRIVATE);
 
     }
 
 }
 
-void publishDebugMessage(int state, unsigned char doorStatus, float XeThruValue, unsigned long timer){
+void publishDebugMessage(int state, unsigned char doorStatus, float fastValue, float slowValue, unsigned long timer){
 
     static unsigned long lastDebugPublish = 0;
 
@@ -289,7 +294,7 @@ void publishDebugMessage(int state, unsigned char doorStatus, float XeThruValue,
       //from particle docs, max length of publish is 622 chars, I am assuming this includes null char
       char debugMessage[622];
       snprintf(debugMessage, sizeof(debugMessage), 
-              "{\"state\":\"%d\", \"door_status\":\"0x%02X\", \"xethru_val\":\"%f\", \"timer_status\":\"%ld\"}", state, doorStatus, XeThruValue, timer); 
+              "{\"state\":\"%d\", \"door_status\":\"0x%02X\", \"xethru_fast_val\":\"%f\", \"xethru_slow_val\":\"%f\", \"timer_status\":\"%ld\"}", state, doorStatus, fastValue, slowValue, timer); 
       Particle.publish("Debug Message", debugMessage, PRIVATE);
       lastDebugPublish = millis();
 
