@@ -15,8 +15,8 @@
 
 //initial (default) values for state machine, can be changed via console function
 //or by writing something other than 0x8888 to the above flag in flash
-#define FAST_THRESHOLD 50
-#define SLOW_THRESHOLD 2
+#define FAST_THRESHOLD 20
+#define SLOW_THRESHOLD 5
 #define STATE1_MAX_TIME 15000 //ms = 15s
 #define STATE2_MAX_DURATION 1200000 //ms = 20 min
 #define STATE3_MAX_STILLNESS_TIME 120000 //ms = 2 minutes
