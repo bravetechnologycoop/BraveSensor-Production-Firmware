@@ -279,10 +279,13 @@ int setxeThruConfigValsFromConsole(String command) { // command is a long string
     int new_sensitivity = command.substring(split2+1,split3).toInt();
     int split4 = command.indexOf(',', split3+1);
     float new_min_detect = command.substring(split3+1,split4).toFloat();
-    int split5 = command.indexOf(',', split4+1);
-    float new_max_detect = command.substring(split4+1,split5).toFloat();
-
+    float new_max_detect = command.substring(split4+1).toFloat();
+    
     // check if valid input
+    if (split1 == -1 || split2 == -1 || split3 == -1 || split4 == -1) {
+      Log.warn("invalid input format");
+      return -1;
+    }
     if (new_led >2 || new_led < 0) {
       Log.warn("invalid led setting");
       return -1;
