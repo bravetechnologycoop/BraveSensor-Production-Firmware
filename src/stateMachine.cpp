@@ -238,7 +238,7 @@ void state3_stillness(){
   publishDebugMessage(3, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow, (millis()-state3_stillness_timer));   
 
   //fix outputs and state exit conditions accordingly
-  if((unsigned long)checkXT.movement_slow > slow_threshold){
+  if((unsigned long)checkXT.movement_slow >= slow_threshold){
 
     Log.warn("motion spotted again, going from state3_stillness to state2_duration");
     publishStateTransition(3, 2, checkDoor.doorStatus, checkXT.movement_fast, checkXT.movement_slow);
