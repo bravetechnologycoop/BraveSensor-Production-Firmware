@@ -45,6 +45,12 @@ int sound_alarm(String command){
     return 1;
 }
 
+void timer_overflow(){
+    detachInterrupt(BUTTON);
+    digitalWrite(BUZZER, LOW);
+    flag = 2; // escalate response msg
+}
+
 void button_interrupt(){
     detachInterrupt(BUTTON);
     digitalWrite(BUZZER, LOW);
@@ -52,16 +58,10 @@ void button_interrupt(){
     flag = 1; // button pressed msg
 }
 
-void timer_overflow(){
-    detachInterrupt(BUTTON);
-    digitalWrite(BUZZER, LOW);
-    flag = 2; // escalate response msg
-}
-
 void publish_messages(){
     if(flag == 0){}
     else if(flag == 1){
-        Particle.publish("button-pressed");
+        Particle.publish("alarm-addressed");
         flag = 0;
     }
     else if(flag == 2){
