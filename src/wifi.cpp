@@ -229,40 +229,46 @@ void connectToWifi(){
 
   //attempt to connect to the different wifi credentials stored in memory 
   for(int i = 0; i < 5; i++){
+    //skip over credentials if they are the default value, otherwise continue
+    if(strcmp(SSIDs[i],"ssid") == 0 || strcmp(passwords[i],"password") == 0) {
+      Log.warn("Credential set %d is default, skipping to next set", i);
+      //delay(1000);
+    } else {
+      long int timeStarted = Time.now();
 
-    long int timeStarted = Time.now();
+      Log.warn("Setting credential set: %d", i);
+      Log.warn(SSIDs[i]);
+      Log.warn(passwords[i]);
 
-    Log.warn("Setting credential set: %d", i);
-    Log.warn(SSIDs[i]);
-    Log.warn(passwords[i]);
+      WiFi.setCredentials(SSIDs[i], passwords[i]);
+      WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
 
-    WiFi.setCredentials(SSIDs[i], passwords[i]);
-    WiFi.connect(WIFI_CONNECT_SKIP_LISTEN);  
+      //wait for wifi to connect or for 15 seconds, whichever is sooner
+      Log.warn("waiting for wifi to connect");
+      waitFor(WiFi.ready, 15000);  
 
-    //wait for wifi to connect or for 15 seconds, whichever is sooner
-    Log.warn("waiting for wifi to connect");
-    waitFor(WiFi.ready, 15000);  
+      //wifi.ready() returns true when connected and false when not
+      if(WiFi.ready()) {
 
-    //wifi.ready() returns true when connected and false when not
-    if(WiFi.ready()) {
+        Log.warn("Connected to wifi.");
+        long int connectionLength = Time.now() - timeStarted;
+        Log.warn("connection process took %ld seconds.\n", connectionLength);
+        Particle.connect();
+        //takes about 5s to connect to cloud. If we care about publishing something immediately after this command
+        //such as a wifi disconnect warning, this needs to be uncommented.
+        //delay(5000);
+        //if we're connected, stop trying credentials
+        break;
+      }
+      else {
 
-      Log.warn("Connected to wifi.");
-      long int connectionLength = Time.now() - timeStarted;
-      Log.warn("connection process took %ld seconds.\n", connectionLength);
-      Particle.connect();
-      //takes about 5s to connect to cloud. If we care about publishing something immediately after this command
-      //such as a wifi disconnect warning, this needs to be uncommented.
-      //delay(5000);
-      //if we're connected, stop trying credentials
-      break;
-    }
-    else {
+        //else not connected, so continue on to next set of credentials
+        Log.warn("Failed to connect to credential set: %d", i);
+        continue;
 
-      //else not connected, so continue on to next set of credentials
-      Log.warn("Failed to connect to credential set: %d", i);
-      continue;
+      } //end wifi ready if
 
-    } //end wifi ready if
+    }//end default creds if
 
   } //end for
 
