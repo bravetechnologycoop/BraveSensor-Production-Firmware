@@ -11,7 +11,7 @@
 #include "wifi.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
-#define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
+#define BRAVE_FIRMWARE_VERSION 2001 //see versioning notes in the readme
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
 
 PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
