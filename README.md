@@ -32,11 +32,11 @@ As of April 16/21, the different product firmware versions in this repo are:
         - [IM21 Door Sensor Settings](#im21-door-sensor-settings)
 
       - [Console Function Instructions](#console-function-instructions)
-          - [ChangeSSID(String)](#changessid(string))
-          - [ChangePwd(String)](#changepwd(string))
-          - [getWifiLog(String)](#getwifilog(string))
-          - [changeIM21DoorID(String)](#changeim21doorid(string))
-          - [changeXeThruConfigVals(String)](#changexethruconfigvals(string))
+          - [ChangeSSID(String)](#changessidstring)
+          - [ChangePwd(String)](#changepwdstring)
+          - [getWifiLog(String)](#getwifilogstring)
+          - [changeIM21DoorID(String)](#changeim21dooridstring)
+          - [changeXeThruConfigVals(String)](#changexethruconfigvalsstring)
 
       - [Published Events](#published-events)
           - [XeThru](#xethru)
@@ -71,12 +71,12 @@ As of April 16/21, the different product firmware versions in this repo are:
           - [MOVING_AVERAGE_BUFFER_SIZE](#moving_average_buffer_size)
           - [Door Sensor Definitions](#door-sensor-definitions)
       - [State Machine Console Functions](#state-machine-console-functions)
-          - [stillness_timer_set(String)](#stillness_timer_set(String))
-          - [initial_timer_set(String)](#initial_timer_set(String))
-          - [duration_timer_set(String)](#duration_timer_set(String))
-          - [ins_threshold_set(String)](#ins_threshold_set(String))
-          - [toggle_debugging_publishes(String)](#toggle_debugging_publishes(String))
-          - [im21_door_id_set(String)](#im21_door_id_set(String))
+          - [stillness_timer_set(String)](#stillness_timer_setString)
+          - [initial_timer_set(String)](#initial_timer_setString)
+          - [duration_timer_set(String)](#duration_timer_setString)
+          - [ins_threshold_set(String)](#ins_threshold_setString)
+          - [toggle_debugging_publishes(String)](#toggle_debugging_publishesString)
+          - [im21_door_id_set(String)](#im21_door_id_setString)
       - [State Machine Published Messages](#state-machine-published-messages)
           - [Stillness Alert](#stillness-alert)
           - [Heartbeat Message](#heartbeat-message)
@@ -85,7 +85,23 @@ As of April 16/21, the different product firmware versions in this repo are:
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [IM21 Warning: state machine](#im21-warning:-state-machine)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
-7. [Webhook Templates](#webhook-templates)
+7. [Single Argon INS Firmware](#single-argon-ins-firmware)
+    - [1 Argon INS Firmware Settings and Config](#1-argon-ins-firmware-settings-and-config)
+    - [1 Argon INS Console Functions](#1-argon-ins-console-functions)
+    - [1 Argon INS Published Messages](#1-argon-ins-published-messages)
+8. [Single Argon XeThru Firmware](#single-argon-xethru-firmware)
+    - [Update from Two Argon XeThru Firmware](#update-from-two-argon-xethru-firmware)
+    - [1 Argon XeThru Firmware Settings and Config](#1-argon-xethru-firmware-settings-and-config)
+        - [DEBUG_LEVEL](#debug_level)
+        - [BRAVE_FIRMWARE_VERSION, BRAVE_PRODUCT_ID](#BRAVE_FIRMWARE_VERSION,-BRAVE_PRODUCT_ID)
+        - [SLOW_THRESHOLD](#SLOW_THRESHOLD)
+        - [FAST_THRESHOLD](#FAST_THRESHOLD)
+        - [STATE1_MAX_TIME ... SM_HEARTBEAT_INTERVAL](#state1_max_time--sm_heartbeat_interval)
+        - [XeThru Configuration Variables](#xethru-configuration-variables)
+    - [1 Argon XeThru Console Functions](#1-argon-xethru-console-functions)
+        - [slow_threshold_set(String)](#slow_threshold_setString)
+        - [changeXeThruConfigVals(String) for 1 Argon XeThru](#changeXeThruConfigValsString-for-1-argon-xethru)
+9. [Webhook Templates](#webhook-templates)
     - [XeThru Template](#xethru-template)
     - [IM21 Template](#im21-template)
     - [INS3331 Template](#ins3331-template)
@@ -105,6 +121,10 @@ In the Production (main/master) branch, in the firmware_config.h file, the comme
 * The custom firmware on the Covenant House Door Argons is version #101 on the console.
 * Beta release versions for the 2 Argon + INS follow the same numbering scheme of odd for radar Argon and even for Door Argon, except the numbers start at 1001.  There are no tags in the firmware repo since this version has not been released to production yet.
 * State machine beta release will start at #2000 on the Particle Console. There are no corresponding repo tags/versions since this code has not been released to production yet
+* v2000 = 1 Boron + INS3331 code = v4.0 on Sensor Product Release Timeline [here](https://docs.google.com/spreadsheets/d/1qa0hrfZ9nuKfag2WtU9p4lWTh8E7RW6DfsR_nHg383g/edit?usp=sharing)
+* v2001 = 1 Argon + INS3331 code = v3.2 ""
+* v2002 = 1 Argon + XeThru = v2.1 ""
+
 
 ## Repo Branches Outline
 
@@ -1070,6 +1090,157 @@ Be aware:  this means that notification a door event is missed won't be publishe
   }
 }
 ```
+
+## Single Argon INS Firmware
+
+This is the Single Boron firmware with firmware state machine, modified to include wifi console functions and wifi connect functionality.
+
+### 1 Argon INS Firmware Settings and Config
+
+When commissioning the Single Argon, the setup firmware must be flashed beforehand. Setup firmware is found in the Setup-Firmware branch. Step-by-step instructions on how to flash this and the firmware are shared with developers internally.
+
+The rest of the firmware settings are identical to the 1 Boron + INS, and can be found [here](#firmware-state-machine-setup).
+
+### 1 Argon INS Console Functions
+
+There are no console functions unique to this product. All console functions pertaining to the state machine and IM21 door sensor are described in detail [here](#state-machine-console-functions). All console functions pertaining to wifi are are described in detail [here](#changessidstring).
+
+### 1 Argon INS Published Messages
+
+The published messages are identical to the 1 Boron + INS firmware [here](#state-machine-published-messages).
+
+## Single Argon XeThru Firmware
+
+This firmware is intended to be a hotfix release candidate for hardware in production with XeThru radars. This firmware will be released as an update for XeThru devices on the 2 Argon + XeThru firmware. 
+
+The state machine design differs slightly from the Boron INS / Argon INS state machine, using XeThru Movement_Fast and Movement_Slow data to imitate the INS radar InPhase data. The entry/exit conditions are documented [here](https://docs.google.com/drawings/d/1sq7MucmDWfG4PBPH-IGz7HAvKjXkQ7c1LccWlS7bQo8/edit?usp=sharing).
+
+### Update from Two Argon XeThru Firmware
+
+To upgrade devices from the 2 Argon + XeThru firmware, document the existing [XeThru configuration variables](#xethru-configuration-variables), as they will be wiped from EEPROM during the update. 
+
+Importantly, the wifi credentials will be preserved, and after the over-the-air update the device should immediately begin to connect back to the cloud.
+
+The door sensor device ID will be initalized by default to 0xAA 0xAA 0xAA. Once the firmware is up and running, the console function to change the door sensor ID can be used to overwrite the default value to the ID of whichever door sensor was shipped to the client. See the console function docs on how to do this.
+
+### 1 Argon XeThru Firmware Settings and Config
+
+The setup firmware must be flashed before the main firmware is flashed. Setup firmware is found in the Setup-Firmware branch. Step-by-step instructions on how to flash this and the firmware are shared with developers internally.
+
+The [firmware version](#brave_firmware_version:-state-machine) and [product key](#product_id_betatest-and-product_id_production:-state-machine) are also necessary to change with each code revision, click to go to the relevant information.
+
+Production firmware will initialize state machine constants (timer lengths, INS threshold, etc) to sensible default values, which can later be tweaked and configured via console functions.  It will initialize the door sensor ID to 0xAA 0xAA 0xAA.  This can later be updated via console function, once the device is connected to the cloud.
+
+Default settings useful to know about will be described in this section.  Note that changing these is done at the code level and not in a configuration file, so doing so will require a hotfix that is assigned a version number.  Changes will affect all devices in the fleet.
+
+#### DEBUG_LEVEL
+
+This is defined via a macro at the top of the .ino file. See [above](#debug-level) for details.
+
+#### BRAVE_FIRMWARE_VERSION, BRAVE_PRODUCT_ID
+
+This is defined in the main .ino file. See [above](#brave_firmware_version:-state-machine) for details.
+
+#### SLOW_THRESHOLD
+
+This is defined via a macro in the stateMachine.h header file.
+
+The Movement_Slow data from the XeThru radar is a time average of movement over a longer period. The threshold is compared to Movement_Slow data to determine stillness. Anything above the threshold is considered an indication of breathing and subtle motion, below would be considered stillness. 
+
+The default level is set to 5, based on testing [here](https://docs.google.com/document/d/1i5v0Ui3wrlOUMt_VvitPoBqSaLXMNcTEj-xPsQCEa70/edit?usp=sharing).
+
+#### FAST_THRESHOLD
+
+This is defined via a macro in the stateMachine.h header file.
+
+The Movement_Fast data from the XeThru radar is a time average of movement over a shorter period. The threshold is compared to Movement_Fast data to determine when an individual enters or exits the stall. 
+
+The default level is set to 20 based on testing [here](https://docs.google.com/document/d/1i5v0Ui3wrlOUMt_VvitPoBqSaLXMNcTEj-xPsQCEa70/edit?usp=sharing).This value is hard-coded, meaning that changes to this threshold must be done on the code level and will require a new firmware version. 
+
+#### STATE1_MAX_TIME ... SM_HEARTBEAT_INTERVAL
+
+These are defined via a macro in the stateMachine.h header file, see [above](#state1_max_time) for details.
+
+#### XeThru Configuration Variables
+
+Led, noisemap, and sensitivity settings are ints, so defining a decimal number will break the code.  Min detect and max detect are floats, so decimal numbers can be used there.  An example is below:
+
+```C++
+#define XETHRU_LED_SETTING 0
+#define XETHRU_NOISEMAP_SETTING 0
+#define XETHRU_SENSITIVITY_SETTING 5
+#define XETHRU_MIN_DETECT_SETTING 0.5
+#define XETHRU_MAX_DETECT_SETTING 4.0
+```
+
+**LED:**
+
+- 0: OFF
+- 1: SIMPLE
+- 2: FULL
+
+**NoiseMap:**
+- Bit 0: FORCE INITIALIZE NOISEMAP ON RESET
+- Bit 1: ADAPTIVE NOISEMAP ON
+- Bit 2: USE DEFAULT NOISEMAP
+
+**Sensitivity:**
+Scale goes from 0 to 10.
+
+**Max and Min Detect:**
+Set the maximum and minimum range (in metres) for detecting movement.
+
+
+### 1 Argon XeThru Console Functions
+
+#### **slow_threshold_set(String)**
+
+**Description:**
+
+Use the console function to set the Movement_Slow threshold to something other than the default.
+
+The Movement_Slow data from the XeThru radar is a time average of movement over a longer period. The threshold is compared to Movement_Slow data to determine stillness. Anything above the threshold is considered an indication of breathing and subtle motion, below would be considered stillness. 
+
+The default level is set to 5, based on testing [here](https://docs.google.com/document/d/1i5v0Ui3wrlOUMt_VvitPoBqSaLXMNcTEj-xPsQCEa70/edit?usp=sharing).
+
+**Argument(s):**
+
+1. The integer value of the new threshold
+2. e - this is short for echo, and will echo the current timer value
+
+**Return(s):**
+
+- The integer value of the new threshold, when a new threshold is entered
+- The integer value of the current threshold, when e for echo is entered
+- -1: when bad data is entered
+
+#### **changeXeThruConfigVals(String) for 1 Argon XeThru**
+
+**Description:**
+
+Writes new XeThru configuration settings to Particle and restarts the XeThru sensor. New settings should take effect immediately after XeThru restart.
+
+Configuration settings are led, noisemap, sensitivity, min_detect, and max_detect. Led, noisemap, and sensitivity are ints, min_detect and max_detect are floats.
+
+**Argument(s):**
+
+All console functions only accept a single arduino String.  It is not necessary to enter the string with surrounding `“”` quotes.  The different string(s) this function accepts are:
+
+1. String containing led, noisemap, sensitivity, min_detect, and max_detect settings, in that order, separated by commas.  Led, noisemap, and sensitivity are ints so entering a decimal number will cause truncation and possibly an error.
+Min_detect and max_detect are floats. Allowed values:
+    1. led: `[0,2]`
+    2. noisemap: `[0,7]`
+    3. sensitivity: `[0,9]`
+    4. min_detect: `[0.0,inf)`
+    5. max_detect: `[0.0,inf)`
+    - **Sample input:**   0, 0, 5, 0.5, 4.0 
+2. e - echos, aka publish to cloud, the current Xethru configuration settings
+
+**Return(s):**
+
+- 0 - if new settings parsed and written to flash, and xethru restarted
+- 1 - if current settings are echoed to the cloud
+- -1 - if bad input was received and settings were neither parsed nor echoed to the cloud
 
 ## Webhook Templates
 
