@@ -132,7 +132,7 @@ void checkIM21(){
   static doorData previousDoorData = {0x00, 0x00};
   static doorData currentDoorData = {0x00, 0x00};
 
-  const unsigned int SCAN_RESULT_MAX = 10;
+  const unsigned int SCAN_RESULT_MAX = 30;
   BleScanResult scanResults[SCAN_RESULT_MAX];
   unsigned char doorAdvertisingData[BLE_MAX_ADV_DATA_LEN]; 
 
