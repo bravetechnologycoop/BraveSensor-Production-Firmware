@@ -119,6 +119,7 @@ In the Production (main/master) branch, in the firmware_config.h file, the comme
   * v1.2.01: XeThru = 5, IM21 = 6
   * v1.2.02: Xethru = 7, IM21 = 8
 * The custom firmware on the Covenant House Door Argons is version #101 on the console.
+* The custom fimrware on the PGPL Door Argon is version #102 on the console.
 * Beta release versions for the 2 Argon + INS follow the same numbering scheme of odd for radar Argon and even for Door Argon, except the numbers start at 1001.  There are no tags in the firmware repo since this version has not been released to production yet.
 * State machine beta release will start at #2000 on the Particle Console. There are no corresponding repo tags/versions since this code has not been released to production yet
 * v2000 = 1 Boron + INS3331 code = v4.0 on Sensor Product Release Timeline [here](https://docs.google.com/spreadsheets/d/1qa0hrfZ9nuKfag2WtU9p4lWTh8E7RW6DfsR_nHg383g/edit?usp=sharing)
