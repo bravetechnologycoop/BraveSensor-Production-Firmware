@@ -114,7 +114,7 @@ void logAndPublishDoorData(doorData previousDoorData, doorData currentDoorData){
   sprintf(doorPublishBuffer, "{ \"deviceid\": \"%02X:%02X:%02X\", \"data\": \"%02X\", \"control\": \"%02X\" }", 
           globalDoorID.byte1, globalDoorID.byte2, globalDoorID.byte3, currentDoorData.doorStatus, currentDoorData.controlByte);
   Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
-  Log.info("published, 0x%02X", currentDoorData.controlByte);
+  Log.warn("published, 0x%02X", currentDoorData.controlByte);
 
 }
 
