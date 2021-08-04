@@ -11,7 +11,8 @@
 //initialize door ID to agreed upon intial value
 IM21DoorID globalDoorID = {0xAA, 0xAA, 0xAA};
 os_queue_t bleQueue;
-
+int missedDoorEventCount = 0;
+bool doorLowBatteryFlag = false;
 
 //**********setup()******************
 
@@ -63,6 +64,10 @@ doorData checkIM21(){
 
     //Log.warn("raw door sensor output - control:  prev, current: 0x%02X, 0x%02X", previousDoorData.controlByte, currentDoorData.controlByte);
     //Log.warn("raw door sensor output - data byte prev, current: 0x%02X, 0x%02X", previousDoorData.doorStatus, currentDoorData.doorStatus);
+    
+    // Checks if the 2nd bit (counting from 0) of doorStatus is 1
+    // read as: doorLowBatteryFlag is true if doorStatus AND 0b0100 is not 0b0000
+    doorLowBatteryFlag = (currentDoorData.doorStatus & (1 << 2)) != 0;
 
     //if this is the first door event received after firmware bootup, publish
     if(initialDoorDataFlag){
@@ -81,6 +86,7 @@ doorData checkIM21(){
     else if(currentDoorData.controlByte > (previousDoorData.controlByte+0x01)){
 
       Log.error("curr > prev + 1, WARNING WARNING WARNING, missed door event!");
+      missedDoorEventCount++;
       logAndPublishDoorWarning(previousDoorData, currentDoorData);
       returnDoorData = currentDoorData;
       previousDoorData = currentDoorData;  

@@ -315,6 +315,18 @@ void publishDebugMessage(int state, unsigned char doorStatus, float INSValue, un
 
 }
 
+/**
+ * Saves the state transition data onto queues, including the last state, reason of transition and time spent in state.
+ * 
+ * Reason Code | Meaning
+ * -------------------------------
+ * 0           | Movement surpasses threshold
+ * 1           | Movement falls below threshold
+ * 2           | Door opened
+ * 3           | Initial timer surpassed
+ * 4           | Duration alert
+ * 5           | Stillness alert
+ **/
 void saveStateChange(int state, int reason){
     
     stateQueue.push(state);
@@ -332,6 +344,13 @@ void getHeartbeat(){
       char heartbeatMessage[622] = {0};
       JSONBufferWriter writer(heartbeatMessage, sizeof(heartbeatMessage)-1);
       writer.beginObject();
+        //logs number of instances of missed door events since last heartbeat
+        writer.name("md").value(missedDoorEventCount);
+        missedDoorEventCount = 0;
+
+        //logs whether door sensor is low battery
+        writer.name("lb").value(doorLowBatteryFlag);
+        //logs each state, reason of transitioning away, and time spent in state (ms)
         writer.name("states").beginArray();
         int numStates = stateQueue.size();
           for(int i = 0; i < numStates; i++){
