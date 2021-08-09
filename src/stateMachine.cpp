@@ -350,21 +350,30 @@ void getHeartbeat(){
 
         //logs whether door sensor is low battery
         writer.name("lb").value(doorLowBatteryFlag);
+        
+        //logs timestamp when heartbeat was received
+        writer.name("dh").value((unsigned int) doorHeartbeatReceived);
+
         //logs each state, reason of transitioning away, and time spent in state (ms)
         writer.name("states").beginArray();
         int numStates = stateQueue.size();
           for(int i = 0; i < numStates; i++){
+            // If heartbeat message is near full, break, report rest of states in next heartbeat
+            if(writer.dataSize() >= HEARTBEAT_STATES_CUTOFF) {
+              Log.warn("Heartbeat message full, remaining states will be reported next heartbeat");
+              break;
+            }
             writer.beginArray()
               .value(stateQueue.front())
               .value(reasonQueue.front())
-              .value((int) timeQueue.front())
+              .value((unsigned int) timeQueue.front())
               .endArray();
             stateQueue.pop();
             reasonQueue.pop();
             timeQueue.pop();
           } // end states queue for
-        writer.endArray();
-      writer.endObject();
+        writer.endArray(); // end states array
+      writer.endObject(); // end heartbeat message
       Particle.publish("Heartbeat", heartbeatMessage, PRIVATE);
       Log.warn(heartbeatMessage);
       Log.warn("%d", writer.dataSize());
