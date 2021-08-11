@@ -24,10 +24,11 @@
 #define SM_HEARTBEAT_INTERVAL 600000  //ms = 10 min
 
 
-//do not include heartbeat signals when checking for open or closed, because 
-//they do not signify a change in door status
-#define isDoorOpen(X)  (X == 0x02 || X == 0x06)
-#define isDoorClosed(X)  (X == 0x00 || X == 0x04)
+//heartbeat signals have been added. Although heartbeat signals don't
+//represent a change in door status, they will reflect the current
+//status of the door sensor. 
+#define isDoorOpen(X)  (X == 0x02 || X == 0x06 || X == 0x0A || X == 0x0E)
+#define isDoorClosed(X)  (X == 0x00 || X == 0x04 || X == 0x08 || X == 0x0C)
 
 //setup() functions
 void setupStateMachine();
