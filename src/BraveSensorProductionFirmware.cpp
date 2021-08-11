@@ -28,7 +28,8 @@ SYSTEM_THREAD(ENABLED);
 SerialLogHandler logHandler(WARN_LEVEL);
 
 void setup() {
-
+  // enable reset reason
+  System.enableFeature(FEATURE_RESET_INFO);
 
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);

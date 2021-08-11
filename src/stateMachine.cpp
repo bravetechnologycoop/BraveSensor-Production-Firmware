@@ -25,6 +25,7 @@ unsigned long state3_max_stillness_time = STATE3_MAX_STILLNESS_TIME;
 //except this one, we don't want to take the chance that random memory
 //contents will initialize this to "on"
 bool stateMachineDebugFlag = false;
+int resetReason = System.resetReason();
 
 std::queue<int> stateQueue;
 std::queue<int> reasonQueue;
@@ -353,6 +354,9 @@ void getHeartbeat(){
         
         //logs timestamp when heartbeat was received
         writer.name("doorHeartbeat").value((unsigned int) (millis() - doorHeartbeatReceived));
+
+        //logs the reason of the last reset
+        writer.name("resetReason").value(resetReason);
 
         //logs each state, reason of transitioning away, and time spent in state (ms)
         writer.name("states").beginArray();
