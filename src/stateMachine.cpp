@@ -336,6 +336,26 @@ void saveStateChange(int state, int reason){
     lastStateChange = millis();
 }
 
+const char *resetReasonString(int resetReason)
+{
+	switch( System.resetReason() )
+	{
+		case RESET_REASON_PIN_RESET:		    return "PIN_RESET";
+		case RESET_REASON_POWER_MANAGEMENT:	return "POWER_MANAGEMENT";
+		case RESET_REASON_POWER_DOWN:		    return "POWER_DOWN";
+		case RESET_REASON_POWER_BROWNOUT:	  return "POWER_BROWNOUT";
+		case RESET_REASON_WATCHDOG:		      return "WATCHDOG";
+		case RESET_REASON_UPDATE:		        return "UPDATE";
+		case RESET_REASON_UPDATE_TIMEOUT:	  return "UPDATE_TIMEOUT";
+		case RESET_REASON_FACTORY_RESET:	  return "FACTORY_RESET";
+		case RESET_REASON_DFU_MODE:		      return "DFU_MODE";
+		case RESET_REASON_PANIC:		        return "PANIC";
+		case RESET_REASON_USER:			        return "USER";
+		case RESET_REASON_UNKNOWN:		      return "UNKNOWN";
+	  default:              		 	        return "NONE";
+	}
+}
+
 void getHeartbeat(){
 
     static unsigned long lastHeartbeatPublish = 0;
@@ -356,7 +376,7 @@ void getHeartbeat(){
         writer.name("doorHeartbeat").value((unsigned int) (millis() - doorHeartbeatReceived));
 
         //logs the reason of the last reset
-        writer.name("resetReason").value(resetReason);
+        writer.name("resetReason").value(resetReasonString(resetReason));
 
         //logs each state, reason of transitioning away, and time spent in state (ms)
         writer.name("states").beginArray();
@@ -365,7 +385,7 @@ void getHeartbeat(){
             // If heartbeat message is near full, break, report rest of states in next heartbeat
             if(writer.dataSize() >= HEARTBEAT_STATES_CUTOFF) {
               Log.warn("Heartbeat message full, remaining states will be reported next heartbeat");
-              break;
+             
             }
             writer.beginArray()
               .value(stateQueue.front())
