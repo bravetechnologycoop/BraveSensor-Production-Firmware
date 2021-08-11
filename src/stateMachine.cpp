@@ -385,7 +385,7 @@ void getHeartbeat(){
             // If heartbeat message is near full, break, report rest of states in next heartbeat
             if(writer.dataSize() >= HEARTBEAT_STATES_CUTOFF) {
               Log.warn("Heartbeat message full, remaining states will be reported next heartbeat");
-             
+              break;
             }
             writer.beginArray()
               .value(stateQueue.front())
