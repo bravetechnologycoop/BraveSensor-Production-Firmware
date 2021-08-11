@@ -13,7 +13,7 @@ IM21DoorID globalDoorID = {0xAA, 0xAA, 0xAA};
 os_queue_t bleQueue;
 int missedDoorEventCount = 0;
 bool doorLowBatteryFlag = false;
-unsigned long doorHeartbeatReceived = 0;
+unsigned long doorHeartbeatReceived = millis();
 
 //**********setup()******************
 
