@@ -8,6 +8,7 @@
 #include "ins3331.h"
 #include "stateMachine.h"
 #include "consoleFunctions.h"
+#include "tpl5010watchdog.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2000 //see versioning notes in the readme
@@ -16,7 +17,7 @@
 PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
 PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, see versioning notes above
 SYSTEM_THREAD(ENABLED);
-SerialLogHandler logHandler(DEBUG_LEVEL);
+SerialLogHandler logHandler(WARN_LEVEL);
 
 void setup() {
 
@@ -26,6 +27,8 @@ void setup() {
   setupINS3331();
   setupConsoleFunctions();
   setupStateMachine();
+  setupWatchdog();
+
 
 
   Particle.publishVitals(120);  //two minutes
@@ -34,6 +37,10 @@ void setup() {
 
 void loop() {
 
+  // service the watchdog if Particle is connected to wifi
+  if(Cellular.ready()){
+    serviceWatchdog();
+  }
   //officially sanctioned Mariano (at Particle support) code
   //aka don't send commands to peripherals via UART in setup() because
   //particleOS may not have finished initializing its UART modules
