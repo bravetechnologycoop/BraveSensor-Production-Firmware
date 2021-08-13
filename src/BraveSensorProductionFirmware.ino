@@ -9,6 +9,7 @@
 #include "stateMachine.h"
 #include "consoleFunctions.h"
 #include "wifi.h"
+#include "tpl5010watchdog.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
 #define BRAVE_FIRMWARE_VERSION 2001 //see versioning notes in the readme
@@ -29,6 +30,7 @@ void setup() {
   setupConsoleFunctions();
   setupStateMachine();
   setupWifi();
+  setupWatchdog();
   
 
 
@@ -41,6 +43,10 @@ void loop() {
 
     checkWifi();
 
+  // service the watchdog if Particle is connected to wifi
+  if(WiFi.ready()){
+    serviceWatchdog();
+  }
   //officially sanctioned Mariano (at Particle support) code
   //aka don't send commands to peripherals via UART in setup() because
   //particleOS may not have finished initializing its UART modules
