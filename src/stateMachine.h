@@ -21,8 +21,7 @@
 
 //length of time between debug publishes
 #define DEBUG_PUBLISH_INTERVAL 1500  //ms
-//#define SM_HEARTBEAT_INTERVAL 600000  //ms = 10 min
-#define SM_HEARTBEAT_INTERVAL 60000
+#define SM_HEARTBEAT_INTERVAL 600000  //ms = 10 min
 
 #define HEARTBEAT_STATES_CUTOFF 603 // = 622 - 17 (max length of sub state array) - 2 (length of closing brackets)
 

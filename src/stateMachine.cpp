@@ -402,7 +402,6 @@ void getHeartbeat(){
       writer.endObject(); // end heartbeat message
       Particle.publish("Heartbeat", heartbeatMessage, PRIVATE);
       Log.warn(heartbeatMessage);
-      Log.warn("%d", writer.dataSize());
       lastHeartbeatPublish = millis();
     }
 
