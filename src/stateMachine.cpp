@@ -8,6 +8,7 @@
 #include "im21door.h"
 #include "ins3331.h"
 #include "flashAddresses.h"
+#include <queue>
 
 //define and initialize state machine pointer
 StateHandler stateHandler = state0_idle;
@@ -24,6 +25,12 @@ unsigned long state3_max_stillness_time = STATE3_MAX_STILLNESS_TIME;
 //except this one, we don't want to take the chance that random memory
 //contents will initialize this to "on"
 bool stateMachineDebugFlag = false;
+int resetReason = System.resetReason();;
+
+std::queue<int> stateQueue;
+std::queue<int> reasonQueue;
+std::queue<unsigned long> timeQueue;
+unsigned long lastStateChange = millis();
 
 void setupStateMachine(){
 
@@ -96,11 +103,11 @@ void state0_idle(){
 
     Log.warn("In state 0, door closed and seeing movement, heading to state 1");
     publishStateTransition(0, 1, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(0, 0);
     //zero the state 1 timer
     state1_timer = millis();
     //head to state 1
     stateHandler = state1_15sCountdown;
-
   }
   else {
     //if we don't meet the exit conditions above, we remain here
@@ -131,6 +138,7 @@ void state1_15sCountdown(){
 
     Log.warn("no movement, you're going back to state 0 from state 1");
     publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(1, 1);
     stateHandler = state0_idle;
 
   }
@@ -138,6 +146,7 @@ void state1_15sCountdown(){
 
     Log.warn("door was opened, you're going back to state 0 from state 1");
     publishStateTransition(1, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(1, 2);
     stateHandler = state0_idle;
 
   }
@@ -145,6 +154,7 @@ void state1_15sCountdown(){
 
     Log.warn("door closed && motion for > Xs, going to state 2 from state1");
     publishStateTransition(1, 2, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(1, 3);
     //zero the duration timer
     state2_duration_timer = millis();
     //head to duration state
@@ -182,6 +192,7 @@ void state2_duration(){
 
     Log.warn("Seeing stillness, going to state3_stillness from state2_duration");
     publishStateTransition(2, 3, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(2, 1);
     //zero the stillness timer
     state3_stillness_timer = millis();
     //go to stillness state
@@ -192,6 +203,7 @@ void state2_duration(){
 
     Log.warn("Door opened, session over, going to idle from state2_duration");
     publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(2, 2);
     stateHandler = state0_idle;
 
   }
@@ -199,6 +211,7 @@ void state2_duration(){
 
     Log.warn("See duration alert, going from state2_duration to idle after alert publish");
     publishStateTransition(2, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(2, 4);
     Log.error("Duration Alert!!");
     Particle.publish("Duration Alert", "duration alert", PRIVATE);
     stateHandler = state0_idle;
@@ -233,6 +246,7 @@ void state3_stillness(){
 
     Log.warn("motion spotted again, going from state3_stillness to state2_duration");
     publishStateTransition(3, 2, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(3, 0);
     //go back to state 2, duration
     stateHandler = state2_duration;
 
@@ -241,6 +255,7 @@ void state3_stillness(){
 
     Log.warn("door opened, session over, going from state3_stillness to idle");
     publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(3, 2);
     stateHandler = state0_idle;
 
   }
@@ -248,6 +263,7 @@ void state3_stillness(){
 
     Log.warn("See duration alert, going from state3 to idle after alert publish");
     publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(3, 4);
     Log.error("Duration Alert!!");
     Particle.publish("Duration Alert", "duration alert", PRIVATE);
     stateHandler = state0_idle;
@@ -256,6 +272,7 @@ void state3_stillness(){
 
     Log.warn("stillness alert, going from state3 to idle after publish");
     publishStateTransition(3, 0, checkDoor.doorStatus, checkINS.iAverage);
+    saveStateChange(3, 5);
     Log.error("Stillness Alert!!");
     Particle.publish("Stillness Alert", "stillness alert!!!", PRIVATE);
     stateHandler = state0_idle;
@@ -299,77 +316,93 @@ void publishDebugMessage(int state, unsigned char doorStatus, float INSValue, un
 
 }
 
+/**
+ * Saves the state transition data onto queues, including the last state, reason of transition and time spent in state.
+ * 
+ * Reason Code | Meaning
+ * -------------------------------
+ * 0           | Movement surpasses threshold
+ * 1           | Movement falls below threshold
+ * 2           | Door opened
+ * 3           | Initial timer surpassed
+ * 4           | Duration alert
+ * 5           | Stillness alert
+ **/
+void saveStateChange(int state, int reason){
+    
+    stateQueue.push(state);
+    reasonQueue.push(reason);
+    timeQueue.push(millis() - lastStateChange);
+    lastStateChange = millis();
+}
+
+const char *resetReasonString(int resetReason)
+{
+	switch(resetReason)
+	{
+		case RESET_REASON_PIN_RESET:		    return "PIN_RESET";
+		case RESET_REASON_POWER_MANAGEMENT:	return "POWER_MANAGEMENT";
+		case RESET_REASON_POWER_DOWN:		    return "POWER_DOWN";
+		case RESET_REASON_POWER_BROWNOUT:	  return "POWER_BROWNOUT";
+		case RESET_REASON_WATCHDOG:		      return "WATCHDOG";
+		case RESET_REASON_UPDATE:		        return "UPDATE";
+		case RESET_REASON_UPDATE_TIMEOUT:	  return "UPDATE_TIMEOUT";
+		case RESET_REASON_FACTORY_RESET:	  return "FACTORY_RESET";
+		case RESET_REASON_DFU_MODE:		      return "DFU_MODE";
+		case RESET_REASON_PANIC:		        return "PANIC";
+		case RESET_REASON_USER:			        return "USER";
+		case RESET_REASON_UNKNOWN:		      return "UNKNOWN";
+	  default:              		 	        return "NONE";
+	}
+}
+
 void getHeartbeat(){
 
     static unsigned long lastHeartbeatPublish = 0;
-    unsigned long insTimeDiff = 0;
-    unsigned long doorTimeDiff = 0;
-    static unsigned long currInsTimestamp = 0;
-    static unsigned long prevInsTimestamp = 0;
-    static unsigned long currDoorTimestamp = 0;
-    static unsigned long prevDoorTimestamp = 0;
-    float insStatus = 0;
-    unsigned char doorStatus;
-
-    static filteredINSData currInsHeartbeat = {0,0,0};
-    static doorData currDoorHeartbeat = {0x99,0x99,0};
-
-    //call over and over again to get the most recent value in the heartbeat interval
-    //make static so most recent value is stored.  Ditto door data.
-    currInsHeartbeat = checkINS3331();
-    currDoorHeartbeat = checkIM21();
-
     if((millis()-lastHeartbeatPublish) > SM_HEARTBEAT_INTERVAL){
-
-      doorStatus = currDoorHeartbeat.doorStatus;
-      insStatus = currInsHeartbeat.iAverage;
-
-      currInsTimestamp = currInsHeartbeat.timestamp;
-      currDoorTimestamp = currDoorHeartbeat.timestamp;
-
-      if((int)insStatus == 0){
-        //when ins returns 0 that means no data
-        insTimeDiff = 0;
-        prevInsTimestamp = currInsTimestamp;        
-      }
-      else if(currInsTimestamp == prevInsTimestamp){
-        //if time stamps are the same, no new data
-        insTimeDiff = 0;
-        insStatus = 0;
-        prevInsTimestamp = currInsTimestamp;
-      }
-      else{
-        //timestamps different and no 0 data, so report new data point
-        insTimeDiff = millis() - currInsTimestamp;
-        prevInsTimestamp = currInsTimestamp;
-      }
-
-
-      if(doorStatus == 0x99){
-        //when door status is 0x99, there have been no door events since bootup
-        doorTimeDiff = 0;
-        prevDoorTimestamp = currDoorTimestamp;
-      }
-      else if(currDoorTimestamp == prevDoorTimestamp){
-        //timestamps the same so no new data
-        doorTimeDiff = 0;
-        doorStatus = 0x99;
-        prevDoorTimestamp = currDoorTimestamp;
-      }
-      else {
-        //timestamps different, and door not 0x99, must be new data
-        doorTimeDiff = millis() - currDoorTimestamp;
-        prevDoorTimestamp = currDoorTimestamp;
-      }
       
       //from particle docs, max length of publish is 622 chars, I am assuming this includes null char
-      char heartbeatMessage[622];
-      snprintf(heartbeatMessage, sizeof(heartbeatMessage),
-                " {\"door_status\":\"0x%02X\", \"door_time\":\"%ld\", \"INS_status\":\"%f\", \"ins_time\":\"%ld\" }", doorStatus, doorTimeDiff, insStatus, insTimeDiff); 
+      char heartbeatMessage[622] = {0};
+      JSONBufferWriter writer(heartbeatMessage, sizeof(heartbeatMessage)-1);
+      writer.beginObject();
+        //logs number of instances of missed door events since last heartbeat
+        writer.name("doorMissedMsg").value(missedDoorEventCount);
+        missedDoorEventCount = 0;
+
+        //logs whether door sensor is low battery
+        writer.name("doorLowBatt").value(doorLowBatteryFlag);
+        
+        //logs time in millis since last heartbeat was received
+        writer.name("doorLastHeartbeat").value((unsigned int) (millis() - doorHeartbeatReceived));
+
+        //logs the reason of the last reset    
+        writer.name("resetReason").value(resetReasonString(resetReason));
+        //subsequent heartbeats will not display reset reason
+        resetReason = RESET_REASON_NONE;
+
+        //logs each state, reason of transitioning away, and time spent in state (ms)
+        writer.name("states").beginArray();
+        int numStates = stateQueue.size();
+          for(int i = 0; i < numStates; i++){
+            // If heartbeat message is near full, break, report rest of states in next heartbeat
+            if(writer.dataSize() >= HEARTBEAT_STATES_CUTOFF) {
+              Log.warn("Heartbeat message full, remaining states will be reported next heartbeat");
+              break;
+            }
+            writer.beginArray()
+              .value(stateQueue.front())
+              .value(reasonQueue.front())
+              .value((unsigned int) timeQueue.front())
+              .endArray();
+            stateQueue.pop();
+            reasonQueue.pop();
+            timeQueue.pop();
+          } // end states queue for
+        writer.endArray(); // end states array
+      writer.endObject(); // end heartbeat message
       Particle.publish("Heartbeat", heartbeatMessage, PRIVATE);
       Log.warn(heartbeatMessage);
       lastHeartbeatPublish = millis();
-
     }
 
     

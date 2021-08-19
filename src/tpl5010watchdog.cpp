@@ -9,13 +9,9 @@ const std::chrono::milliseconds WATCHDOG_PERIOD = 2min;
 //********************setup() functions*************************/
 
 void setupWatchdog() {
-    System.enableFeature(FEATURE_RESET_INFO);
-
     pinMode(WATCHDOG_PIN, OUTPUT);
-    
     if (System.resetReason() == RESET_REASON_PIN_RESET) {
         Log.info("RESET_REASON_PIN_RESET: either RESET or hardware watchdog");
-        Particle.publish("RESET_REASON_PIN_RESET", PRIVATE);
     }
 }
 

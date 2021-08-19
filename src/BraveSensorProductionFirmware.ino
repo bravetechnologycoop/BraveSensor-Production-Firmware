@@ -12,7 +12,11 @@
 #include "tpl5010watchdog.h"
 
 #define DEBUG_LEVEL LOG_LEVEL_INFO
+<<<<<<< HEAD
 #define BRAVE_FIRMWARE_VERSION 2001 //see versioning notes in the readme
+=======
+#define BRAVE_FIRMWARE_VERSION 2003 //see versioning notes in the readme
+>>>>>>> Detailed-Reporting-Feature
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
 
 PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
@@ -22,6 +26,8 @@ SYSTEM_THREAD(ENABLED);
 SerialLogHandler logHandler(WARN_LEVEL);
 
 void setup() {
+  // enable reset reason
+  System.enableFeature(FEATURE_RESET_INFO);
 
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);
