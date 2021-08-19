@@ -366,14 +366,14 @@ void getHeartbeat(){
       JSONBufferWriter writer(heartbeatMessage, sizeof(heartbeatMessage)-1);
       writer.beginObject();
         //logs number of instances of missed door events since last heartbeat
-        writer.name("missedDoor").value(missedDoorEventCount);
+        writer.name("doorMissedMsg").value(missedDoorEventCount);
         missedDoorEventCount = 0;
 
         //logs whether door sensor is low battery
-        writer.name("lowBatt").value(doorLowBatteryFlag);
+        writer.name("doorLowBatt").value(doorLowBatteryFlag);
         
-        //logs timestamp when heartbeat was received
-        writer.name("doorHeartbeat").value((unsigned int) (millis() - doorHeartbeatReceived));
+        //logs time in millis since last heartbeat was received
+        writer.name("doorLastHeartbeat").value((unsigned int) (millis() - doorHeartbeatReceived));
 
         //logs the reason of the last reset    
         writer.name("resetReason").value(resetReasonString(resetReason));
