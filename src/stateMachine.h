@@ -25,6 +25,7 @@
 #define DEBUG_PUBLISH_INTERVAL 1500  //ms
 #define SM_HEARTBEAT_INTERVAL 600000  //ms = 10 min
 
+#define HEARTBEAT_STATES_CUTOFF 603 // = 622 - 17 (max length of sub state array) - 2 (length of closing brackets)
 
 //heartbeat signals have been added. Although heartbeat signals don't
 //represent a change in door status, they will reflect the current
@@ -47,6 +48,7 @@ void state3_stillness();
 
 void publishDebugMessage(int, unsigned char, float, float, unsigned long);
 void publishStateTransition(int, int, unsigned char, float, float);
+void saveStateChange(int, int);
 
 //threads
 void heartbeatTimerThread(void *param);

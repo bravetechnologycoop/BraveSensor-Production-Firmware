@@ -28,9 +28,11 @@ PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, se
 PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, see versioning notes above
 SYSTEM_MODE(SEMI_AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
-SerialLogHandler logHandler(DEBUG_LEVEL);
+SerialLogHandler logHandler(WARN_LEVEL);
 
 void setup() {
+  // enable reset reason
+  System.enableFeature(FEATURE_RESET_INFO);
 
   // use external antenna on Boron
   BLE.selectAntenna(BleAntennaType::EXTERNAL);

@@ -58,6 +58,11 @@ extern os_queue_t bleHeartbeatQueue;
 //needs to be global because it is used in setup(), loop(), and console function
 extern IM21DoorID globalDoorID;
 
+//used in getHeartbeat()
+extern int missedDoorEventCount;
+extern bool doorLowBatteryFlag;
+extern unsigned long doorHeartbeatReceived;
+
 //setup() functions
 void setupIM21(void);
 
