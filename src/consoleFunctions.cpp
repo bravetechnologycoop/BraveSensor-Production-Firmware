@@ -17,6 +17,7 @@
 #include "flashAddresses.h"
 #include "stateMachine.h"
 #include "im21door.h"
+#include "wifi.h"
 
 void setupConsoleFunctions(){
 
@@ -27,6 +28,9 @@ void setupConsoleFunctions(){
   Particle.function("Change_INS_Threshold", ins_threshold_set);
   Particle.function("Turn_Debugging_Publishes_On_Off", toggle_debugging_publishes);   
   Particle.function("Change_IM21_Door_ID", im21_door_id_set); 
+  Particle.function("changeSSID", setSSIDFromConsole);  //wifi code
+  Particle.function("changePwd", setPwdFromConsole);    //wifi code
+  Particle.function("getWifiLog", getWifiLogFromConsole);       //wifi code
 
 }
 

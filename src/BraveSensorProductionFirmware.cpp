@@ -13,17 +13,19 @@
 #include "ins3331.h"
 #include "stateMachine.h"
 #include "consoleFunctions.h"
+#include "wifi.h"
 #include "tpl5010watchdog.h"
 
 void setup();
 void loop();
-#line 13 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
+#line 14 "/Users/Seto/Documents/Brave/BraveSensor-Production-Firmware/src/BraveSensorProductionFirmware.ino"
 #define DEBUG_LEVEL LOG_LEVEL_INFO
-#define BRAVE_FIRMWARE_VERSION 2003 //see versioning notes in the readme
+#define BRAVE_FIRMWARE_VERSION 2001 //see versioning notes in the readme
 #define BRAVE_PRODUCT_ID 12858 //12858 = beta units, 12876 = production units
 
 PRODUCT_ID(BRAVE_PRODUCT_ID); //you get this number off the particle console, see readme for instructions
 PRODUCT_VERSION(BRAVE_FIRMWARE_VERSION); //must be an int, see versioning notes above
+SYSTEM_MODE(SEMI_AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
 SerialLogHandler logHandler(WARN_LEVEL);
 
@@ -37,7 +39,9 @@ void setup() {
   setupINS3331();
   setupConsoleFunctions();
   setupStateMachine();
+  setupWifi();
   setupWatchdog();
+  
 
 
 
@@ -47,8 +51,10 @@ void setup() {
 
 void loop() {
 
+    checkWifi();
+
   // service the watchdog if Particle is connected to wifi
-  if(Cellular.ready()){
+  if(WiFi.ready()){
     serviceWatchdog();
   }
   //officially sanctioned Mariano (at Particle support) code
