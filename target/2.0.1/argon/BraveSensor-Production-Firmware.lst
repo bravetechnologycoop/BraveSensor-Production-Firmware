@@ -208,89 +208,91 @@ void __cxa_guard_release (__guard *g) {*(char *)g = 1;};
    d40c6:	e7f8      	b.n	d40ba <_ZNSt14_Function_base13_Base_managerIPFvvEE10_M_managerERSt9_Any_dataRKS4_St18_Manager_operation+0x8>
 
 000d40c8 <_Z19change_timer_length6String>:
-
-void loop(){
+{
     publish_messages();
 }
 
-int change_timer_length(String command){
+int change_timer_length(String command)
+{
    d40c8:	b5b0      	push	{r4, r5, r7, lr}
-    //check for non-integer characters
     char command_arr[command.length() + 1];
-   d40ca:	6884      	ldr	r4, [r0, #8]
     strcpy(command_arr, command.c_str());
+   d40ca:	6884      	ldr	r4, [r0, #8]
+    for (unsigned int i = 0; i < command.length(); i++)
    d40cc:	6805      	ldr	r5, [r0, #0]
-    char command_arr[command.length() + 1];
+    strcpy(command_arr, command.c_str());
    d40ce:	f104 0308 	add.w	r3, r4, #8
    d40d2:	f023 0307 	bic.w	r3, r3, #7
-int change_timer_length(String command){
+{
    d40d6:	af00      	add	r7, sp, #0
-    char command_arr[command.length() + 1];
-   d40d8:	ebad 0d03 	sub.w	sp, sp, r3
     strcpy(command_arr, command.c_str());
+   d40d8:	ebad 0d03 	sub.w	sp, sp, r3
+    for (unsigned int i = 0; i < command.length(); i++)
    d40dc:	4629      	mov	r1, r5
    d40de:	4668      	mov	r0, sp
    d40e0:	f001 fcf0 	bl	d5ac4 <strcpy>
-    for (int i=0; i<command.length(); i++){
+    {
    d40e4:	446c      	add	r4, sp
    d40e6:	466a      	mov	r2, sp
    d40e8:	42a2      	cmp	r2, r4
    d40ea:	d00b      	beq.n	d4104 <_Z19change_timer_length6String+0x3c>
         char temp = command_arr[i];
+        if (temp != '0' && temp != '1' && temp != '2' && temp != '3' && temp != '4' && temp != '5' && temp != '6' && temp != '7' && temp != '8' && temp != '9')
    d40ec:	f812 3b01 	ldrb.w	r3, [r2], #1
-        if (temp!='0' && temp!='1' && temp!='2' && temp!='3' && temp!='4' && temp!='5' && temp!='6' && temp!='7' && temp!='8' && temp!='9'){
+        {
    d40f0:	3b30      	subs	r3, #48	; 0x30
    d40f2:	2b09      	cmp	r3, #9
    d40f4:	d9f8      	bls.n	d40e8 <_Z19change_timer_length6String+0x20>
             flag = 4;
+            return -1;
    d40f6:	4b08      	ldr	r3, [pc, #32]	; (d4118 <_Z19change_timer_length6String+0x50>)
    d40f8:	2204      	movs	r2, #4
    d40fa:	601a      	str	r2, [r3, #0]
-            return -1;
+        }
    d40fc:	f04f 30ff 	mov.w	r0, #4294967295
-    }
 
     timeout = atoi(command); // Update length of escalation timer
     flag = 5;
     return 1;
 }
+
    d4100:	46bd      	mov	sp, r7
    d4102:	bdb0      	pop	{r4, r5, r7, pc}
-    timeout = atoi(command); // Update length of escalation timer
+    flag = 5;
    d4104:	4628      	mov	r0, r5
    d4106:	f001 fc87 	bl	d5a18 <atoi>
    d410a:	4b04      	ldr	r3, [pc, #16]	; (d411c <_Z19change_timer_length6String+0x54>)
    d410c:	6018      	str	r0, [r3, #0]
-    flag = 5;
+    return 1;
    d410e:	4b02      	ldr	r3, [pc, #8]	; (d4118 <_Z19change_timer_length6String+0x50>)
    d4110:	2205      	movs	r2, #5
    d4112:	601a      	str	r2, [r3, #0]
-    return 1;
+}
    d4114:	2001      	movs	r0, #1
    d4116:	e7f3      	b.n	d4100 <_Z19change_timer_length6String+0x38>
    d4118:	2003e690 	.word	0x2003e690
    d411c:	2003e61c 	.word	0x2003e61c
 
 000d4120 <_Z14timer_overflowv>:
-    timer.start();
-    flag = 3; // alarm sounded msg
     return 1;
 }
 
-void timer_overflow(){
-   d4120:	b508      	push	{r3, lr}
+void timer_overflow()
+{
     detachInterrupt(BUTTON);
+   d4120:	b508      	push	{r3, lr}
+    digitalWrite(BUZZER, LOW);
    d4122:	2005      	movs	r0, #5
    d4124:	f001 f9da 	bl	d54dc <_Z15detachInterruptt>
-    digitalWrite(BUZZER, LOW);
+    flag = 2; // escalate response msg
    d4128:	2100      	movs	r1, #0
    d412a:	2006      	movs	r0, #6
    d412c:	f001 fc0f 	bl	d594e <digitalWrite>
-    flag = 2; // escalate response msg
+}
    d4130:	4b01      	ldr	r3, [pc, #4]	; (d4138 <_Z14timer_overflowv+0x18>)
    d4132:	2202      	movs	r2, #2
    d4134:	601a      	str	r2, [r3, #0]
-}
+
    d4136:	bd08      	pop	{r3, pc}
    d4138:	2003e690 	.word	0x2003e690
 
@@ -439,13 +441,14 @@ inline particle::Future<bool> CloudClass::publish(const char* name) {
    d41d0:	f85d fb04 	ldr.w	pc, [sp], #4
 
 000d41d4 <_Z16button_interruptv>:
-
-void button_interrupt(){
-   d41d4:	b508      	push	{r3, lr}
+void button_interrupt()
+{
     detachInterrupt(BUTTON);
+   d41d4:	b508      	push	{r3, lr}
+    digitalWrite(BUZZER, LOW);
    d41d6:	2005      	movs	r0, #5
    d41d8:	f001 f980 	bl	d54dc <_Z15detachInterruptt>
-    digitalWrite(BUZZER, LOW);
+    timer.stop();
    d41dc:	2100      	movs	r1, #0
    d41de:	2006      	movs	r0, #6
    d41e0:	f001 fbb5 	bl	d594e <digitalWrite>
@@ -454,12 +457,12 @@ void button_interrupt(){
    d41e6:	4804      	ldr	r0, [pc, #16]	; (d41f8 <_Z16button_interruptv+0x24>)
    d41e8:	f06f 4100 	mvn.w	r1, #2147483648	; 0x80000000
    d41ec:	f7ff ffe3 	bl	d41b6 <_ZN5Timer5_stopEjb>
-    timer.stop();
     flag = 1; // button pressed msg
+}
    d41f0:	4b02      	ldr	r3, [pc, #8]	; (d41fc <_Z16button_interruptv+0x28>)
    d41f2:	2201      	movs	r2, #1
    d41f4:	601a      	str	r2, [r3, #0]
-}
+
    d41f6:	bd08      	pop	{r3, pc}
    d41f8:	2003e694 	.word	0x2003e694
    d41fc:	2003e690 	.word	0x2003e690
@@ -519,7 +522,7 @@ void button_interrupt(){
    d425a:	bd10      	pop	{r4, pc}
 
 000d425c <setup>:
-void setup() {
+{
    d425c:	b510      	push	{r4, lr}
         return register_function(call_raw_user_function, (void*)func, funcKey);
    d425e:	4c0c      	ldr	r4, [pc, #48]	; (d4290 <setup+0x34>)
@@ -593,7 +596,7 @@ void setup() {
    d42d2:	bd38      	pop	{r3, r4, r5, pc}
 
 000d42d4 <_Z11sound_alarm6String>:
-int sound_alarm(String command){
+    if (command != "run")
    d42d4:	b530      	push	{r4, r5, lr}
 	unsigned char equals(const String &s) const;
 	unsigned char equals(const char *cstr) const;
@@ -604,9 +607,9 @@ int sound_alarm(String command){
    d42d6:	4919      	ldr	r1, [pc, #100]	; (d433c <_Z11sound_alarm6String+0x68>)
    d42d8:	b085      	sub	sp, #20
    d42da:	f000 fbce 	bl	d4a7a <_ZNK6String6equalsEPKc>
-    if (command != "run") { // check for correct command
+    { // check for correct command
    d42de:	b950      	cbnz	r0, d42f6 <_Z11sound_alarm6String+0x22>
-        Particle.publish("wrong-command");
+        return -1;
    d42e0:	4917      	ldr	r1, [pc, #92]	; (d4340 <_Z11sound_alarm6String+0x6c>)
    d42e2:	a802      	add	r0, sp, #8
    d42e4:	f7ff ff4e 	bl	d4184 <_ZN10CloudClass7publishEPKc.isra.0>
@@ -619,10 +622,10 @@ int sound_alarm(String command){
    d42e8:	a803      	add	r0, sp, #12
    d42ea:	f7ff ffdd 	bl	d42a8 <_ZNSt14__shared_countILN9__gnu_cxx12_Lock_policyE0EED1Ev>
    d42ee:	f04f 30ff 	mov.w	r0, #4294967295
-}
+
    d42f2:	b005      	add	sp, #20
    d42f4:	bd30      	pop	{r4, r5, pc}
-    attachInterrupt(BUTTON, button_interrupt, RISING);
+    digitalWrite(BUZZER, HIGH);
    d42f6:	2400      	movs	r4, #0
    d42f8:	f04f 33ff 	mov.w	r3, #4294967295
    d42fc:	2201      	movs	r2, #1
@@ -632,7 +635,7 @@ int sound_alarm(String command){
    d4302:	9400      	str	r4, [sp, #0]
    d4304:	2005      	movs	r0, #5
    d4306:	f001 f8bf 	bl	d5488 <_Z15attachInterrupttPFvvE13InterruptModeah>
-    digitalWrite(BUZZER, HIGH);
+    timer.start();
    d430a:	2101      	movs	r1, #1
    d430c:	2006      	movs	r0, #6
    d430e:	f001 fb1e 	bl	d594e <digitalWrite>
@@ -650,11 +653,11 @@ int sound_alarm(String command){
    d432a:	4622      	mov	r2, r4
    d432c:	4621      	mov	r1, r4
    d432e:	f000 f901 	bl	d4534 <os_timer_change>
-    flag = 3; // alarm sounded msg
+    return 1;
    d4332:	4b06      	ldr	r3, [pc, #24]	; (d434c <_Z11sound_alarm6String+0x78>)
    d4334:	2203      	movs	r2, #3
    d4336:	601a      	str	r2, [r3, #0]
-    return 1;
+}
    d4338:	2001      	movs	r0, #1
    d433a:	e7da      	b.n	d42f2 <_Z11sound_alarm6String+0x1e>
    d433c:	000d5c65 	.word	0x000d5c65
@@ -664,62 +667,66 @@ int sound_alarm(String command){
    d434c:	2003e690 	.word	0x2003e690
 
 000d4350 <_Z16publish_messagesv>:
-
-void publish_messages(){
+void publish_messages()
+{
+    if (flag == 0)
    d4350:	b513      	push	{r0, r1, r4, lr}
-    if(flag == 0){}
+    {
    d4352:	4c12      	ldr	r4, [pc, #72]	; (d439c <_Z16publish_messagesv+0x4c>)
    d4354:	6823      	ldr	r3, [r4, #0]
    d4356:	b15b      	cbz	r3, d4370 <_Z16publish_messagesv+0x20>
-    else if(flag == 1){
+    }
+    else if (flag == 1)
+    {
    d4358:	6823      	ldr	r3, [r4, #0]
    d435a:	2b01      	cmp	r3, #1
    d435c:	d10a      	bne.n	d4374 <_Z16publish_messagesv+0x24>
         Particle.publish("alarm-addressed");
+        Particle.publish("addressed", "alarm-addressed", PRIVATE);
    d435e:	4910      	ldr	r1, [pc, #64]	; (d43a0 <_Z16publish_messagesv+0x50>)
-    else if(flag == 4){
+    {
         Particle.publish("integer-please");
         flag = 0;
     }
-    else if(flag == 5){
-        Particle.publish("timer-length-updated");
+    else if (flag == 5)
+    {
    d4360:	4668      	mov	r0, sp
    d4362:	f7ff ff0f 	bl	d4184 <_ZN10CloudClass7publishEPKc.isra.0>
    d4366:	a801      	add	r0, sp, #4
    d4368:	f7ff ff9e 	bl	d42a8 <_ZNSt14__shared_countILN9__gnu_cxx12_Lock_policyE0EED1Ev>
-        flag = 0;
+        Particle.publish("timer-length-updated");
    d436c:	2300      	movs	r3, #0
    d436e:	6023      	str	r3, [r4, #0]
+        flag = 0;
     }
-} 
    d4370:	b002      	add	sp, #8
    d4372:	bd10      	pop	{r4, pc}
-    else if(flag == 2){
+    else if (flag == 2)
    d4374:	6823      	ldr	r3, [r4, #0]
    d4376:	2b02      	cmp	r3, #2
    d4378:	d101      	bne.n	d437e <_Z16publish_messagesv+0x2e>
-        Particle.publish("escalate-response");
+        Particle.publish("A");
    d437a:	490a      	ldr	r1, [pc, #40]	; (d43a4 <_Z16publish_messagesv+0x54>)
    d437c:	e7f0      	b.n	d4360 <_Z16publish_messagesv+0x10>
-    else if(flag == 3){
+    }
    d437e:	6823      	ldr	r3, [r4, #0]
    d4380:	2b03      	cmp	r3, #3
    d4382:	d101      	bne.n	d4388 <_Z16publish_messagesv+0x38>
-        Particle.publish("alarm-sounded");
+    {
    d4384:	4908      	ldr	r1, [pc, #32]	; (d43a8 <_Z16publish_messagesv+0x58>)
    d4386:	e7eb      	b.n	d4360 <_Z16publish_messagesv+0x10>
-    else if(flag == 4){
+    }
    d4388:	6823      	ldr	r3, [r4, #0]
    d438a:	2b04      	cmp	r3, #4
    d438c:	d101      	bne.n	d4392 <_Z16publish_messagesv+0x42>
-        Particle.publish("integer-please");
+    {
    d438e:	4907      	ldr	r1, [pc, #28]	; (d43ac <_Z16publish_messagesv+0x5c>)
    d4390:	e7e6      	b.n	d4360 <_Z16publish_messagesv+0x10>
-    else if(flag == 5){
+    }
    d4392:	6823      	ldr	r3, [r4, #0]
    d4394:	2b05      	cmp	r3, #5
    d4396:	d1eb      	bne.n	d4370 <_Z16publish_messagesv+0x20>
-        Particle.publish("timer-length-updated");
+    {
    d4398:	4905      	ldr	r1, [pc, #20]	; (d43b0 <_Z16publish_messagesv+0x60>)
    d439a:	e7e1      	b.n	d4360 <_Z16publish_messagesv+0x10>
    d439c:	2003e690 	.word	0x2003e690
@@ -734,7 +741,7 @@ void publish_messages(){
    d43b4:	f7ff bfcc 	b.w	d4350 <_Z16publish_messagesv>
 
 000d43b8 <_GLOBAL__sub_I_flag>:
-} 
+    }
    d43b8:	b5f0      	push	{r4, r5, r6, r7, lr}
 } // namespace particle
 
@@ -750,7 +757,7 @@ inline particle::Flag<TagT, ValueT>::Flag(ValueT val) :
 Timer timer(timeout, timer_overflow, true);
    d43c2:	4a1c      	ldr	r2, [pc, #112]	; (d4434 <_GLOBAL__sub_I_flag+0x7c>)
    d43c4:	60a3      	str	r3, [r4, #8]
-} 
+    }
    d43c6:	b089      	sub	sp, #36	; 0x24
 Timer timer(timeout, timer_overflow, true);
    d43c8:	6817      	ldr	r7, [r2, #0]
@@ -804,7 +811,7 @@ Timer timer(timeout, timer_overflow, true);
    d441e:	490c      	ldr	r1, [pc, #48]	; (d4450 <_GLOBAL__sub_I_flag+0x98>)
    d4420:	4620      	mov	r0, r4
    d4422:	f001 faed 	bl	d5a00 <__aeabi_atexit>
-} 
+    }
    d4426:	b009      	add	sp, #36	; 0x24
    d4428:	bdf0      	pop	{r4, r5, r6, r7, pc}
    d442a:	bf00      	nop
