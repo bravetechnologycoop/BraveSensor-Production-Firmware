@@ -17,9 +17,8 @@ void button_interrupt();
 void timer_overflow();
 void publish_messages();
 
-volatile int flag = 0;
-volatile int timeout = 5000; // in ms
-Timer timer(timeout, timer_overflow, true);
+int flag = 0;
+Timer timer(5000, timer_overflow, true);
 
 void setup()
 {
@@ -49,15 +48,14 @@ int change_timer_length(String command)
             return -1;
         }
     }
-
-    timeout = atoi(command); // Update length of escalation timer
+    timer.changePeriod(atoi(command));
     flag = 5;
     return 1;
 }
 
 int start_siren(String command)
 {
-    if (command != "run")
+    if (command != "start")
     { // check for correct command
         Particle.publish("wrong-command");
         return -1;
@@ -92,14 +90,14 @@ void publish_messages()
     }
     else if (flag == 1)
     {
-        Particle.publish("alarm-addressed");
-        Particle.publish("addressed", "alarm-addressed", PRIVATE);
+        Particle.publish("siren-addressed");
+        Particle.publish("addressed", "siren-addressed", PRIVATE);
         flag = 0;
     }
     else if (flag == 2)
     {
-        Particle.publish("A");
-        Particle.publish("escalate", "B", PRIVATE);
+        Particle.publish("escalate-siren");
+        Particle.publish("escalate", "escalate-siren", PRIVATE);
         flag = 0;
     }
     else if (flag == 3)
@@ -109,7 +107,7 @@ void publish_messages()
     }
     else if (flag == 4)
     {
-        Particle.publish("integer-please");
+        Particle.publish("positive-integer-please");
         flag = 0;
     }
     else if (flag == 5)
