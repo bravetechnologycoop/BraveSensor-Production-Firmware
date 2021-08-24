@@ -1,16 +1,20 @@
 # SensorProductionFirmware
 
-Last update to this readme: April 16/21
+Last update to this readme: August 24/21
 
 This Repository approximately follows the gitflow workflow method, see the [tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)  It does not use a Develop branch, however; this repo only contains the Production (master) branch, Release branch, and feature branches.
 
 Tags denote the different releases found on the Production branch.  
 
-As of April 16/21, the different product firmware versions in this repo are:
+As of August 24/21, the different product firmware versions in this repo are:
 
-2 Argon + XeThru - in the Production (master) branch.
-2 Argon + INS - in the Release branch.
-1 Boron + INS - in the Local-State-Machine branch.
+| Product Firmware Version              | Branch Name                       |
+|---------------------------------------|-----------------------------------|
+| 2 Argon + XeThru                      | Production (master)               |
+| 2 Argon + INS                         | Release                           |
+| 1 Boron + INS (optional TPL watchdog) | Local-State-Machine               |
+| 1 Argon + INS (optional TPL watchdog) | Argon-Local-State-Machine         |
+| 1 Argon + XeThru                      | Argon-Xethru-Local-State-Machine  |
 
 
 ## Table of Contents
