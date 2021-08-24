@@ -85,20 +85,21 @@ As of April 16/21, the different product firmware versions in this repo are:
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [IM21 Warning: state machine](#im21-warning:-state-machine)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
+      - [Hardware Watchdog](#hardware-watchdog)
 7. [Single Argon INS Firmware](#single-argon-ins-firmware)
-    - [1 Argon INS Firmware Settings and Config](#1-argon-ins-firmware-settings-and-config)
-    - [1 Argon INS Console Functions](#1-argon-ins-console-functions)
-    - [1 Argon INS Published Messages](#1-argon-ins-published-messages)
+    - [Single Argon INS Firmware Settings and Config](#Single-argon-ins-firmware-settings-and-config)
+    - [Single Argon INS Console Functions](#Single-argon-ins-console-functions)
+    - [Single Argon INS Published Messages](#Single-argon-ins-published-messages)
 8. [Single Argon XeThru Firmware](#single-argon-xethru-firmware)
     - [Update from Two Argon XeThru Firmware](#update-from-two-argon-xethru-firmware)
-    - [1 Argon XeThru Firmware Settings and Config](#1-argon-xethru-firmware-settings-and-config)
+    - [Single Argon XeThru Firmware Settings and Config](#Single-argon-xethru-firmware-settings-and-config)
         - [DEBUG_LEVEL](#debug_level)
         - [BRAVE_FIRMWARE_VERSION, BRAVE_PRODUCT_ID](#BRAVE_FIRMWARE_VERSION,-BRAVE_PRODUCT_ID)
         - [SLOW_THRESHOLD](#SLOW_THRESHOLD)
         - [FAST_THRESHOLD](#FAST_THRESHOLD)
         - [STATE1_MAX_TIME ... SM_HEARTBEAT_INTERVAL](#state1_max_time--sm_heartbeat_interval)
         - [XeThru Configuration Variables](#xethru-configuration-variables)
-    - [1 Argon XeThru Console Functions](#1-argon-xethru-console-functions)
+    - [Single Argon XeThru Console Functions](#single-argon-xethru-console-functions)
         - [slow_threshold_set(String)](#slow_threshold_setString)
         - [changeXeThruConfigVals(String) for 1 Argon XeThru](#changeXeThruConfigValsString-for-1-argon-xethru)
 9. [Webhook Templates](#webhook-templates)
@@ -137,11 +138,11 @@ Release: this branch contains the firmware that is running on the devices in our
 
 All other branches should be feature development, prototyping, or radar testing branches.  Radar testing branches will explicitly say what they are in the branch name.
 
-## Two Argon and XeThru Firmware
+# Two Argon and XeThru Firmware
 
 As of April 16/21, this firmware is in the Production (main/master) branch, and is in production on the devices at client sites.
 
-### Firmware Settings and Config
+## Firmware Settings and Config
 
 Setup firmware must be flashed to these devices before the production firmware can be flashed to them.  Setup firmware is found in the Setup-Firmware branch.  Step-by-step instructions on how to flash this and the production firmware are shared with developers internally.
 
@@ -149,7 +150,7 @@ The production firmware also has configuration values, found in the firmware_con
 
 See the list below for information on the settings found in these two files:
 
-#### DEBUG_LEVEL
+### DEBUG_LEVEL
 
 Define this in both the setup and production firmware config files.
 
@@ -159,7 +160,7 @@ This firmware defaults to warn level.  If more detailed debugging info is needed
 
 If you are connect to the Particle device via USB, these logs can be read by opening a Particle [command line interface](https://docs.particle.io/reference/developer-tools/cli/) and using the command "particle serial monitor --follow".
 
-#### IM21_PARTICLE
+### IM21_PARTICLE
 
 Uncomment this define in both the setup and production firmware config files if you are flashing code to an IM21 Particle device (an Argon as of the date of this writing).
 
@@ -167,7 +168,7 @@ An “IM21 Particle” connects to the IM21 door sensor via bluetooth low energy
 
 Do not define XETHRU_PARTICLE at the same time unless you want both the door sensor and the Xethru breath sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
 
-#### XETHRU_PARTICLE
+### XETHRU_PARTICLE
 
 Uncomment this define in both the setup and production firmware config files if you are flashing code to a XeThru Particle device (an Argon as of the date of this writing).
 
@@ -175,17 +176,17 @@ A “Xethru Particle” connects to the Xethru radar sensor and relays radar dat
 
 Do not define IM21_PARTICLE at the same time unless you want both the door sensor and the Xethru breath sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
 
-#### PHOTON
+### PHOTON
 
 Define this in the production firmware config file if your device is a photon, so photon-specific code can be compiled/flashed. The default device is currently an Argon.  (Presently all this macro does is turn on the Photon’s external wifi antenna, all other code is identical to the Argon.)
 
-#### BRAVE_FIRMWARE_VERSION
+### BRAVE_FIRMWARE_VERSION
 
 Define this in the production firmware's config file.
 
 This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
 
-#### BRAVE_PRODUCT_ID
+### BRAVE_PRODUCT_ID
 
 Define this in the production firmware's config file, depending on whether your firmware is going to the beta test product or the production product on the Particle Console.
 
@@ -197,7 +198,7 @@ Product keys are found by looking at the list of different products on the Parti
 
 For more information on fleetwide updates, see the Particle docs [here](https://docs.particle.io/tutorials/device-cloud/ota-updates/#fleet-wide-ota).
 
-#### Wifi Settings
+### Wifi Settings
 
 In this section you define client wifi credentials, and two internal Brave passwords that can be entered to the Particle console functions to publish credentials in flash memory.  
 
@@ -225,7 +226,7 @@ You may have up to four unique SSIDs, but the SSIDs are not required to be uniqu
 
 We are limited to 5 SSID/password pairs by the functionality of WiFi.setCredentials() in the Particle API.  The last set of credentials is reserved for the Brave diagnostics network, so we have the option of setting up to four different sets of wifi credentials for the customer.  
 
-#### locationID, deviceID, devicetype
+### locationID, deviceID, devicetype
 
 Each of these must be initialised to a string array containing the correct information for your particular install.
 
@@ -237,7 +238,7 @@ DeviceID is currently redundant and will be removed in future versions of the fi
 
 Device type is “XeThru”, "IM21", "INS3331", etc.  It indicated which type of device the Argon is receiving data from.
 
-#### XeThru Configuration Variables
+### XeThru Configuration Variables
 
 Led, noisemap, and sensitivity settings are ints, so defining a decimal number will break the code.  Min detect and max detect are floats, so decimal numbers can be used there.  An example is below:
 
@@ -266,7 +267,7 @@ Scale goes from 0 to 10.
 **Max and Min Detect:**
 Set the maximum and minimum range (in metres) for detecting movement.
 
-#### IM21 Door Sensor Settings 
+### IM21 Door Sensor Settings 
 
 The door sensor device ID for each individual IM21 is broadcast by the door sensor in its advertising data.  This door ID is 3 bytes, and is initialized by default in the setup firmware to 0xAA 0xAA 0xAA.  
 
@@ -618,11 +619,11 @@ The IM21 door sensor increments a control byte by 0x01 every time advertising da
 }
 ```
 
-## Two Argons and INS Firmware
+# Two Argons and INS Firmware
 
 As of April 16/21, this firmware is in the Release branch, and is running on the beta testing devices.
 
-### Firmware Settings
+## Firmware Settings
 
 Setup firmware must be flashed to these devices before the production firmware can be flashed to them.  Setup firmware is found in the Setup-Firmware branch.  Step-by-step instructions on how to flash this and the production firmware are shared with developers internally.
 
@@ -630,7 +631,7 @@ The production firmware also has configuration values, found in the firmware_con
 
 The only setting that is unique to this product is below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#firmware-settings-and-config) above.
 
-#### INS3331_PARTICLE
+### INS3331_PARTICLE
 
 
 
@@ -638,15 +639,15 @@ An “INS3331 Particle” connects to the INS3331 radar sensor and relays breath
 
 Do not define IM21_PARTICLE at the same time unless you want both the door sensor and the INS radar sensor to be operated by the same Particle.  This is not advisable as door open/closed events will be dropped.
 
-### Console Function Instructions
+## Console Function Instructions
 
 There are no console functions unique to this product.  All console functions found in this product are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#console-function-instructions) above.
 
-### Published Messages
+## Published Messages
 
 The only published messages that are unique to this product are below.  All the others are identical to the 2 Argon + XeThru firmware.  Their documentation can be found in the 2 Argon + XeThru [section](#published-messages) above.
 
-#### INS3331 Data
+### INS3331 Data
 
 **Event description:**  Publishes INS3331 radar data.  
 
@@ -655,7 +656,7 @@ The only published messages that are unique to this product are below.  All the 
 1. **inPhase** - A string containing a series of 10 I (inPhase) values, separated by commas
 2. **quadrature** - A string containing a series of 10 I (inPhase) values, separated by commas
 
-## Single Boron Firmware State Machine
+# Single Boron Firmware State Machine
 
 Since this is intended to run on the Boron, it does not have the wifi code or wifi console functions found in previous versions of the firmware.  
 
@@ -665,7 +666,7 @@ All state machine functions are defined in stateMachine.h and written in stateMa
 
 State transitions are handled by a pointer to a function.  The pointer is called StateHandler.  To transition to and from any new state you add to the code, set StateHandler = name of state function you wish to transition to/from.  See the current state functions for an example.
 
-### Firmware State Machine Setup
+## Firmware State Machine Setup
 
 The only things that need to be changed when provisioning devices is the [firmware version](#brave_firmware_version:-state-machine) and [product key](#product_id_betatest-and-product_id_production:-state-machine), click to go to the relevant information.
 
@@ -673,7 +674,7 @@ The production firmware only needs to be flashed to a device once.  There is no 
 
 Default settings useful to know about will be described in this section.  Note that changing these is done at the code level and not in a configuration file, so doing so will require a hotfix that is assigned a version number.  Changes will affect all devices in the fleet.
 
-#### DEBUG_LEVEL
+### DEBUG_LEVEL
 
 This is defined via a macro at the top of the .ino file.
 
@@ -683,13 +684,13 @@ This firmware defaults to warn level.  If more detailed debugging info is needed
 
 If you are connect to the Particle device via USB, these logs can be read by opening a Particle [command line interface](https://docs.particle.io/reference/developer-tools/cli/) and using the command "particle serial monitor --follow".
 
-#### BRAVE_FIRMWARE_VERSION: state machine
+### BRAVE_FIRMWARE_VERSION: state machine
 
 Define this in the main .ino file.
 
 This is the version number of the firmware that the Particle Console will use to determine which devices to flash.  It must be an int.  Due to this restriction versioning is a bit complicated, see the section on [versioning](#firmware-versioning).
 
-#### BRAVE_PRODUCT_ID for state machine
+### BRAVE_PRODUCT_ID for state machine
 
 Define this in the main .ino file, depending on whether your firmware is going to the beta test group or the production group on the Particle Console.
 
@@ -702,7 +703,7 @@ Product keys are found by looking at the list of different products on the Parti
 For more information on fleetwide updates, see the Particle docs [here](https://docs.particle.io/tutorials/device-cloud/ota-updates/#fleet-wide-ota).
 
 
-#### INS_THRESHOLD
+### INS_THRESHOLD
 
 This is defined via a macro in the stateMachine.h header file.  
 
@@ -710,7 +711,7 @@ It is compared to the filtered inPhase values detected by the INS radar.  Anythi
 
 The default level is set to 60.  This is based on the radar testing documented [here](https://docs.google.com/document/d/12TLw6XE9CSaNpguytS2NCSCP0aZWUs-OncmaDdoTKfo/edit?usp=sharing).
 
-#### STATE1_MAX_TIME
+### STATE1_MAX_TIME
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -718,7 +719,7 @@ It is the length of time the state 1 timer counts up to.  It is how long motion 
 
 The length of time defaults to 15s.  It is defined in milliseconds, so the actual macro definition will be 15000 in code.
 
-#### STATE2_MAX_DURATION
+### STATE2_MAX_DURATION
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -726,7 +727,7 @@ It is the length of time the state 2 timer counts up to.  It is how long a bathr
 
 The length of time defaults to 20 minutes.  It is defined in milliseconds, so the actual macro definition will be 1200000 in code.
 
-#### STATE3_MAX_STILLNESS_TIME
+### STATE3_MAX_STILLNESS_TIME
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -734,7 +735,7 @@ It is the length of time the state 3 timer counts up to.  It is how long a bathr
 
 The length of time defaults to 2 minutes.  It is defined in milliseconds, so the actual macro definition will be 120000 in code.
 
-#### DEBUG_PUBLISH_INTERVAL
+### DEBUG_PUBLISH_INTERVAL
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -742,7 +743,7 @@ It is the length of time between publishes of debug messages to the cloud.  (Deb
 
 The debug interval defaults to 1.5 seconds.  It is defined in milliseconds, so the actual macro definition will be 1500 in code.
 
-#### SM_HEARTBEAT_INTERVAL
+### SM_HEARTBEAT_INTERVAL
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -750,7 +751,7 @@ It is the length of time between publishes of heartbeat messages to the cloud.  
 
 The heartbeat interval defaults to 10 minutes.  It is defined in milliseconds, so the actual macro definition will be 600000 in code.  Note this is a fairly firm lower limit - based on Particle's pricing scheme we are limited to approximately one publish every 6 minutes, and we must save room in that rate limit for the alerts to be published as well.
 
-#### MOVING_AVERAGE_SAMPLE_SIZE
+### MOVING_AVERAGE_SAMPLE_SIZE
 
 This is defined via macro in the ins3331.h header file.
 
@@ -758,7 +759,7 @@ The INS data is filtered by taking the absolute value of each inPhase data point
 
 The sample size for the rolling average defaults to 25, based on the algorithm documentation linked above.  Note if you plan to change the sample size, the buffer size must change accordingly.  See the [buffer size section](#moving-average-buffer-size) below.
 
-#### MOVING_AVERAGE_BUFFER_SIZE
+### MOVING_AVERAGE_BUFFER_SIZE
 
 This is defined via macro in the ins3331.h header file.
 
@@ -773,7 +774,7 @@ sum = sum - oldVal + newVal, where:
 
 Thus the buffer size must be one larger than the sample size to retain oldVal for the next calculation.
 
-#### Door Sensor Definitions
+### Door Sensor Definitions
 
 All of the following definitions are in the im21door.h header file.
 
@@ -799,11 +800,11 @@ Various different macro defines for door sensor data are also in the im21door.h 
 
 Note that the low battery signal is published in the state machine heartbeat publish.  See the section on published messages below for more information.
 
-### State Machine Console Functions
+## State Machine Console Functions
 
 Below are the console functions unique to the single Boron state machine firmware.  Any console functions not documented here are documented in the other console functions sections of this readme.
 
-#### **stillness_timer_set(String)**
+### **stillness_timer_set(String)**
 
 **Description:**
 
@@ -820,7 +821,7 @@ Stillness timer is the length of time the Sensor sees stillness before publishin
 - The integer number of seconds of the current timer value, when e for echo is entered
 - -1: when bad data is entered 
 
-#### **initial_timer_set(String)**
+### **initial_timer_set(String)**
 
 **Description:**
 
@@ -837,7 +838,7 @@ Initial timer is the length of time the Sensor needs to see motion above the thr
 - The integer number of seconds of the current timer value, when e for echo is entered
 - -1: when bad data is entered 
 
-#### **duration_timer_set(String)**
+### **duration_timer_set(String)**
 
 **Description:**
 
@@ -854,7 +855,7 @@ Duration timer is the length of time the Sensor needs to see motion above the th
 - The integer number of seconds of the current timer value, when e for echo is entered
 - -1: when bad data is entered 
 
-#### **ins_threshold_set(String)**
+### **ins_threshold_set(String)**
 
 **Description:**
 
@@ -875,7 +876,7 @@ The default level is set to 60.  This is based on the radar testing documented [
 - The integer value of the current threshold, when e for echo is entered
 - -1: when bad data is entered 
 
-#### **toggle_debugging_publishes(String)**
+### **toggle_debugging_publishes(String)**
 
 **Description:**
 
@@ -892,7 +893,7 @@ Use this console function to turn cloud publishes of state machine debugging val
 - 1 if 1 is entered
 - -1: when bad data is entered 
 
-#### **im21_door_id_set(String)**
+### **im21_door_id_set(String)**
 
 **Description:**
 
@@ -913,9 +914,9 @@ The IM21 door sensors each have a sticker on them with their door IDs.  On the b
 - 1 - if door ID echoed to the cloud
 - -1 - if bad input was received and door ID was neither parsed or echoed to the cloud
 
-### State Machine Published Messages
+## State Machine Published Messages
 
-#### **Stillness Alert**
+### **Stillness Alert**
 
 **Event Name**
 
@@ -925,7 +926,7 @@ Stillness Alert
 
 None, other than a string saying "stillness alert".  This is redundant but doesn't increase our data usage under the Particle plan.  It is just there to make the Particle.publish() call a little more readable in code.
 
-#### **Duration Alert**
+### **Duration Alert**
 
 **Event Name**
 
@@ -935,7 +936,7 @@ Duration Alert
 
 None, other than a string saying "duration alert".  This is redundant but doesn't increase our data usage under the Particle plan.  It is just there to make the Particle.publish() call a little more readable in code.
 
-#### **Heartbeat Message**
+### **Heartbeat Message**
 
 This is published once every 10 minutes.  It contains vitals from the INS3331 radar sensor, the IM21 door sensor, and the state machine.  It is separate from the vitals messages published by the Particle OS, see below.
 
@@ -945,12 +946,34 @@ Heartbeat
 
 **Event Data**
 
-1. door_status: the last door event the state machine received from the door sensor before the heartbeat publish was made
-2. door_time: the length of time in milliseconds between the state machine receiving door_status and the heartbeat being published
-3. INS_status: the last filtered inPhase value received from the INS3331 radar sensor before the heartbeat publish was made
-4. ins_time: the length of time in milliseconds between the state machine receiving INS_status and the heartbeat message being published
+1. doorMissedMsg: the number of IM21 missed message alerts generated since the previous heartbeat.
+2. doorLowBatt: a boolean that indicates whether the last IM21 message received has a "1" on the low battery flag.
+3. doorLastHeartbeat: millis since the last IM21 heartbeat was received. Counts from 0 upon restart.
+4. resetReason: provides the reason of reset on the first heartbeat since a reset. Otherwise, will equal "NONE".
+5. states: an array that encodes all the state transitions that occured since the previous heartbeat*, with each subarray representing a single state transition. Subarray data includes:
 
-#### **Debug Message**
+    1. an integer between 0-3, representing the previous state. The number corresponds to the states described in the [state diagram](https://docs.google.com/drawings/d/14JmUKDO-Gs7YLV5bhE67ZYnGeZbBg-5sq0fQYwkhkI0/edit?usp=sharing).
+    2. an integer between 0-5, representing the reason of transition out of the previous state. The table to decode the reason is below.
+    3. an unsigned integer, representing the time spent in the previous state.
+
+*Only until the 622 character limit is reached. Subsequent state transitions will appear in the following heartbeat.
+
+| State Code | Meaning          |
+|------------|------------------|
+| 0          | Idle             |
+| 1          | Initial Timer    |
+| 2          | Duration Timer   |
+| 3          | Stillness Timer  |
+
+| Reason Code | Meaning                         |
+|-------------|---------------------------------|
+| 0           | Movement surpasses threshold    |
+| 1           | Movement falls below threshold  |
+| 2           | Door opened                     |
+| 3           | Initial timer surpassed         |
+| 4           | Duration alert                  |
+| 5           | Stillness alert                 |
+### **Debug Message**
 
 Debug messages are only published when activated by [console function](#toggle_debugging_publishes(String)).
 
@@ -967,7 +990,7 @@ Debug Message
 3. INS_val: the current filtered inPhase value from the INS radar
 4. timer_status: if the current state uses a timer, this contains the time in milliseconds that the timer has counted up to thus far.  If the current state does not contain a timer, this is set to 0.
 
-#### **Debugging: State Transition**
+### **Debugging: State Transition**
 
 Debug messages are only published when activated by [console function](#toggle_debugging_publishes(String)).
 
@@ -985,7 +1008,7 @@ State Transition
 4. INS_val: the current filtered inPhase value from the INS radar
 
 
-#### **Current Door Sensor ID**
+### **Current Door Sensor ID**
 
 Publishes what it says on the box!  If you have entered e for echo into the door sensor console function, it will read the device ID of the door sensor the Particle is currently reading advertising data from, and publish it to the cloud.
 
@@ -1018,7 +1041,7 @@ Be aware:  this means that notification a door event is missed won't be publishe
 5. **curr_control_byte** - Most recent door control byte received
 
 
-#### "**spark/device/diagnostics/update**"
+### "**spark/device/diagnostics/update**"
 
 **Event description:**  This event is triggered by the publishVitals() function. More documentation on this function can be found [here](https://docs.particle.io/reference/device-os/firmware/argon/#particle-publishvitals-).
 
@@ -1091,26 +1114,35 @@ Be aware:  this means that notification a door event is missed won't be publishe
   }
 }
 ```
+## Hardware Watchdog
 
-## Single Argon INS Firmware
+A TPL5010 watchdog timer chip is implemented on some PCBs. Watchdog timers automate the resetting of a Particle, reducing downtime and resource use for the recovery process.
+
+The TPL5010 functions in the following way: If the service pin of the TPL is not pulsed within approximately 4 minutes, the reset pin will be pulled high, causing a reset of the Particle. In our firmware, when the Particle is connected to the cloud, it will service the watchdog through pin D6 periodically.
+
+The Particle Application Notes with example code for the TPL5010 can be found [here](https://docs.particle.io/datasheets/app-notes/an023-watchdog-timers/#simple-watchdog-tpl5010), and the datasheet [here](https://www.ti.com/lit/ds/symlink/tpl5010.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1629830152267&ref_url=https%253A%252F%252Fwww.ti.com%252Fgeneral%252Fdocs%252Fsuppproductinfo.tsp%253FdistId%253D10%2526gotoUrl%253Dhttps%253A%252F%252Fwww.ti.com%252Flit%252Fgpn%252Ftpl5010).
+
+The 4 minute threshold for the TPL should be sufficient to allow for over-the-air updates. However, provisioning the Particle often takes longer than 4 minutes, and thus should be done disconnected from the PCB.
+
+# Single Argon INS Firmware
 
 This is the Single Boron firmware with firmware state machine, modified to include wifi console functions and wifi connect functionality.
 
-### 1 Argon INS Firmware Settings and Config
+### Single Argon INS Firmware Settings and Config
 
 When commissioning the Single Argon, the setup firmware must be flashed beforehand. Setup firmware is found in the Setup-Firmware branch. Step-by-step instructions on how to flash this and the firmware are shared with developers internally.
 
 The rest of the firmware settings are identical to the 1 Boron + INS, and can be found [here](#firmware-state-machine-setup).
 
-### 1 Argon INS Console Functions
+### Single Argon INS Console Functions
 
 There are no console functions unique to this product. All console functions pertaining to the state machine and IM21 door sensor are described in detail [here](#state-machine-console-functions). All console functions pertaining to wifi are are described in detail [here](#changessidstring).
 
-### 1 Argon INS Published Messages
+### Single Argon INS Published Messages
 
 The published messages are identical to the 1 Boron + INS firmware [here](#state-machine-published-messages).
 
-## Single Argon XeThru Firmware
+# Single Argon XeThru Firmware
 
 This firmware is intended to be a hotfix release candidate for hardware in production with XeThru radars. This firmware will be released as an update for XeThru devices on the 2 Argon + XeThru firmware. 
 
@@ -1124,7 +1156,7 @@ Importantly, the wifi credentials will be preserved, and after the over-the-air 
 
 The door sensor device ID will be initalized by default to 0xAA 0xAA 0xAA. Once the firmware is up and running, the console function to change the door sensor ID can be used to overwrite the default value to the ID of whichever door sensor was shipped to the client. See the console function docs on how to do this.
 
-### 1 Argon XeThru Firmware Settings and Config
+## Single Argon XeThru Firmware Settings and Config
 
 The setup firmware must be flashed before the main firmware is flashed. Setup firmware is found in the Setup-Firmware branch. Step-by-step instructions on how to flash this and the firmware are shared with developers internally.
 
@@ -1134,15 +1166,15 @@ Production firmware will initialize state machine constants (timer lengths, INS 
 
 Default settings useful to know about will be described in this section.  Note that changing these is done at the code level and not in a configuration file, so doing so will require a hotfix that is assigned a version number.  Changes will affect all devices in the fleet.
 
-#### DEBUG_LEVEL
+### DEBUG_LEVEL
 
 This is defined via a macro at the top of the .ino file. See [above](#debug-level) for details.
 
-#### BRAVE_FIRMWARE_VERSION, BRAVE_PRODUCT_ID
+### BRAVE_FIRMWARE_VERSION, BRAVE_PRODUCT_ID
 
 This is defined in the main .ino file. See [above](#brave_firmware_version:-state-machine) for details.
 
-#### SLOW_THRESHOLD
+### SLOW_THRESHOLD
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -1150,7 +1182,7 @@ The Movement_Slow data from the XeThru radar is a time average of movement over 
 
 The default level is set to 5, based on testing [here](https://docs.google.com/document/d/1i5v0Ui3wrlOUMt_VvitPoBqSaLXMNcTEj-xPsQCEa70/edit?usp=sharing).
 
-#### FAST_THRESHOLD
+### FAST_THRESHOLD
 
 This is defined via a macro in the stateMachine.h header file.
 
@@ -1158,11 +1190,11 @@ The Movement_Fast data from the XeThru radar is a time average of movement over 
 
 The default level is set to 20 based on testing [here](https://docs.google.com/document/d/1i5v0Ui3wrlOUMt_VvitPoBqSaLXMNcTEj-xPsQCEa70/edit?usp=sharing).This value is hard-coded, meaning that changes to this threshold must be done on the code level and will require a new firmware version. 
 
-#### STATE1_MAX_TIME ... SM_HEARTBEAT_INTERVAL
+### STATE1_MAX_TIME ... SM_HEARTBEAT_INTERVAL
 
 These are defined via a macro in the stateMachine.h header file, see [above](#state1_max_time) for details.
 
-#### XeThru Configuration Variables
+### XeThru Configuration Variables
 
 Led, noisemap, and sensitivity settings are ints, so defining a decimal number will break the code.  Min detect and max detect are floats, so decimal numbers can be used there.  An example is below:
 
@@ -1192,9 +1224,9 @@ Scale goes from 0 to 10.
 Set the maximum and minimum range (in metres) for detecting movement.
 
 
-### 1 Argon XeThru Console Functions
+## Single Argon XeThru Console Functions
 
-#### **slow_threshold_set(String)**
+### **slow_threshold_set(String)**
 
 **Description:**
 
@@ -1215,7 +1247,7 @@ The default level is set to 5, based on testing [here](https://docs.google.com/d
 - The integer value of the current threshold, when e for echo is entered
 - -1: when bad data is entered
 
-#### **changeXeThruConfigVals(String) for 1 Argon XeThru**
+### **changeXeThruConfigVals(String) for 1 Argon XeThru**
 
 **Description:**
 
@@ -1243,11 +1275,11 @@ Min_detect and max_detect are floats. Allowed values:
 - 1 - if current settings are echoed to the cloud
 - -1 - if bad input was received and settings were neither parsed nor echoed to the cloud
 
-## Webhook Templates
+# Webhook Templates
 
 To send sensor data and alerts to the node application on the brave sensor backend, we require a webhook to take the data from the particle publish message and send a HTTP/S post request to the backend server. This section contains the various templates that are used for sending various data payloads to the backed corresponding to various sensors 
 
-### Xethru Template
+## Xethru Template
 
 The XeThru Template uses a custom webhook since the request format of the webhook is a `web form` and not a JSON object. This is technical debt from the initial implementation of sensor which hasn't been changed since the XeThru module support is inactive. 
 
@@ -1281,7 +1313,7 @@ The XeThru Template uses a custom webhook since the request format of the webhoo
 }
 ```
 
-### IM21 Template
+## IM21 Template
 
 The request format of the IM21 webhook template is JSON. As a result, the webhook template is not unique, and the only link to the particle publish message is simply the name of the event. At the backend, the sensor data can be extracted from the body of the request.
 
@@ -1306,7 +1338,7 @@ Particle.publish("IM21 Data", doorPublishBuffer, PRIVATE);
 }
 ```
 
-### INS3331 Template
+## INS3331 Template
 
 The request format of the INS3331 webhook template is JSON. As a result, the webhook template is not unique, and the only link to the particle publish message is simply the name of the event. At the backend, the sensor data can be extracted from the body of the request.
 
