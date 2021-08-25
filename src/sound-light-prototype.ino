@@ -85,34 +85,33 @@ void button_interrupt()
 
 void publish_messages()
 {
-    if (flag == 0)
+    switch (flag)
     {
-    }
-    else if (flag == 1)
-    {
+    case 0:
+        break;
+    case 1:
         Particle.publish("siren-addressed");
         Particle.publish("addressed", "siren-addressed", PRIVATE);
         flag = 0;
-    }
-    else if (flag == 2)
-    {
+        break;
+    case 2:
         Particle.publish("escalate-siren");
         Particle.publish("escalate", "escalate-siren", PRIVATE);
         flag = 0;
-    }
-    else if (flag == 3)
-    {
+        break;
+    case 3:
         Particle.publish("alarm-sounded");
         flag = 0;
-    }
-    else if (flag == 4)
-    {
+        break;
+    case 4:
         Particle.publish("positive-integer-please");
         flag = 0;
-    }
-    else if (flag == 5)
-    {
+        break;
+    case 5:
         Particle.publish("timer-length-updated");
         flag = 0;
+        break;
+    default:
+        break;
     }
 }
