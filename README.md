@@ -74,6 +74,7 @@ As of August 24/21, the different product firmware versions in this repo are:
           - [MOVING_AVERAGE_SAMPLE_SIZE](#moving_average_sample_size)
           - [MOVING_AVERAGE_BUFFER_SIZE](#moving_average_buffer_size)
           - [Door Sensor Definitions](#door-sensor-definitions)
+          - [WATCHDOG_PIN and WATCHDOG_PERIOD](#watchdog_pin-and-watchdog_period)
       - [State Machine Console Functions](#state-machine-console-functions)
           - [stillness_timer_set(String)](#stillness_timer_setString)
           - [initial_timer_set(String)](#initial_timer_setString)
@@ -89,7 +90,6 @@ As of August 24/21, the different product firmware versions in this repo are:
           - [Current Door Sensor ID](#current-door-sensor-id)
           - [IM21 Warning: state machine](#im21-warning:-state-machine)
           - [spark/device/diagnostics/update](#spark/device/diagnostics/update)
-      - [Hardware Watchdog](#hardware-watchdog)
 7. [Single Argon INS Firmware](#single-argon-ins-firmware)
     - [Single Argon INS Firmware Settings and Config](#Single-argon-ins-firmware-settings-and-config)
     - [Single Argon INS Console Functions](#Single-argon-ins-console-functions)
@@ -804,6 +804,21 @@ Various different macro defines for door sensor data are also in the im21door.h 
 
 Note that the low battery signal is published in the state machine heartbeat publish.  See the section on published messages below for more information.
 
+### WATCHDOG_PIN and WATCHDOG_PERIOD
+
+These are defined at the top of `tpl5010watchdog.cpp`.
+
+A TPL5010 watchdog timer chip can be implemented on a Boron+INS or Argon+INS PCB.
+
+The firmware sets up `WATCHDOG_PIN` on the Particle as an output during the `setup()` routine. While the Particle is connected to the cloud, it will service the TPL5010 periodically by pulsing the `WATCHDOG_PIN`. The period of this servicing is set by `WATCHDOG_PERIOD`, and is currently set to 2 minutes.
+
+If the TPL5010 is not serviced within a set period, it will pull the RESET pin of the Particle high, triggering a reset. This reset period is set in hardware by the resistance between pin 3 on the TPL to ground. Currently a 39.2kOhm resistor is used to create a reset period of about 4 minutes.
+
+The 4 minute threshold for the TPL should be sufficient to allow for over-the-air updates. However, provisioning the Particle often takes longer than 4 minutes, and thus should be done disconnected from the PCB.
+
+This section mirrors the Living Doc article on the [TPL5010 Watchdog](https://app.clickup.com/2434616/v/dc/2a9hr-2261/2a9hr-3187).
+The Particle Application Notes with example code for the TPL5010 can be found [here](https://docs.particle.io/datasheets/app-notes/an023-watchdog-timers/#simple-watchdog-tpl5010), and the datasheet [here](https://www.ti.com/lit/ds/symlink/tpl5010.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1629830152267&ref_url=https%253A%252F%252Fwww.ti.com%252Fgeneral%252Fdocs%252Fsuppproductinfo.tsp%253FdistId%253D10%2526gotoUrl%253Dhttps%253A%252F%252Fwww.ti.com%252Flit%252Fgpn%252Ftpl5010).
+
 ## State Machine Console Functions
 
 Below are the console functions unique to the single Boron state machine firmware.  Any console functions not documented here are documented in the other console functions sections of this readme.
@@ -1118,15 +1133,6 @@ Be aware:  this means that notification a door event is missed won't be publishe
   }
 }
 ```
-## Hardware Watchdog
-
-A TPL5010 watchdog timer chip is implemented on some PCBs. Watchdog timers automate the resetting of a Particle, reducing downtime and resource use for the recovery process.
-
-The TPL5010 functions in the following way: If the service pin of the TPL is not pulsed within approximately 4 minutes, the reset pin will be pulled high, causing a reset of the Particle. In our firmware, when the Particle is connected to the cloud, it will service the watchdog through pin D6 periodically.
-
-The Particle Application Notes with example code for the TPL5010 can be found [here](https://docs.particle.io/datasheets/app-notes/an023-watchdog-timers/#simple-watchdog-tpl5010), and the datasheet [here](https://www.ti.com/lit/ds/symlink/tpl5010.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1629830152267&ref_url=https%253A%252F%252Fwww.ti.com%252Fgeneral%252Fdocs%252Fsuppproductinfo.tsp%253FdistId%253D10%2526gotoUrl%253Dhttps%253A%252F%252Fwww.ti.com%252Flit%252Fgpn%252Ftpl5010).
-
-The 4 minute threshold for the TPL should be sufficient to allow for over-the-air updates. However, provisioning the Particle often takes longer than 4 minutes, and thus should be done disconnected from the PCB.
 
 # Single Argon INS Firmware
 
