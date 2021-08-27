@@ -23,7 +23,7 @@ Timer timer(5000, timer_overflow, true);
 void setup()
 {
     Particle.publishVitals(60);
-    Particle.function("Start the Siren ('start')", start_siren);
+    Particle.function("start", start_siren);
     Particle.function("Timer Length (integer in ms)", change_timer_length);
 
     pinMode(BUTTON, INPUT);
