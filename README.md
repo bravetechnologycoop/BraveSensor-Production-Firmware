@@ -992,6 +992,24 @@ Heartbeat
 | 3           | Initial timer surpassed         |
 | 4           | Duration alert                  |
 | 5           | Stillness alert                 |
+
+Example:
+```JSON
+{
+  "doorMissedMsg": 1,
+  "doorLowBatt": false,
+  "doorLastHeartbeat": 234567,
+  "resetReason": "DFU_MODE",
+  "states": [
+    [0,0,5030],
+    [1,1,2411],
+    [0,0,42934],
+    [1,3,15000],
+    [2,4,60000],
+    [0,0,3034],
+  ]
+}
+```
 ### **Debug Message**
 
 Debug messages are only published when activated by [console function](#toggle_debugging_publishes(String)).
