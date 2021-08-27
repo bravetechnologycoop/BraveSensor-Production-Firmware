@@ -3,7 +3,9 @@
 
 //******************global variable initialization*******************
 
+// Pin used to service the watchdog
 const pin_t WATCHDOG_PIN = D6;
+// Period of servicing watchdog
 const std::chrono::milliseconds WATCHDOG_PERIOD = 2min;
 
 //********************setup() functions*************************/
@@ -17,6 +19,7 @@ void setupWatchdog() {
 
 //********************loop() functions*************************/
 
+// Pulses the watchdog service pin once WATCHDOG_PERIOD has passed
 void serviceWatchdog() {
     static unsigned long lastWatchdogMillis = 0;
 
