@@ -28,7 +28,7 @@ void setup() {
   setupStateMachine();
 
 
-  Particle.publishVitals(120);  //two minutes
+  Particle.publishVitals(900);  //15 minutes
   
 }
 
