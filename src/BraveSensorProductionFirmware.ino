@@ -33,7 +33,7 @@ void setup() {
 
 
 
-  Particle.publishVitals(900);  //15 minutes
+  Particle.publishVitals(30);  //30 seconds
   
 }
 
