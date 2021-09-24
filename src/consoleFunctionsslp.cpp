@@ -71,12 +71,10 @@ void publish_messages()
         break;
     case 1:
         Particle.publish("siren-addressed");
-        Particle.publish("addressed", "siren-addressed", PRIVATE);
         flag = 0;
         break;
     case 2:
-        Particle.publish("escalate-siren");
-        Particle.publish("escalate", "escalate-siren", PRIVATE);
+        Particle.publish("siren-escalated");
         flag = 0;
         break;
     case 3:

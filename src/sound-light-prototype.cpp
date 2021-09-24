@@ -22,21 +22,10 @@ int change_timer_length(String command);
 #define BUZZER D6
 #define BUTTON D5
 
-int start_siren(String command); // cloud function
-void button_interrupt();
-void timer_overflow();
-void publish_messages();
-
-int flag = 0;
-Timer timer(5000, timer_overflow, true);
-
 void setup()
 {
     Particle.publishVitals(60);
     setupConsoleFunctions();
-    // Particle.function("start", start_siren);
-    // Particle.function("Timer Length (integer in ms)", change_timer_length);
-
     pinMode(BUTTON, INPUT);
     pinMode(BUZZER, OUTPUT);
 }
