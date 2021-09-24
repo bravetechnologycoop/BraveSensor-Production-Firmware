@@ -5,7 +5,7 @@
     "files.associations": {
         "*.ino": "cpp"
     },
-    "particle.firmwareVersion": "2.0.1",
+    "particle.firmwareVersion": "1.5.2",
     "particle.targetPlatform": "argon",
     "particle.targetDevice": "maria_traffic_light"
 }
