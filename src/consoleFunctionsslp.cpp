@@ -19,18 +19,26 @@ int change_timer_length(String command)
 {
     char command_arr[command.length() + 1];
     strcpy(command_arr, command.c_str());
-    for (unsigned int i = 0; i < command.length(); i++)
-    {
-        char temp = command_arr[i];
-        if (temp != '0' && temp != '1' && temp != '2' && temp != '3' && temp != '4' && temp != '5' && temp != '6' && temp != '7' && temp != '8' && temp != '9')
+    const char* holder = command.c_str();
+
+    //if e, echo the current timer
+    if(*holder == 'e'){
+        flag = 0;
+        return 0; //timer.default_wait()
+    } else {
+        for (unsigned int i = 0; i < command.length(); i++)
         {
-            flag = 4;
-            return -1;
+            char temp = command_arr[i];
+            if (temp != '0' && temp != '1' && temp != '2' && temp != '3' && temp != '4' && temp != '5' && temp != '6' && temp != '7' && temp != '8' && temp != '9')
+            {
+                flag = 4;
+                return -1;
+            }
         }
+        timer.changePeriod(atoi(command));
+        flag = 5;
+        return 1;
     }
-    timer.changePeriod(atoi(command));
-    flag = 5;
-    return 1;
 }
 
 int start_siren(String command)
