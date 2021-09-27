@@ -24,7 +24,7 @@ int change_timer_length(String command)
     //if e, echo the current timer
     if(*holder == 'e'){
         flag = 0;
-        return 0; //timer.default_wait()
+        return period; //timer.default_wait()
     } else {
         for (unsigned int i = 0; i < command.length(); i++)
         {
@@ -36,6 +36,7 @@ int change_timer_length(String command)
             }
         }
         timer.changePeriod(atoi(command));
+        period = atoi(command);
         flag = 5;
         return 1;
     }

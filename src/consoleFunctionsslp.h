@@ -32,4 +32,5 @@ void timer_overflow();
 void publish_messages();
 
 int flag = 0;
-Timer timer(5000, timer_overflow, true);
+int period = 5000;
+Timer timer(period, timer_overflow, true);
