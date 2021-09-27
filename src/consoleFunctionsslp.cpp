@@ -38,7 +38,7 @@ int change_timer_length(String command)
         timer.changePeriod(atoi(command));
         period = atoi(command);
         flag = 5;
-        return 1;
+        return period;
     }
 }
 
